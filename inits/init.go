@@ -1,17 +1,13 @@
 package inits
 
-import (
-	"forum/internal/server"
-	"forum/pkg/utils"
-	"github.com/gin-gonic/gin"
-)
-
 func Init() {
-	// Initialize Router
-	server.Router = gin.Default()
+	// 初始化 Router
+	routerInit()
 
-	// Initialize MYSQL
+	//初始化日志
+	LogInit()
+
+	// 初始化 MYSQL
 	mysqlInit()
 
-	utils.InitFile("logs", "forum")
 }

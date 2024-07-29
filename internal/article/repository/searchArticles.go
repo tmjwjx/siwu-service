@@ -1,0 +1,31 @@
+package repository
+
+import (
+	"forum/inits"
+	"forum/internal/article/request"
+	"forum/internal/models"
+	"github.com/gin-gonic/gin"
+	"net/http"
+)
+
+func SearchArticles(c *gin.Context, req request.SearchRequest) (articles []models.Article) {
+	db := inits.DB
+	offset := (req.Page - 1) * req.Limit // 计算当前页的偏移量，用于分页
+	var condition string
+	if req.Kind == 0 { // 0 代表按照热度排序
+		condition = "article_heat DESC"
+	} else if req.Kind == 1 { // 1 代表按照发布时间排序
+		condition = "published_at DESC"
+	}
+
+	if err := db.Where("(article_title LIKE ? OR article_summary LIKE ?) AND article_category_id = ?", "%"+req.Query+"%", "%"+req.Query+"%", req.Category).
+		Order(condition).                   // 按照热度降序排序
+		Limit(req.Limit).                   // 限制返回的产品数量
+		Offset(offset).                     // 设置查询的偏移量
+		Find(&articles).Error; err != nil { // 执行查询并检查是否出错
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"}) // 返回 500 错误
+		return                                                                   // 结束函数执行
+	}
+
+	return articles
+}
