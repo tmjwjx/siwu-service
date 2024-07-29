@@ -1,7 +1,7 @@
 {
   "db": {
     "username": "root",
-    "password": "123456987",
+    "password": "123456789",
     "host": "127.0.0.1",
     "port": 3306,
     "dbname": "forum",

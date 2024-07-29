@@ -1,10 +1,7 @@
 package inits
 
-import (
-	"forum/internal/server"
-	"github.com/gin-gonic/gin"
-)
-
-func routerInit() {
-	server.Router = gin.Default()
-}
+//var Router *gin.Engine
+//
+//func routerInit() {
+//	Router = gin.Default()
+//}

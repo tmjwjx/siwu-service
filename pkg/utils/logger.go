@@ -56,6 +56,7 @@ func (hook *FileDateHook) Fire(entry *logrus.Entry) error {
 	return nil
 }
 
+// InitFile 初始化日志文件
 func InitFile(logPath, appName string) {
 	// now := time.Now()
 	// fileDate := now.Format("2006-01-02")

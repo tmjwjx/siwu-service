@@ -1,8 +1,6 @@
 package inits
 
 func Init() {
-	// 初始化 Router
-	routerInit()
 
 	//初始化日志
 	LogInit()
