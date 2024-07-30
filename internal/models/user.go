@@ -6,17 +6,18 @@ import (
 
 // User 用户简略信息
 type User struct {
-	ID            uint          `json:"id" gorm:"primaryKey"`                // 主键
-	Nickname      string        `json:"nickname"`                            // 昵称
-	Email         string        `json:"email" gorm:"unique"`                 // 邮箱，唯一
-	Password      string        `json:"password"`                            // 密码
-	PersonalHeat  int           `json:"personal_heat"`                       // 个人热度
-	FansCount     uint          `json:"fans_count"`                          // 粉丝数
-	UserHeadImage UserHeadImage `gorm:"foreignKey:UserID;references:ID"`     // 关联 UserHeadImage 表，UserID -> ID
-	UserDetail    UserDetail    `gorm:"foreignKey:UserID;references:ID"`     // 关联 UserDetail 表，UserID -> ID
-	UserMessage   UserMessage   `gorm:"foreignKey:UserID;references:ID"`     // 关联 UserMessage 表，UserID -> ID
-	Follow1       Follow        `gorm:"foreignKey:FollowerID;references:ID"` // 关联 Follow 表，FollowerID -> ID
-	Follow2       Follow        `gorm:"foreignKey:FollowedID;references:ID"` // 关联 Follow 表，FollowedID -> ID
+	ID            uint          `json:"id" gorm:"primaryKey"`                                                                               // 主键
+	Nickname      string        `json:"nickname"`                                                                                           // 昵称
+	Email         string        `json:"email" gorm:"unique"`                                                                                // 邮箱，唯一
+	Password      string        `json:"password"`                                                                                           // 密码
+	PersonalHeat  int           `json:"personal_heat"`                                                                                      // 个人热度
+	FansCount     uint          `json:"fans_count"`                                                                                         // 粉丝数
+	UserHeadImage UserHeadImage `gorm:"foreignKey:UserID;references:ID"`                                                                    // 关联 UserHeadImage 表，UserID -> ID
+	UserDetail    UserDetail    `gorm:"foreignKey:UserID;references:ID"`                                                                    // 关联 UserDetail 表，UserID -> ID
+	UserMessage   UserMessage   `gorm:"foreignKey:UserID;references:ID"`                                                                    // 关联 UserMessage 表，UserID -> ID
+	Follow1       Follow        `gorm:"foreignKey:FollowerID;references:ID"`                                                                // 关联 Follow 表，FollowerID -> ID
+	Follow2       Follow        `gorm:"foreignKey:FollowedID;references:ID"`                                                                // 关联 Follow 表，FollowedID -> ID
+	FollowsTags   []Tag         `gorm:"many2many:user_follows_tags;foreignKey:ID;joinForeignKey:UserID;references:ID;joinReferences:TagID"` // 关联中间表 user_follows_tags , USerID -> ID
 }
 
 // UserHeadImage 头像信息
