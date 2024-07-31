@@ -1,7 +1,7 @@
-package utils
+package globals
 
+// 自定义状态码：StatusOK = 2000，区别于 http.StatusOK = 200
 const (
-	// 自定义状态码：StatusOK = 2000，区别于 http.StatusOK = 200
 	StatusOK                  = 2000
 	StatusBadRequest          = 4000
 	StatusInternalServerError = 5000

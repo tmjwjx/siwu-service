@@ -1,17 +1,26 @@
 package inits
 
 import (
-	"forum/internal/server"
-	"forum/pkg/utils"
+	"forum/pkg/globals"
 	"github.com/gin-gonic/gin"
 )
 
-func Init() {
-	// Initialize Router
-	server.Router = gin.Default()
+func init() {
+	// 优先初始化配置文件（给mysql，redis赋上配置信息）
+	viperInit()
 
-	// Initialize MYSQL
-	mysqlInit()
+	// 初始化 mysql
+	DBInit()
 
-	utils.InitFile("logs", "forum")
+	// 初始化 redis
+	RedisInit()
+
+	// 初始化表
+	TableInit()
+
+	// 初始化日志文件
+	logInit("logs", "forum")
+
+	// 初始化路由 Router
+	globals.Router = gin.Default()
 }
