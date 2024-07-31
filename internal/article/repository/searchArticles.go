@@ -23,8 +23,8 @@ func SearchArticles(c *gin.Context, req request.SearchRequest) (articles []model
 		Limit(req.Limit).                   // 限制返回的产品数量
 		Offset(offset).                     // 设置查询的偏移量
 		Find(&articles).Error; err != nil { // 执行查询并检查是否出错
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"}) // 返回 500 错误
-		return                                                                   // 结束函数执行
+		c.JSON(http.StatusInternalServerError, gin.H{"errors": "Database errors"}) // 返回 500 错误
+		return                                                                     // 结束函数执行
 	}
 
 	return articles

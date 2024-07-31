@@ -16,7 +16,7 @@ func Register(c *gin.Context) {
 	// 获取数据包
 	data, err := c.GetRawData()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"code": globals.StatusInternalServerError, "data": "", "error": globals.CodeMsgMap[globals.StatusInternalServerError]})
+		c.JSON(http.StatusInternalServerError, gin.H{"code": globals.StatusInternalServerError, "data": "", "errors": globals.CodeMsgMap[globals.StatusInternalServerError]})
 		return
 	}
 	fmt.Println("Register 接收到的消息为:")
@@ -27,7 +27,7 @@ func Register(c *gin.Context) {
 	err = json.Unmarshal(data, &registerMsg)
 	if err != nil {
 		// 反序列化失败，前端发送的数据有问题
-		c.JSON(http.StatusBadRequest, gin.H{"code": globals.StatusBadRequest, "data": "", "error": globals.CodeMsgMap[globals.StatusBadRequest]})
+		c.JSON(http.StatusBadRequest, gin.H{"code": globals.StatusBadRequest, "data": "", "errors": globals.CodeMsgMap[globals.StatusBadRequest]})
 		return
 	}
 
