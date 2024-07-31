@@ -6,6 +6,7 @@ import (
 )
 
 func main() {
+
 	// 初始化
 	inits.Init()
 

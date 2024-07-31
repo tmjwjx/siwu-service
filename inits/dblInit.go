@@ -2,8 +2,8 @@ package inits
 
 import (
 	"fmt"
-	"forum/configs"
 	"forum/internal/models"
+	"github.com/spf13/viper"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
@@ -13,24 +13,19 @@ import (
 var DB *gorm.DB
 
 // 初始化mysql
-func mysqlInit() {
-	configMap, _ := configs.LoadMysqlConfig("mysqlConfig.json")
-	dbConfig := configMap["db"].(map[string]interface{})
-	username := dbConfig["username"].(string)
-	password := dbConfig["password"].(string)
-	host := dbConfig["host"].(string)
-	port := int(dbConfig["port"].(float64))
-	Dbname := dbConfig["dbname"].(string)
-	timeout := dbConfig["timeout"].(string)
-	// username := "root"  // 账号
-	// password := ""      // 密码
-	// host := "127.0.0.1" // 数据库地址，可以是Ip或者域名
-	// port := 3306        // 数据库端口
-	// Dbname := "forum"   // 数据库名
-	// timeout := "10s"    // 连接超时，10秒
+func dbInit() {
+
+	username := viper.GetString("db.username")
+	password := viper.GetString("db.password")
+	host := viper.GetString("db.host")
+	port := viper.GetInt("db.port")
+	dbname := viper.GetString("db.dbname")
+	timeout := viper.GetString("db.timeout")
+	// 打印所有的配置供调试
+	fmt.Println("All configurations:", viper.AllSettings())
 
 	// root:root@tcp(127.0.0.1:3306)/gorm?
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local&timeout=%s", username, password, host, port, Dbname, timeout)
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local&timeout=%s", username, password, host, port, dbname, timeout)
 	// 连接MYSQL, 获得DB类型实例，用于后面的数据库读写操作。
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
 		// 跳过默认事务，能获得 60% 的性能提升
@@ -40,7 +35,7 @@ func mysqlInit() {
 		},
 	})
 	if err != nil {
-		log.Fatalln("mysqlInit err = ", err)
+		log.Fatalln("dbInit err = ", err)
 	}
 
 	DB = db
