@@ -1,16 +1,14 @@
 package server
 
 import (
-	"github.com/gin-gonic/gin"
+	"forum/pkg/utils"
 )
-
-var Router *gin.Engine = gin.Default()
 
 // Run 启动路由
 func Run() {
-
-	err := Router.Run("0.0.0.0:8081")
+	err := utils.Router.Run("0.0.0.0:8081")
 	if err != nil {
+		utils.Log.Errorf("路由启动错误")
 		return
 	}
 

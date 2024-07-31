@@ -21,7 +21,7 @@ func Search(c *gin.Context) {
 
 	articles := repository.SearchArticles(c, req)
 
-	//articles = append(articles, models.Article{
+	// articles = append(articles, models.Article{
 	//	AuthorID:                2,
 	//	ArticleTitle:            "searchApple",
 	//	ArticleImage:            "",
@@ -39,9 +39,9 @@ func Search(c *gin.Context) {
 	//	UpdatedAt:               nil,
 	//	PublishedAt:             nil,
 	//	Category:                models.Category{},
-	//})
+	// })
 
 	// 返回查询到的产品列表，状态码为 200
-	//c.JSON(http.StatusOK, articles)
+	// c.JSON(http.StatusOK, articles)
 	c.JSON(200, gin.H{"data": articles, "msg": "发送成功"})
 }

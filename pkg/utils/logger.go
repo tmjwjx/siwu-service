@@ -7,13 +7,13 @@ import (
 	"time"
 )
 
-var Log = logrus.New()
+// 日志工具
 
 type FileDateHook struct {
 	file     *os.File
-	logPath  string
+	LogPath  string
 	fileDate string // 判断日期切换目录
-	appName  string
+	AppName  string
 }
 
 func (hook *FileDateHook) Levels() []logrus.Level {
@@ -41,7 +41,7 @@ func (hook *FileDateHook) Fire(entry *logrus.Entry) error {
 		// }
 
 		// 创建新文件（按天分文件）
-		filename := fmt.Sprintf("%s/%s-%s.log", hook.logPath, hook.appName, timerDate)
+		filename := fmt.Sprintf("%s/%s-%s.log", hook.LogPath, hook.AppName, timerDate)
 		var err error
 		hook.file, err = os.OpenFile(filename, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0600)
 		if err != nil {
@@ -54,29 +54,4 @@ func (hook *FileDateHook) Fire(entry *logrus.Entry) error {
 		return err
 	}
 	return nil
-}
-
-// InitFile 初始化日志文件
-func InitFile(logPath, appName string) {
-	// now := time.Now()
-	// fileDate := now.Format("2006-01-02")
-
-	// 创建文件（按天分文件）
-	// filename := fmt.Sprintf("%s/%s-%s.log", logPath, appName, fileDate)
-	// file, err := os.OpenFile(filename, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0600)
-	// if err != nil {
-	//	Log.Error(err)
-	//	return
-	// }
-
-	fileHook := FileDateHook{
-		// file:     file,
-		logPath: logPath,
-		// fileDate: fileDate,
-		appName: appName,
-	}
-	Log.AddHook(&fileHook)
-
-	// 包含调用者信息
-	Log.SetReportCaller(true)
 }
