@@ -1,15 +1,20 @@
 package server
 
 import (
-	"forum/internal/user/controllers"
-	"github.com/gin-gonic/gin"
+	articleControl "forum/internal/article/controllers"
+	userControl "forum/internal/user/controllers"
+	"forum/pkg/utils"
 )
-
-var Router *gin.Engine
 
 // SetupRouter 启动处理函数
 func SetupRouter() {
 	// 注册
-	Router.GET("/register", controllers.Register)
+	utils.Router.GET("/register", userControl.Register)
+
+	// 搜索
+	userGroup := utils.Router.Group("/search")
+	{
+		userGroup.GET("/search_box", articleControl.Search)
+	}
 
 }
