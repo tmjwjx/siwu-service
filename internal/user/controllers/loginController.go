@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"forum/internal/user/requests"
-	"forum/pkg/utils"
+	"forum/pkg/globals"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -16,7 +16,7 @@ func Register(c *gin.Context) {
 	// 获取数据包
 	data, err := c.GetRawData()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"code": utils.StatusInternalServerError, "data": "", "error": utils.CodeMsgMap[utils.StatusInternalServerError]})
+		c.JSON(http.StatusInternalServerError, gin.H{"code": globals.StatusInternalServerError, "data": "", "error": globals.CodeMsgMap[globals.StatusInternalServerError]})
 		return
 	}
 	fmt.Println("Register 接收到的消息为:")
@@ -27,9 +27,9 @@ func Register(c *gin.Context) {
 	err = json.Unmarshal(data, &registerMsg)
 	if err != nil {
 		// 反序列化失败，前端发送的数据有问题
-		c.JSON(http.StatusBadRequest, gin.H{"code": utils.StatusBadRequest, "data": "", "error": utils.CodeMsgMap[utils.StatusBadRequest]})
+		c.JSON(http.StatusBadRequest, gin.H{"code": globals.StatusBadRequest, "data": "", "error": globals.CodeMsgMap[globals.StatusBadRequest]})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"code": utils.StatusOK, "data": gin.H{}, "msg": utils.CodeMsgMap[utils.StatusOK]})
+	c.JSON(http.StatusOK, gin.H{"code": globals.StatusOK, "data": gin.H{}, "msg": globals.CodeMsgMap[globals.StatusOK]})
 }

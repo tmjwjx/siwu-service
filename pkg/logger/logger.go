@@ -1,4 +1,4 @@
-package utils
+package logger
 
 import (
 	"fmt"
@@ -33,12 +33,6 @@ func (hook *FileDateHook) Fire(entry *logrus.Entry) error {
 
 		// 更新日期
 		hook.fileDate = timerDate
-
-		// //创建目录（按日期分目录）
-		// dirPath := hook.logPath
-		// if err := os.MkdirAll(dirPath, os.ModePerm); err != nil {
-		//	return err
-		// }
 
 		// 创建新文件（按天分文件）
 		filename := fmt.Sprintf("%s/%s-%s.log", hook.LogPath, hook.AppName, timerDate)

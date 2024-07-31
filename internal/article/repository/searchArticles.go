@@ -3,13 +3,13 @@ package repository
 import (
 	"forum/internal/article/request"
 	"forum/internal/models"
-	"forum/pkg/utils"
+	"forum/pkg/globals"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
 func SearchArticles(c *gin.Context, req request.SearchRequest) (articles []models.Article) {
-	db := utils.DB
+	db := globals.DB
 	offset := (req.Page - 1) * req.Limit // 计算当前页的偏移量，用于分页
 	var condition string
 	if req.Kind == 0 { // 0 代表按照热度排序

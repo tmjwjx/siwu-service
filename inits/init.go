@@ -1,13 +1,13 @@
 package inits
 
 import (
-	"forum/pkg/utils"
+	"forum/pkg/globals"
 	"github.com/gin-gonic/gin"
 )
 
 func init() {
 	// 优先初始化配置文件（给mysql，redis赋上配置信息）
-	ConfigInit()
+	viperInit()
 
 	// 初始化 mysql
 	DBInit()
@@ -19,8 +19,8 @@ func init() {
 	TableInit()
 
 	// 初始化日志文件
-	InitFile("logs", "forum")
+	logInit("logs", "forum")
 
 	// 初始化路由 Router
-	utils.Router = gin.Default()
+	globals.Router = gin.Default()
 }
