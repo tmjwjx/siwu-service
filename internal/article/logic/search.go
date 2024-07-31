@@ -14,8 +14,8 @@ func Search(c *gin.Context) {
 	// 绑定查询参数到 req 变量，如果绑定失败，返回错误信息
 	if err := c.ShouldBindQuery(&req); err != nil {
 		fmt.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid query parameters"}) // 返回 400 错误
-		return                                                                    // 结束函数执行
+		c.JSON(http.StatusBadRequest, gin.H{"errors": "Invalid query parameters"}) // 返回 400 错误
+		return                                                                     // 结束函数执行
 	}
 	fmt.Println(req)
 
