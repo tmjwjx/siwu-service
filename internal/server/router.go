@@ -1,24 +1,20 @@
 package server
 
 import (
-	articleContro "forum/internal/article/controllers"
-	userContro "forum/internal/user/controllers"
+	articleControl "forum/internal/article/controllers"
+	userControl "forum/internal/user/controllers"
 )
 
 // SetupRouter 启动处理函数
 func SetupRouter() {
+
 	// 注册
-	Router.GET("/register", userContro.Register)
+	Router.GET("/register", userControl.Register)
 
-}
-
-// Search 搜索
-func Search() {
-
+	// 搜索
 	userGroup := Router.Group("/search")
 	{
-		userGroup.GET("/search_box", articleContro.Search)
+		userGroup.GET("/search_box", articleControl.Search)
 	}
-	//r.GET("/search_box", controllers.Search)
 
 }

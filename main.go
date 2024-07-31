@@ -11,8 +11,6 @@ func main() {
 
 	// 启动处理函数
 	server.SetupRouter()
-	// 搜索
-	server.Search()
 
 	// 启动路由
 	server.Run()
