@@ -35,22 +35,15 @@ func DBInit() {
 // TableInit 初始化表
 func TableInit() {
 	// 用户模块
-	err := globals.DB.AutoMigrate(&models.User{}, &models.UserDetail{}, &models.UserMessage{}, &models.UserHeadImage{}, &models.Follow{})
+	err := globals.DB.AutoMigrate(&models.Category{},
+		&models.UserDetail{}, &models.UserMessage{},
+		&models.Tag{}, &models.Resource{},
+		&models.Administrator{}, &models.ArticleLike{},
+		&models.ArticleCollection{}, &models.Attachment{},
+		&models.User{}, &models.Article{},
+		&models.ArticleComment{})
 	if err != nil {
-		fmt.Println("db.AutoMigrate err = ", err)
-		return
-	}
-
-	// 文章模块
-	err = globals.DB.AutoMigrate(&models.Comment{}, &models.ArticleLike{}, &models.ArticleCollection{}, &models.Attachment{}, &models.Category{}, &models.Article{})
-	if err != nil {
-		fmt.Println("db.AutoMigrate err = ", err)
-		return
-	}
-
-	// 标签模块
-	err = globals.DB.AutoMigrate(&models.Tag{}, &models.Resource{}, &models.Administrator{}, &models.ArticleTag{}, &models.UserFollowsTag{})
-	if err != nil {
+		globals.Log.Println("db.AutoMigrate err =", err)
 		return
 	}
 

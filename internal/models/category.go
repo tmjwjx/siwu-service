@@ -1,8 +1,11 @@
 package models
 
+import "gorm.io/gorm"
+
 // Category 类目表
 type Category struct {
-	ID            uint   `json:"id" gorm:"primaryKey"` // 主键
-	CategoryName  string `json:"category_name"`        // 类目名称
-	CategoryImage string `json:"category_image"`       // 类目图标
+	gorm.Model        //ID CreatedAt UpdatedAt DeletedAt
+	Name       string `json:"name"` // 类目名称
+	Path       string `json:"path"` // 类目图标
+	Articles   []Article
 }
