@@ -5,7 +5,7 @@ import (
 	"forum/pkg/logger"
 )
 
-func logInit(logPath, appName string) {
+func LogInit(logPath, appName string) {
 
 	fileHook := logger.FileDateHook{
 		// file:     file,
