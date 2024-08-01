@@ -20,5 +20,6 @@ type User struct {
 	ArticleLikes       []Article `gorm:"many2many:article_likes"`                                                    //点赞的人
 	ArticleCollections []Article `gorm:"many2many:article_collections"`                                              // 收藏的文章
 	ArticleComments    []Article `gorm:"many2many:article_comments"`                                                 // 文章的评论
+	CommentLikes       []User    `gorm:"many2many:comment_likes"`                                                    // 用户对评论的点赞
 	Users              []User    `gorm:"many2many:user_follows;joinForeignKey:FollowedID;JoinReferences:FollowerID"` // 关注的用户列表
 }

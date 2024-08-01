@@ -14,4 +14,5 @@ type ArticleComment struct {
 	Content    string `json:"content"`                 // 评论内容
 	LikesCount int    `json:"likes_count"`             // 点赞数量
 	// 评论点赞还需要一个表
+	Users []User `gorm:"many2many:comment_likes"` // 用户对评论的点赞
 }
