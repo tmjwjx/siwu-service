@@ -12,6 +12,7 @@ type User struct {
 	Password    string `json:"password"`            // 密码
 	Heat        int    `json:"heat"`                // 个人热度
 	FansCount   uint   `json:"fans_count"`          // 粉丝数
+	Path        string `json:"path"`                // 用户头像
 	UserDetail  UserDetail
 	UserMessage UserMessage
 	//用户和标签之间有2个关系表(暂时只写一个)

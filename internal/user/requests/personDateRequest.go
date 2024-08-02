@@ -1,6 +1,6 @@
-package request
+package requests
 
-/*import (
+import (
 	"gorm.io/gorm"
 	"time"
 )
@@ -30,4 +30,4 @@ type UserDetail struct {
 	GithubLink        string     `form:"github_link"`         // Github链接	2
 	LastLoginTime     *time.Time `form:"last_login_time"`     // 上次登录时间
 	CreateAccountTime *time.Time `form:"create_account_time"` // 创建账号时间
-}*/
+}

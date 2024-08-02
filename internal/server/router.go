@@ -2,6 +2,7 @@ package server
 
 import (
 	articleControl "forum/internal/article/controllers"
+	imageControl "forum/internal/image/controllers"
 	userControl "forum/internal/user/controllers"
 	"forum/pkg/globals"
 )
@@ -17,4 +18,10 @@ func SetupRouter() {
 	{
 		userGroup.GET("/search_box", articleControl.Search)
 	}
+
+	// 上传图片
+	globals.Router.POST("/upload", imageControl.UploadHandlerControllers)
+
+	// 上传个人资料
+	globals.Router.POST("/form_personal_data", userControl.PersonalDataHandler)
 }

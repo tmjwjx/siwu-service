@@ -1,6 +1,15 @@
 package controllers
 
-/*func PersonalDataHandler(c *gin.Context) {
+import (
+	"forum/internal/user/logic"
+	"forum/internal/user/requests"
+	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
+	"net/http"
+	"regexp"
+)
+
+func PersonalDataHandler(c *gin.Context) {
 	// 初始化验证器
 	validate := validator.New()
 	err := validate.RegisterValidation("nickname", NicknameValidation)
@@ -17,7 +26,7 @@ package controllers
 	}
 
 	// 将前端传来的请求数据绑定到 User 结构体
-	var user request.User
+	var user requests.User
 	if err := c.ShouldBind(&user); err != nil {
 		// 处理绑定错误
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -60,4 +69,4 @@ func PasswordValidation(fl validator.FieldLevel) bool {
 	// 密码长度不超过 16 个字符，只能包含数字和字母
 	re := regexp.MustCompile(`^[A-Za-z0-9]{1,16}$`)
 	return re.MatchString(password)
-}*/
+}

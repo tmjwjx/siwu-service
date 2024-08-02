@@ -13,7 +13,7 @@ func init() {
 	DBInit()
 
 	// 初始化 redis
-	RedisInit()
+	//RedisInit()
 
 	// 初始化表
 	TableInit()
