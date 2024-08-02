@@ -9,6 +9,8 @@ import (
 
 // Run 启动路由
 func Run() {
+	// 启动处理函数
+	SetupRouter()
 
 	if err := viper.UnmarshalKey("app", &globals.AppConfig.App); err != nil {
 		log.Fatalf("无法解码为结构: %s", err)
