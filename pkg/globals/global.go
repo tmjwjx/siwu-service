@@ -7,17 +7,22 @@ import (
 	"gorm.io/gorm"
 )
 
-// AppConfig 项目的mysql，redis配置
-var AppConfig Config
+var (
+	// AppConfig 项目的mysql，redis配置
+	AppConfig Config
 
-// DB mysql链接
-var DB *gorm.DB
+	// DB mysql链接
+	DB *gorm.DB
 
-// RDB redis链接
-var RDB *redis.Client
+	// RDB redis链接
+	RDB *redis.Client
 
-// Log 日志记录
-var Log = logrus.New()
+	// Log 日志记录
+	Log *logrus.Logger
 
-// Router 总路由
-var Router *gin.Engine
+	// Router 总路由
+	Router *gin.Engine
+
+	// Env 环境配置文件
+	Env string
+)

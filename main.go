@@ -6,8 +6,6 @@ import (
 )
 
 func main() {
-	// 启动处理函数
-	server.SetupRouter()
 
 	// 启动路由
 	server.Run()

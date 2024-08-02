@@ -3,9 +3,12 @@ package inits
 import (
 	"forum/pkg/globals"
 	"forum/pkg/logger"
+	"github.com/sirupsen/logrus"
 )
 
 func LogInit(logPath, appName string) {
+
+	globals.Log = logrus.New()
 
 	fileHook := logger.FileDateHook{
 		// file:     file,

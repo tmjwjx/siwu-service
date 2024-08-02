@@ -1,7 +1,7 @@
 package server
 
 import (
-	articleControl "forum/internal/article/controllers"
+	"forum/internal/article/routes"
 	userControl "forum/internal/user/controllers"
 	"forum/pkg/globals"
 )
@@ -12,9 +12,5 @@ func SetupRouter() {
 	// 注册
 	globals.Router.GET("/register", userControl.Register)
 
-	// 搜索
-	userGroup := globals.Router.Group("/search")
-	{
-		userGroup.GET("/search_box", articleControl.Search)
-	}
+	routes.Search()
 }
