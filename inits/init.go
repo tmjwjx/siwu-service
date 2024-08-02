@@ -7,7 +7,7 @@ import (
 
 func init() {
 	// 优先初始化配置文件（给mysql，redis赋上配置信息）
-	viperInit()
+	ConfigInit()
 
 	// 初始化 mysql
 	DBInit()
@@ -19,8 +19,12 @@ func init() {
 	TableInit()
 
 	// 初始化日志文件
-	logInit("logs", "forum")
+	LogInit("logs", "forum")
 
 	// 初始化路由 Router
 	globals.Router = gin.Default()
+
+	//某一个控制器报错，不影响整体
+	//日志自动记录
+	globals.Router.Use(gin.Recovery())
 }
