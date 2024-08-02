@@ -6,6 +6,9 @@ import (
 )
 
 func init() {
+	// 初始化环境
+	EnvInit()
+
 	// 优先初始化配置文件（给mysql，redis赋上配置信息）
 	ConfigInit()
 
@@ -13,7 +16,7 @@ func init() {
 	DBInit()
 
 	// 初始化 redis
-	RedisInit()
+	// RedisInit()
 
 	// 初始化表
 	TableInit()
@@ -24,7 +27,7 @@ func init() {
 	// 初始化路由 Router
 	globals.Router = gin.Default()
 
-	//某一个控制器报错，不影响整体
-	//日志自动记录
+	// 某一个控制器报错，不影响整体
+	// 日志自动记录
 	globals.Router.Use(gin.Recovery())
 }

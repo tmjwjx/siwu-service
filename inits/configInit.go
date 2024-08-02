@@ -7,8 +7,7 @@ import (
 )
 
 func ConfigInit() {
-
-	globals.Env = "local"
+	fmt.Println("当前项目环境为", globals.Env)
 
 	viper.SetConfigName(globals.Env) // 配置文件名称(无扩展名)
 	viper.SetConfigType("yaml")      // 如果配置文件的名称中没有扩展名，则需要配置此项
