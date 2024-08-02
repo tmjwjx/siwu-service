@@ -1,0 +1,10 @@
+database:
+  host: "0.0.0.0"
+  port: 3306
+  user: "root"
+  password: "root"
+  name: "forum"
+
+app:
+  host: "0.0.0.0"
+  port: 8081
