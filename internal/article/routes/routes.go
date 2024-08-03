@@ -10,5 +10,7 @@ func Search() {
 	userGroup := globals.Router.Group("/search")
 	{
 		userGroup.GET("/search_box", articleControl.Search)
+		userGroup.GET("/test", articleControl.Test1)
 	}
+
 }
