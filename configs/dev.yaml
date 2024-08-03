@@ -8,9 +8,9 @@ database:
 # redis 暂时未使用
 
 redis:
-  host: "127.0.0.1"
+  host: "192.168.10.4"
   port: 6379
-  password: ""
+  password: "123456"
   db: 0
 
 app:
