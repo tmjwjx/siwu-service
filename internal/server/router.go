@@ -1,7 +1,7 @@
 package server
 
 import (
-	"forum/internal/article/routes"
+	articleRouter "forum/internal/article/routes"
 	userRouter "forum/internal/user/routes"
 	"forum/pkg/globals"
 )
@@ -11,6 +11,6 @@ func SetupRouter() {
 	// 用户分路由
 	userRouter.RouterInit(globals.Router)
 
-	routes.Search()
+	articleRouter.Search()
 
 }
