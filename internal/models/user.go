@@ -16,6 +16,7 @@ type User struct {
 	FansCount   uint        `json:"fans_count" gorm:"default:0"` // 粉丝数
 	UserDetail  UserDetail  // 用户详情
 	UserMessage UserMessage // 通知用户信息
+
 	//用户和标签之间有2个关系表(暂时只写一个)
 	Tags               []Tag     `gorm:"many2many:user_tags"`
 	Articles           []Article // 写的文章

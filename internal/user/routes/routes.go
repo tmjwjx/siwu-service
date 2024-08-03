@@ -1,7 +1,8 @@
-package router
+package routes
 
 import (
 	"forum/internal/user/controllers"
+	"forum/pkg/globals"
 	"github.com/gin-gonic/gin"
 )
 
@@ -12,4 +13,6 @@ func RouterInit(e *gin.Engine) {
 
 	r.POST("/register", controllers.Register)
 
+	// 上传个人资料
+	globals.Router.POST("/form_personal_data", controllers.PersonalDataHandler)
 }

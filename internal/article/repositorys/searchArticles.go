@@ -1,14 +1,14 @@
-package repository
+package repositorys
 
 import (
-	"forum/internal/article/request"
+	"forum/internal/article/requests"
 	"forum/internal/models"
 	"forum/pkg/globals"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
-func SearchArticles(c *gin.Context, req request.SearchRequest) (articles []models.Article) {
+func SearchArticles(c *gin.Context, req requests.SearchRequest) (articles []models.Article) {
 	db := globals.DB
 	offset := (req.Page - 1) * req.Limit // 计算当前页的偏移量，用于分页
 	var condition string

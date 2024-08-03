@@ -1,15 +1,15 @@
-package logic
+package logics
 
 import (
 	"fmt"
-	"forum/internal/article/repository"
-	"forum/internal/article/request"
+	"forum/internal/article/repositorys"
+	"forum/internal/article/requests"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
 func Search(c *gin.Context) {
-	var req request.SearchRequest // 创建一个 SearchRequest 类型的变量，用于存储请求参数
+	var req requests.SearchRequest // 创建一个 SearchRequest 类型的变量，用于存储请求参数
 
 	// 绑定查询参数到 req 变量，如果绑定失败，返回错误信息
 	if err := c.ShouldBindQuery(&req); err != nil {
@@ -19,7 +19,7 @@ func Search(c *gin.Context) {
 	}
 	fmt.Println(req)
 
-	articles := repository.SearchArticles(c, req)
+	articles := repositorys.SearchArticles(c, req)
 
 	// 返回查询到的产品列表，状态码为 200
 	// c.JSON(http.StatusOK, articles)

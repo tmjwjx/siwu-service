@@ -1,4 +1,4 @@
-package request
+package requests
 
 type SearchRequest struct {
 	Query    string `json:"query" form:"query"`

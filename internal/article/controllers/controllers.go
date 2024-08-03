@@ -1,10 +1,10 @@
 package controllers
 
 import (
-	"forum/internal/article/logic"
+	"forum/internal/article/logics"
 	"github.com/gin-gonic/gin"
 )
 
 func Search(c *gin.Context) {
-	logic.Search(c)
+	logics.Search(c)
 }
