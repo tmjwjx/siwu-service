@@ -1,15 +1,16 @@
 package main
 
 import (
-	"fmt"
 	_ "forum/inits" // 空导入，初始化
 	"forum/internal/server"
+	"forum/pkg/globals"
 )
 
-func init() {
-	fmt.Println("hello")
-}
 func main() {
+	globals.Log.Info("info ")
+	globals.Log.Error("error")
+
 	//启动路由
 	server.Run()
+
 }

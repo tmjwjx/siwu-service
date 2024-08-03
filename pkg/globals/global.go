@@ -3,7 +3,7 @@ package globals
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
-	"github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -18,7 +18,7 @@ var (
 	RDB *redis.Client
 
 	// Log 日志记录
-	Log *logrus.Logger
+	Log *zap.SugaredLogger
 
 	// Router 总路由
 	Router *gin.Engine
