@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"forum/internal/user/logic"
+	"forum/internal/user/logics"
 	"forum/pkg/globals"
 	"forum/pkg/response"
 	"github.com/gin-gonic/gin"
@@ -11,7 +11,7 @@ import (
 
 // Register 注册
 func Register(c *gin.Context) {
-	userLogic := logic.NewUserLogic(globals.DB, c)
+	userLogic := logics.NewUserLogic(globals.DB, c)
 
 	// 业务逻辑
 	appErr := userLogic.Register()

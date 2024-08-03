@@ -2,7 +2,7 @@ package server
 
 import (
 	"forum/internal/article/routes"
-	userRouter "forum/internal/user/router"
+	userRouter "forum/internal/user/routes"
 	"forum/pkg/globals"
 )
 
@@ -12,4 +12,5 @@ func SetupRouter() {
 	userRouter.RouterInit(globals.Router)
 
 	routes.Search()
+
 }
