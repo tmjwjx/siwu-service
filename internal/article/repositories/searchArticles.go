@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func SearchArticles(db *gorm.DB, req requests.SearchRequest, offset int) (articles []models.Article, err error) {
+func SearchArticles(db *gorm.DB, req requests.ReqSearch) (articles []models.Article, err error) {
 	var condition string
 	if req.Kind == 0 { // 0 代表按照热度排序
 		condition = "heat DESC"
@@ -18,24 +18,13 @@ func SearchArticles(db *gorm.DB, req requests.SearchRequest, offset int) (articl
 	
 	query := db.Model(&models.Article{})
 	
-	// 按用户ID筛选
-	if req.UserId != 0 {
+	if req.UserId != 0 { // 按用户ID筛选
 		query = query.Joins("JOIN user_follows ON articles.user_id = user_follows.followed_id").
 			Where("user_follows.follower_id = ?", req.UserId)
-		//condition = "published_at DESC" // 按照时间排序
-	}
-	// 按关键词搜索
-	if req.Query != "" {
+		condition = "published_at DESC" // 按照时间排序
+	} else if req.Query != "" { // 按关键词搜索
 		query = query.Where("title LIKE ? OR summary LIKE ?", "%"+req.Query+"%", "%"+req.Query+"%")
-	}
-	// 按类目筛选
-	if req.CategoryId != 0 {
-		query = query.Where("category_id = ?", req.CategoryId)
-	}
-	//// 按标签筛选
-	fmt.Println(req)
-	fmt.Println(req.Tag)
-	if req.Tag != "" {
+	} else if req.Tag != "" { //按标签筛选
 		var tag models.Tag
 		// 根据标签名称查找 tag_id
 		if err = db.Where("name = ?", req.Tag).First(&tag).Error; err != nil {
@@ -47,7 +36,19 @@ func SearchArticles(db *gorm.DB, req requests.SearchRequest, offset int) (articl
 			Where("article_tags.tag_id = ?", tag.ID)
 	}
 	
-	query = query.Order(condition).Limit(req.Limit).Offset(offset)
+	if req.CategoryId != 0 { // 按类目筛选
+		query = query.Where("category_id = ?", req.CategoryId)
+	}
+	
+	// 判断是否分页
+	if req.Limit != 0 {
+		offset := (req.Page - 1) * req.Limit // 计算当前页的偏移量，用于分页
+		query = query.Limit(req.Limit).Offset(offset)
+		
+	}
+	
+	// 选择排序方式 时间or热度
+	query = query.Order(condition)
 	
 	// 执行查询
 	if err = query.Find(&articles).Error; err != nil {

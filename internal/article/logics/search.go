@@ -7,13 +7,15 @@ import (
 	"gorm.io/gorm"
 )
 
-func Search(db *gorm.DB, req requests.SearchRequest) ([]models.Article, error) {
+func Search(db *gorm.DB, req requests.ReqSearch) ([]models.Article, error) {
 	
-	offset := (req.Page - 1) * req.Limit // 计算当前页的偏移量，用于分页
-	
-	articles, err := repositories.SearchArticles(db, req, offset)
+	articles, err := repositories.SearchArticles(db, req)
 	if err != nil {
 		return nil, err
 	}
 	return articles, nil
+}
+func Public(db *gorm.DB, req requests.ReqPublish) error {
+	
+	return nil
 }
