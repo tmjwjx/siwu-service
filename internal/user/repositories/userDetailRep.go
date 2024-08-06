@@ -5,30 +5,27 @@ import (
 	"forum/internal/user/requests"
 	"forum/pkg/globals"
 	"github.com/gin-gonic/gin"
-	"net/http"
+	"gorm.io/gorm"
 )
 
-func Query(u *requests.User, c *gin.Context) {
+// QueryPersonEmail 查询Email
+func QueryPersonEmail(u *requests.User, c *gin.Context) *gorm.DB {
 
 	// 查询 Email 是否唯一
 	var user models.User
 	result := globals.DB.Where("email = ?", u.Email).First(&user)
-	if result.Error == nil {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": "邮件已经存在"})
-		return
-	}
+	return result
 }
 
-func Update(u *requests.User, c *gin.Context) {
+// UpdatePersonData 更新用户信息
+func UpdatePersonData(u *requests.User, c *gin.Context) *gorm.DB {
 
 	// 将前端传过来的 user 文本类数据插入到数据库中
 	result2 := globals.DB.Create(&u)
-	if result2.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"msg": "用户数据保存失败"})
-	}
-	c.JSON(http.StatusOK, gin.H{"msg": "用户数据保存成功"})
+	return result2
 }
 
+// SelectPersonData 查询用户信息
 func SelectPersonData(userID string) (*requests.User, error) {
 	var user requests.User
 

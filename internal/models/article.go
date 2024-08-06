@@ -8,12 +8,12 @@ import (
 // Article 文章表
 type Article struct {
 	gorm.Model        //ID CreatedAt UpdatedAt DeletedAt
-	UserID     uint   `json:"user_id" gorm:"index"` // 作者ID，外键
+	UserID     uint   `json:"user_id" gorm:"index"`  // 作者ID，外键
 	Title      string `json:"title" gorm:"not null"` // 文章标题
-	Path       string `json:"path" gorm:"not null"` // 文章图片路径
-	
+	//Path       string `json:"path" gorm:"not null"` // 文章图片路径
+
 	//Flag       int    `json:"flag"` // 图片所属单位的标志
-	
+
 	Link             string     `json:"link" gorm:"not null"`                                                // 文章链接，唯一 (链接后缀为：作者id+文章id+类目+发布日期)
 	LikesCount       int        `json:"likes_count" gorm:"default:0"`                                        // 点赞数量
 	CollectionsCount int        `json:"collections_count" gorm:"default:0"`                                  // 收藏数量

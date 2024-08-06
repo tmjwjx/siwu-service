@@ -1,19 +1,10 @@
 package controllers
 
-import (
-	"fmt"
-	"forum/internal/article/logics"
-	"forum/internal/article/requests"
-	"forum/pkg/globals"
-	"forum/pkg/response"
-	"github.com/gin-gonic/gin"
-)
+/*func SearchHandler(c *gin.Context) {
 
-func SearchHandler(c *gin.Context) {
-	
 	db := globals.DB
 	var req requests.SearchRequest // 创建一个 SearchRequest 类型的变量，用于存储请求参数
-	
+
 	// 绑定查询参数到 req 变量，如果绑定失败，返回错误信息
 	if err := c.ShouldBindQuery(&req); err != nil {
 		globals.Log.Errorf("err = %s", err)
@@ -37,4 +28,4 @@ func SearchHandler(c *gin.Context) {
 }
 func Test1(c *gin.Context) {
 	c.JSON(200, gin.H{"msg": "ok"})
-}
+}*/
