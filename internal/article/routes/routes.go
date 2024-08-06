@@ -9,8 +9,8 @@ func Search() {
 	// 搜索
 	userGroup := globals.Router.Group("/search")
 	{
-		userGroup.GET("/search_box", articleControl.Search)
+		userGroup.GET("/query", articleControl.SearchHandler)
 		userGroup.GET("/test", articleControl.Test1)
 	}
-
+	
 }

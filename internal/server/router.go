@@ -9,6 +9,7 @@ import (
 
 // SetupRouter 启动处理函数
 func SetupRouter() {
+	
 	// 用户分路由
 	userRouter.User(globals.Router)
 
