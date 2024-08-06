@@ -10,7 +10,7 @@ func main() {
 	globals.Log.Info("info ")
 	globals.Log.Error("error")
 
-	//启动路由
+	// 启动路由
 	server.Run()
 
 }

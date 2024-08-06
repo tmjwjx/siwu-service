@@ -38,7 +38,7 @@ func PersonalDataHandler(c *gin.Context) {
 	// 参数验证
 	if err := validate.Struct(user); err != nil {
 		// 输出错误信息
-		//fmt.Println(err)
+		// fmt.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"msg": "用户名或密码的格式不正确"})
 		return
 	}
@@ -58,7 +58,7 @@ func ResponsePersonDate(c *gin.Context) {
 	if err != nil {
 		// 返回错误响应
 		e := response.NewAppErr(globals.StatusInternalServerError, err, nil)
-		response.Failed(c, e, 5000)
+		response.Failed(c, http.StatusInternalServerError, e)
 	} else {
 		// 返回用户数据
 		response.NewAppData(globals.StatusOK, "用户数据响应成功", user)

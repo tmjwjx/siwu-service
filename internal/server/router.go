@@ -2,7 +2,7 @@ package server
 
 import (
 	articleRouter "forum/internal/article/routes"
-	tagRoutes "forum/internal/tag/routes"
+	tagRouter "forum/internal/tag/routes"
 	userRouter "forum/internal/user/routes"
 	"forum/pkg/globals"
 )
@@ -10,11 +10,12 @@ import (
 // SetupRouter 启动处理函数
 func SetupRouter() {
 	// 用户分路由
-	userRouter.RouterInit(globals.Router)
+	userRouter.User(globals.Router)
 
+	// 搜索分路由
 	articleRouter.Search()
 
-	// 标签路由
-	tagRoutes.RouterInit(globals.Router)
+	// 标签分路由
+	tagRouter.Tag(globals.Router)
 
 }
