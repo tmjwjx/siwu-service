@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"encoding/json"
+	"fmt"
 	"forum/internal/user/logics"
 	"forum/internal/user/requests"
 	"forum/pkg/globals"
@@ -16,49 +16,42 @@ import (
 func Register(c *gin.Context) {
 	userLogic := logics.NewUserLogic(globals.DB, c)
 
-	// 获取参数，检验参数
-
-	// 获取数据包
-	data, err := c.GetRawData()
-	// 请求语法错误或无效参数
-	if err != nil {
-		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, err, nil))
+	// 绑定数据
+	var registerMsg *requests.RegisterMsg
+	if err := c.ShouldBind(registerMsg); err != nil {
+		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("Register() -> %s", err.Error()), nil))
 		return
 	}
 
-	// fmt.Println("Register 接收到的消息为:")
-	// fmt.Println(string(data))
-
-	// 将数据包反序列化
-	var registerMsg requests.RegisterMsg
-	err = json.Unmarshal(data, &registerMsg)
+	// 业务逻辑
+	err := userLogic.Register(registerMsg)
 	if err != nil {
-		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, err, nil))
-		return
-	}
-
-	// 具体的业务逻辑
-	appErr := userLogic.Register(registerMsg)
-	if appErr != nil {
-		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, err, nil))
+		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("Register() -> %s", err.Error()), nil))
 		return
 	}
 
 	// 成功
-	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "", nil))
+	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", nil))
 }
 
 // ReqVerifyCode 用户请求验证码
 func ReqVerifyCode(c *gin.Context) {
-	// userLogic := logic.NewUserLogic(globals.DB, c)
-	//
-	// // 具体的业务逻辑
-	// verifycode, err := userLogic.ReqVerifyCode()
-	// if err != nil {
-	// 	response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, err, nil))
-	// 	return
-	// }
-	//
-	// // 成功
-	// response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, ""))
+	userLogic := logics.NewUserLogic(globals.DB, c)
+
+	// 绑定数据
+	var reqVerifyCode *requests.ReqVerifyCode
+	if err := c.ShouldBind(reqVerifyCode); err != nil {
+		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("ReqVerifyCode() -> %s", err.Error()), nil))
+		return
+	}
+
+	// 业务逻辑
+	err := userLogic.ReqVerifyCode(reqVerifyCode)
+	if err != nil {
+		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("ReqVerifyCode() -> %s", err.Error()), nil))
+		return
+	}
+
+	// 成功
+	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", nil))
 }
