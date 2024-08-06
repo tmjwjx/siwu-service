@@ -28,3 +28,13 @@ func Update(u *requests.User, c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"msg": "用户数据保存成功"})
 }
+
+func SelectPersonData(userID string) (*requests.User, error) {
+	var user requests.User
+
+	// 预加载 UserDetail
+	if err := globals.DB.Preload("UserDetail").First(&user, userID).Error; err != nil {
+		return &user, err
+	}
+	return &user, nil
+}

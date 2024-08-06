@@ -6,7 +6,7 @@ import "gorm.io/gorm"
 type Attachment struct {
 	gorm.Model        //ID CreatedAt UpdatedAt DeletedAt
 	Name       string `json:"name"` // 文件名
-	Type       string `json:"type"` // 文件类型，例如 image/png
+	Type       string `json:"type"` // 文件类型，例如 images/png
 	Size       int64  `json:"size"` // 文件大小（以字节为单位）
 	Path       string `json:"path"` // 文件路径
 }

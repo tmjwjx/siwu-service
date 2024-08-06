@@ -15,4 +15,7 @@ func RouterInit(e *gin.Engine) {
 
 	// 上传个人资料
 	globals.Router.POST("/form_personal_data", controllers.PersonalDataHandler)
+
+	// 前端获取用户资料
+	globals.Router.GET("/form_personal_data/:id", controllers.ResponsePersonDate)
 }
