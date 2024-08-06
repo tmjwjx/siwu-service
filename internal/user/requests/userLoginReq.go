@@ -8,8 +8,8 @@ type RegisterMsg struct {
 	RePassword string `json:"re_password"` // 重复密码
 }
 
-// LogOnMsg 登录消息
-type LogOnMsg struct {
+// LogicMsg 登录消息
+type LogicMsg struct {
 	Email    string `json:"email"`    // 邮箱
 	Password string `json:"password"` // 密码
 }

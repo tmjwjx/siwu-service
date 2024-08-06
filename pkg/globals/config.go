@@ -1,6 +1,6 @@
 package globals
 
-// 和配置数据库相关的结构体
+// 和配置相关的结构体
 
 type DatabaseConfig struct {
 	Host     string `yaml:"host"`
