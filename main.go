@@ -7,8 +7,8 @@ import (
 )
 
 func main() {
-	globals.Log.Info("info ")
-	globals.Log.Error("error")
+	
+	globals.Log.Info("main运行")
 	
 	//启动路由
 	server.Run()
