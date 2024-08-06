@@ -1,4 +1,4 @@
-package repositorys
+package repositories
 
 import (
 	"fmt"
@@ -24,7 +24,7 @@ func UpdateTagUserCountReq(tagID uint) (string, error) {
 	return fansCount, nil
 }
 
-// 更新数据库中标签的文章数量
+// UpdateTagArticleCountReq 更新数据库中标签的文章数量
 func UpdateTagArticleCountReq() {
 	//var article []models.Article
 
