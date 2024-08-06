@@ -3,12 +3,15 @@ package controllers
 import (
 	"forum/internal/user/logics"
 	"forum/internal/user/requests"
+	"forum/pkg/globals"
+	"forum/pkg/response"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"net/http"
 	"regexp"
 )
 
+// PersonalDataHandler 个人信息的更新处理
 func PersonalDataHandler(c *gin.Context) {
 	// 初始化验证器
 	validate := validator.New()
@@ -42,6 +45,24 @@ func PersonalDataHandler(c *gin.Context) {
 
 	// 业务处理
 	logics.PersonalDataLogic(&user, c)
+
+}
+
+// ResponsePersonDate 返回用户数据前端
+func ResponsePersonDate(c *gin.Context) {
+
+	userID := c.Param("id")
+
+	// 根据用户 ID 获取其信息
+	user, err := logics.ResponsePersonDateLogic(userID, c)
+	if err != nil {
+		// 返回错误响应
+		e := response.NewAppErr(globals.StatusInternalServerError, err, nil)
+		response.Failed(c, e, 5000)
+	} else {
+		// 返回用户数据
+		response.NewAppData(globals.StatusOK, "用户数据响应成功", user)
+	}
 
 }
 
