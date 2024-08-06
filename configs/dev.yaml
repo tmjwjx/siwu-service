@@ -1,16 +1,16 @@
 database:
-  host: "127.0.0.1"
-  port: 3306
+  host: "192.168.10.4"
+  port: 3310
   user: "root"
-  password: "123456987"
+  password: "123456"
   name: "forum"
 
-# redis 暂时未使用
+# redis 暂时未使用--
 
 redis:
-  host: "127.0.0.1"
+  host: "192.168.10.4"
   port: 6379
-  password: ""
+  password: "123456"
   db: 0
 
 app:

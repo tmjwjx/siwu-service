@@ -21,7 +21,5 @@ func Search(c *gin.Context) {
 
 	articles := repositorys.SearchArticles(c, req)
 
-	// 返回查询到的产品列表，状态码为 200
-	// c.JSON(http.StatusOK, articles)
 	c.JSON(200, gin.H{"data": articles, "msg": "发送成功"})
 }

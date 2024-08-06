@@ -2,50 +2,22 @@ package logger
 
 import (
 	"fmt"
-	"github.com/sirupsen/logrus"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"os"
 	"time"
 )
 
-// 日志工具
-
-type FileDateHook struct {
-	file     *os.File
-	LogPath  string
-	fileDate string // 判断日期切换目录
-	AppName  string
+func GetEncoder() zapcore.Encoder {
+	encoderConfig := zap.NewProductionEncoderConfig()
+	encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+	encoderConfig.EncodeLevel = zapcore.CapitalLevelEncoder
+	return zapcore.NewJSONEncoder(encoderConfig)
 }
 
-func (hook *FileDateHook) Levels() []logrus.Level {
-	return logrus.AllLevels
-}
-
-func (hook *FileDateHook) Fire(entry *logrus.Entry) error {
-	now := time.Now()
-	timerDate := now.Format("2006-01-02")
-	line, _ := entry.String()
-
-	// 如果日期不同，关闭当前文件，创建新文件
-	if hook.fileDate != timerDate {
-		if hook.file != nil {
-			hook.file.Close()
-		}
-
-		// 更新日期
-		hook.fileDate = timerDate
-
-		// 创建新文件（按天分文件）
-		filename := fmt.Sprintf("%s/%s-%s.log", hook.LogPath, hook.AppName, timerDate)
-		var err error
-		hook.file, err = os.OpenFile(filename, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0600)
-		if err != nil {
-			return err
-		}
-	}
-
-	// 写入日志
-	if _, err := hook.file.Write([]byte(line)); err != nil {
-		return err
-	}
-	return nil
+func GetLogWriter(logPath, appName string) zapcore.WriteSyncer {
+	currentDate := time.Now().Format("2006-01-02")
+	fileName := fmt.Sprintf("./%s/%s-%s.log", logPath, appName, currentDate)
+	file, _ := os.OpenFile(fileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	return zapcore.AddSync(file)
 }
