@@ -5,7 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RouterInit(e *gin.Engine) {
+func Tag(e *gin.Engine) {
 	// 分组
 	r := e.Group("/tag")
 
