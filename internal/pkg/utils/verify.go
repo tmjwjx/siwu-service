@@ -25,6 +25,7 @@ func UserDateVerify(user *requests.User) error {
 	if err := validate.Struct(user); err != nil {
 		return err
 	}
+
 	return nil
 }
 
