@@ -1,20 +1,21 @@
 package server
 
 import (
-	articleControl "forum/internal/article/controllers"
-	userControl "forum/internal/user/controllers"
-	"forum/pkg/utils"
+	articleRouter "forum/internal/article/routes"
+	tagRouter "forum/internal/tag/routes"
+	userRouter "forum/internal/user/routes"
+	"forum/pkg/globals"
 )
 
 // SetupRouter 启动处理函数
 func SetupRouter() {
-	// 注册
-	utils.Router.GET("/register", userControl.Register)
+	// 用户分路由
+	userRouter.User(globals.Router)
 
-	// 搜索
-	userGroup := utils.Router.Group("/search")
-	{
-		userGroup.GET("/search_box", articleControl.Search)
-	}
+	// 搜索分路由
+	articleRouter.Search()
+
+	// 标签分路由
+	tagRouter.Tag(globals.Router)
 
 }

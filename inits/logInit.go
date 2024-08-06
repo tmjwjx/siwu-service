@@ -1,27 +1,26 @@
 package inits
 
-import "forum/pkg/utils"
+import (
+	"forum/pkg/globals"
+	"forum/pkg/logger"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
+	"os"
+)
 
-func InitFile(logPath, appName string) {
-	// now := time.Now()
-	// fileDate := now.Format("2006-01-02")
+func LogInit(logPath, appName string) {
+	writeSyncer := logger.GetLogWriter(logPath, appName)
+	encoder := logger.GetEncoder()
 
-	// 创建文件（按天分文件）
-	// filename := fmt.Sprintf("%s/%s-%s.log", logPath, appName, fileDate)
-	// file, err := os.OpenFile(filename, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0600)
-	// if err != nil {
-	//	Log.Error(err)
-	//	return
-	// }
+	// 新增部分：将日志输出到控制台
+	consoleCore := zapcore.NewCore(encoder, zapcore.AddSync(os.Stdout), zapcore.ErrorLevel)
 
-	fileHook := utils.FileDateHook{
-		// file:     file,
-		LogPath: logPath,
-		// fileDate: fileDate,
-		AppName: appName,
-	}
-	utils.Log.AddHook(&fileHook)
+	// 新增部分：将日志输出到文件
+	fileCore := zapcore.NewCore(encoder, writeSyncer, zapcore.DebugLevel)
 
-	// 包含调用者信息
-	utils.Log.SetReportCaller(true)
+	// 修改部分：合并控制台输出和文件输出
+	core := zapcore.NewTee(consoleCore, fileCore)
+
+	logger := zap.New(core, zap.AddCaller())
+	globals.Log = logger.Sugar()
 }

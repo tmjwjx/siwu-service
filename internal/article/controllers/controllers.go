@@ -1,10 +1,13 @@
 package controllers
 
 import (
-	"forum/internal/article/logic"
+	"forum/internal/article/logics"
 	"github.com/gin-gonic/gin"
 )
 
 func Search(c *gin.Context) {
-	logic.Search(c)
+	logics.Search(c)
+}
+func Test1(c *gin.Context) {
+	c.JSON(200, gin.H{"msg": "ok"})
 }

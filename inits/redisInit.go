@@ -3,22 +3,28 @@ package inits
 import (
 	"context"
 	"fmt"
-	"forum/pkg/utils"
+	"forum/pkg/globals"
 	"github.com/go-redis/redis/v8"
+	"github.com/spf13/viper"
 	"log"
 )
 
 // RedisInit 初始化redis
 func RedisInit() {
-	utils.RDB = redis.NewClient(&redis.Options{
-		Addr:     fmt.Sprintf("%s:%d", utils.AppConfig.Redis.Host, utils.AppConfig.Redis.Port),
-		Password: utils.AppConfig.Redis.Password,
-		DB:       utils.AppConfig.Redis.DB,
+
+	if err := viper.UnmarshalKey("redis", &globals.AppConfig.Redis); err != nil {
+		log.Fatalf("无法解码为结构: %s", err)
+	}
+
+	globals.RDB = redis.NewClient(&redis.Options{
+		Addr:     fmt.Sprintf("%s:%d", globals.AppConfig.Redis.Host, globals.AppConfig.Redis.Port),
+		Password: globals.AppConfig.Redis.Password,
+		DB:       globals.AppConfig.Redis.DB,
 	})
 
 	ctx := context.Background()
-	_, err := utils.RDB.Ping(ctx).Result()
+	_, err := globals.RDB.Ping(ctx).Result()
 	if err != nil {
-		log.Fatalf("Failed to connect to Redis: %v", err)
+		log.Fatalf("Redis连接失败: %v", err)
 	}
 }
