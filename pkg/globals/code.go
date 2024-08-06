@@ -5,17 +5,7 @@ package globals
 type AppCode int
 
 const (
-	StatusOK                  AppCode = 2000
-	StatusBadRequest          AppCode = 4000
-	StatusForbidden           AppCode = 4003
-	StatusNotFound            AppCode = 4004
-	StatusInternalServerError AppCode = 5000
+	StatusOK                  AppCode = 2000 // 成功
+	StatusBadRequest          AppCode = 4000 // 请求语法错误或无效参数
+	StatusInternalServerError AppCode = 5000 // 服务器内部错误
 )
-
-var CodeMsgMap = map[AppCode]string{
-	StatusOK:                  "成功",
-	StatusBadRequest:          "请求语法错误或无效参数",
-	StatusForbidden:           "无权限访问资源",
-	StatusNotFound:            "请求的资源不存在",
-	StatusInternalServerError: "服务器内部错误",
-}

@@ -2,16 +2,21 @@ package routes
 
 import (
 	"forum/internal/user/controllers"
-	"forum/pkg/globals"
 	"github.com/gin-gonic/gin"
 )
 
-// RouterInit 用户路由
-func RouterInit(e *gin.Engine) {
+// User 用户路由
+func User(e *gin.Engine) {
 	// 分组
 	r := e.Group("/user")
-	
+	// 注册
 	r.POST("/register", controllers.Register)
+	// 用户请求验证码
+	r.GET("req_verify_code", controllers.ReqVerifyCode)
+
 	// 上传个人资料
-	globals.Router.POST("/form_personal_data", controllers.PersonalDataHandler)
+	e.POST("/form_personal_data", controllers.PersonalDataHandler)
+
+	// 前端获取用户资料
+	e.GET("/form_personal_data/:id", controllers.ResponsePersonDate)
 }

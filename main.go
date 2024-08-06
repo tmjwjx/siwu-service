@@ -7,10 +7,10 @@ import (
 )
 
 func main() {
-	
-	globals.Log.Info("main运行")
-	
+	globals.Log.Info("info ")
+	globals.Log.Error("error")
+
 	//启动路由
 	server.Run()
-	
+
 }
