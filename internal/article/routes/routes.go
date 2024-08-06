@@ -16,6 +16,6 @@ func Search() {
 
 func Publish() {
 
-	globals.Router.GET("/publish", controllers.PublishHandler)
+	globals.Router.GET("/publish", controllers.ArticlePublishCtrl)
 
 }

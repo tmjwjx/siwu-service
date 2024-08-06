@@ -8,7 +8,8 @@ import (
 	"gorm.io/gorm"
 )
 
-func QueryArticles(db *gorm.DB, req requests.ReqSearch) (articles []models.Article, err error) {
+// QueryArticlesRep 搜索文章
+func QueryArticlesRep(db *gorm.DB, req requests.ReqSearch) (articles []models.Article, err error) {
 	var condition string
 	if req.Kind == 0 { // 0 代表按照热度排序
 		condition = "heat DESC"
@@ -41,7 +42,7 @@ func QueryArticles(db *gorm.DB, req requests.ReqSearch) (articles []models.Artic
 	}
 
 	// 选择排序方式 时间or热度
-	// 一定要先排序，后分页
+	// 先排序 后分页
 	query = query.Order(condition)
 
 	// 判断是否分页

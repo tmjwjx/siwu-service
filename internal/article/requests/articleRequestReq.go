@@ -9,6 +9,3 @@ type ReqSearch struct {
 	Limit      int    `json:"limit" form:"limit"`             // 每页条数
 	Kind       int    `json:"kind" form:"kind"`               // 排序
 }
-
-type ReqPublish struct {
-}

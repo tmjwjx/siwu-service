@@ -7,9 +7,10 @@ import (
 	"gorm.io/gorm"
 )
 
-func ArticleSearch(db *gorm.DB, req requests.ReqSearch) ([]models.Article, error) {
+// ArticleSearchLogic 搜索文章
+func ArticleSearchLogic(db *gorm.DB, req requests.ReqSearch) ([]models.Article, error) {
 
-	articles, err := repositories.QueryArticles(db, req)
+	articles, err := repositories.QueryArticlesRep(db, req)
 	if err != nil {
 		return nil, err
 	}

@@ -5,7 +5,8 @@ import (
 	"gorm.io/gorm"
 )
 
-func ArticlePublic(db *gorm.DB, req requests.ReqPublish) error {
+// ArticlePublicLogic 发布文章
+func ArticlePublicLogic(db *gorm.DB, req requests.ReqPublish) error {
 
 	return nil
 }

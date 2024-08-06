@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"forum/internal/article/logics"
 	"forum/internal/article/requests"
 	"forum/pkg/globals"
@@ -10,12 +9,12 @@ import (
 	"net/http"
 )
 
+// ArticlePublishCtrl 发布文章
 func ArticlePublishCtrl(c *gin.Context) {
 
 	// 初始化需要的变量
 	db := globals.DB
 	var req requests.ReqPublish
-	fmt.Println(db, req)
 
 	// 绑定查询参数到 req 变量，如果绑定失败，返回错误信息
 	if err := c.ShouldBindQuery(&req); err != nil {
@@ -28,12 +27,11 @@ func ArticlePublishCtrl(c *gin.Context) {
 	}
 
 	// 进入业务层
-	err := logics.ArticlePublic(db, req)
+	err := logics.ArticlePublicLogic(db, req)
 	if err != nil {
 		globals.Log.Errorf("搜索文章失败 err = %s", err)
 		data := response.NewAppErr(globals.StatusInternalServerError, err, nil)
 		response.Failed(c, http.StatusInternalServerError, data)
-		//c.JSON(500, response.StatusInternalServerErr)
 		return
 	}
 
