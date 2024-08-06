@@ -9,13 +9,13 @@ func Search() {
 	// 搜索
 	userGroup := globals.Router.Group("/search")
 	{
-		userGroup.GET("/query", controllers.SearchHandler)
+		userGroup.GET("/query", controllers.ArticleSearchCtrl)
 	}
-	
+
 }
 
 func Publish() {
-	
+
 	globals.Router.GET("/publish", controllers.PublishHandler)
-	
+
 }
