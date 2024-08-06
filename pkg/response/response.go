@@ -6,10 +6,10 @@ import (
 
 // status 指的是 http.StatusOK等之类的状态码
 
-func Success(ctx *gin.Context, data *AppData, status int) {
+func Success(ctx *gin.Context, status int, data *AppData) {
 	ctx.JSON(status, data)
 }
 
-func Failed(ctx *gin.Context, err *AppErr, status int) {
+func Failed(ctx *gin.Context, status int, err *AppErr) {
 	ctx.JSON(status, err)
 }

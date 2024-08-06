@@ -4,37 +4,34 @@ import (
 	"forum/internal/image/requests"
 	"forum/internal/models"
 	"forum/pkg/globals"
-	"forum/pkg/response"
 	"github.com/gin-gonic/gin"
 )
 
 // InsertFile 将图片文件的路径相关的信息存入数据库中
-func InsertFile(c *gin.Context, attachment *requests.Attachment, kind int, ID uint) {
+func InsertFile(c *gin.Context, attachment *requests.Attachment, kind int, ID uint) error {
 	// 向数据库中存入文件数据
 	result := globals.DB.Create(attachment)
 	if result.Error != nil {
-		// 插入数据失败，返回响应
-		e := response.NewAppErr(globals.StatusInternalServerError, result.Error, nil)
-		response.Failed(c, e, 5000)
-		return
+		return result.Error
 	}
 
 	// 判断图片是用户图片，还是文章图片
 	if kind == 1 {
 		err := InsertPathToUser(c, ID, attachment.Path)
 		if err != nil {
-			e := response.NewAppErr(globals.StatusInternalServerError, err, nil)
-			response.Failed(c, e, 5000)
-			return
+			//e := response.NewAppErr(globals.StatusInternalServerError, err, nil)
+			//response.Failed(c, e, 5000)
+			return err
 		}
 	} else if kind == 2 {
 		err := InsertPathToArticle(c, ID, attachment.Path)
 		if err != nil {
-			e := response.NewAppErr(globals.StatusInternalServerError, err, nil)
-			response.Failed(c, e, 5000)
-			return
+			//e := response.NewAppErr(globals.StatusInternalServerError, err, nil)
+			//response.Failed(c, e, 5000)
+			return err
 		}
 	}
+	return nil
 }
 
 // InsertPathToUser 将图片的url路径存进User 表中
