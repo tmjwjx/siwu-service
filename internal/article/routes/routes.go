@@ -1,6 +1,6 @@
 package routes
 
-import (
+/*import (
 	articleControl "forum/internal/article/controllers"
 	"forum/pkg/globals"
 )
@@ -12,5 +12,5 @@ func Search() {
 		userGroup.GET("/query", articleControl.SearchHandler)
 		userGroup.GET("/test", articleControl.Test1)
 	}
-	
-}
+
+}*/
