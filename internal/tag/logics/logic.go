@@ -1,8 +1,8 @@
 package logics
 
-import "forum/internal/tag/repositorys"
+import "forum/internal/tag/repositories"
 
 func UpdateTagUserCountLogic(tagID uint) (string, error) {
-	fansCount, err := repositorys.UpdateTagUserCountReq(tagID)
+	fansCount, err := repositories.UpdateTagUserCountReq(tagID)
 	return fansCount, err
 }

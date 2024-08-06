@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"forum/internal/pkg/utils"
+	"forum/internal/internal_pkg/internal_utils"
 	"forum/internal/user/logics"
 	"forum/internal/user/requests"
 	"forum/pkg/globals"
@@ -22,8 +22,22 @@ func PersonalDataHandler(c *gin.Context) {
 	}
 
 	// 验证参数
-	err = utils.UserDateVerify(&user)
-	if err != nil {
+
+	// 验证用户名是否合法
+	res := internal_utils.IsValidNickname(user.Nickname)
+	if !res {
+		e := response.NewAppErr(globals.StatusBadRequest, err, nil)
+		response.Failed(c, 400, e)
+	}
+	// 验证邮箱是否合法
+	res = internal_utils.IsValidEmail(user.Email)
+	if !res {
+		e := response.NewAppErr(globals.StatusBadRequest, err, nil)
+		response.Failed(c, 400, e)
+	}
+	// 验证密码是否合法
+	res = internal_utils.IsValidPassword(user.Password)
+	if !res {
 		e := response.NewAppErr(globals.StatusBadRequest, err, nil)
 		response.Failed(c, 400, e)
 	}

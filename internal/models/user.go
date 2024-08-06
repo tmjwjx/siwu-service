@@ -10,7 +10,7 @@ type User struct {
 	Nickname   string `json:"nickname" gorm:"size:16;not null"` // 昵称
 	Email      string `json:"email" gorm:"not null;unique"`     // 邮箱，唯一
 	Password   string `json:"password" gorm:"size:16;not null"` // 密码
-	Path       string `json:"path" gorm:"not null"`             //头像路径
+	//Path       string `json:"path" gorm:"not null"`             //头像路径
 	// 密码需要做加密功能
 	Heat        int         `json:"heat" gorm:"default:0"`       // 个人热度
 	FansCount   uint        `json:"fans_count" gorm:"default:0"` // 粉丝数

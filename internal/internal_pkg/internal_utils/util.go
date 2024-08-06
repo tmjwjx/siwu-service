@@ -18,6 +18,13 @@ func RandomVerifyCode(l int) string {
 	return string(b)
 }
 
+// IsValidNickname 判断用户名是否合法
+func IsValidNickname(nickname string) bool {
+	// 用户名可以包含数字、字母及中文，长度不超过 16 个字符
+	re := regexp.MustCompile(`^[\u4e00-\u9fa5A-Za-z0-9]{1,16}$`)
+	return re.MatchString(nickname)
+}
+
 // IsValidEmail 判断邮箱是否合法。
 func IsValidEmail(email string) bool {
 	// 定义正则表达式
