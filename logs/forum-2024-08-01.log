@@ -1,0 +1,4 @@
+time="2024-08-01T09:29:17+08:00" level=info msg="this is a test log entry" func=main.main file="D:/桌面/forum/main.go:10"
+time="2024-08-01T09:29:17+08:00" level=info msg="this is a test log entry" func=main.main file="D:/桌面/forum/main.go:13"
+time="2024-08-01T09:30:24+08:00" level=info msg="this is a test log entry" func=main.main file="D:/桌面/forum/main.go:10"
+time="2024-08-01T09:30:24+08:00" level=info msg="this is a test log entry" func=main.main file="D:/桌面/forum/main.go:13"
