@@ -16,6 +16,13 @@ func Search() {
 
 func Publish() {
 
-	globals.Router.GET("/publish", controllers.ArticlePublishCtrl)
+	// 搜索
+	articleGroup := globals.Router.Group("/article")
+	{
+		// 编辑界面
+		articleGroup.GET("/edit", controllers.ArticleEditCtrl)
+		// 发布文章
+		articleGroup.POST("/publish", controllers.ArticlePublishCtrl)
+	}
 
 }
