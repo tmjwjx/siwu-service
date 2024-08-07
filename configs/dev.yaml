@@ -16,3 +16,16 @@ redis:
 app:
   host: "0.0.0.0"
   port: 8081
+
+# 发送验证码
+verifyCode:
+  From : "3174285493@qq.com"
+  Subject: "验证码"
+  VerifyCodeLen: 6
+  VerifyCodeEffectiveDuration: 100
+  VerifyCodeCoolTime: 1
+  host: "smtp.qq.com"
+  port: 587
+  username: "3174285493@qq.com"
+  authorizeCode: "mmureuzrdnmndfef"
+
