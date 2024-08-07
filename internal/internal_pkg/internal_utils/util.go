@@ -7,8 +7,8 @@ import (
 	"unicode"
 )
 
-// RandomVerifyCode 随机生成长度为 l 的数字字母混合验证码
-func RandomVerifyCode(l int) string {
+// RandomGenerateStrings 随机生成长度为 l 的数字字母混合的字符串
+func RandomGenerateStrings(l int) string {
 	rand.Seed(time.Now().UnixNano())
 	const letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	b := make([]byte, l)

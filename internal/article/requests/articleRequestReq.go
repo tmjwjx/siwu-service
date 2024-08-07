@@ -1,6 +1,6 @@
 package requests
 
-type SearchRequest struct {
+type ReqSearch struct {
 	UserId     int    `json:"user_id" form:"user_id"`         // 用户id
 	Query      string `json:"query" form:"query"`             // 搜索词
 	CategoryId int    `json:"category_id" form:"category_id"` // 类目
