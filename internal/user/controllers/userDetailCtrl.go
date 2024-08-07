@@ -13,7 +13,7 @@ import (
 func PersonalDataHandler(c *gin.Context) {
 
 	// 获取参数
-	var user requests.User
+	var user requests.UserResponse
 	err := c.ShouldBind(&user)
 	if err != nil {
 		// 处理绑定错误
@@ -24,19 +24,19 @@ func PersonalDataHandler(c *gin.Context) {
 	// 验证参数
 
 	// 验证用户名是否合法
-	res := internal_utils.IsValidNickname(user.Nickname)
+	res := internal_utils.IsValidNickname(user.User.Nickname)
 	if !res {
 		e := response.NewAppErr(globals.StatusBadRequest, err, nil)
 		response.Failed(c, 400, e)
 	}
 	// 验证邮箱是否合法
-	res = internal_utils.IsValidEmail(user.Email)
+	res = internal_utils.IsValidEmail(user.User.Email)
 	if !res {
 		e := response.NewAppErr(globals.StatusBadRequest, err, nil)
 		response.Failed(c, 400, e)
 	}
 	// 验证密码是否合法
-	res = internal_utils.IsValidPassword(user.Password)
+	res = internal_utils.IsValidPassword(user.User.Password)
 	if !res {
 		e := response.NewAppErr(globals.StatusBadRequest, err, nil)
 		response.Failed(c, 400, e)

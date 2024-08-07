@@ -10,7 +10,7 @@ import (
 
 // UpdateTagUserCount 更新标签的关注人数
 func UpdateTagUserCount(c *gin.Context) {
-	var tag requests.Tag
+	var tag requests.TagReq
 	if err := c.ShouldBind(&tag); err != nil {
 		e := response.NewAppErr(globals.StatusBadRequest, err, nil)
 		response.Failed(c, 400, e)
@@ -32,31 +32,20 @@ func UpdateTagUserCount(c *gin.Context) {
 	response.Success(c, 200, d)
 }
 
-// UpdateTagArticleCount 更新数据库中标签的文章数量
-func UpdateTagArticleCount(c *gin.Context) {
-	// 更新数据库中标签的文章数量
-	articleCount, err := logics.UpdateTagArticleCountLogic()
-	if err != nil {
-		// 文章数量更新失败，返回错误响应
-		e := response.NewAppErr(globals.StatusInternalServerError, err, nil)
-		response.Failed(c, 500, e)
-		return
-	}
-	// 文章数量更新成功，返回成功响应
-	d := response.NewAppData(globals.StatusOK, "文章数量更新成功", articleCount)
-	response.Success(c, 200, d)
-}
+// UpdateTag 更新前端的标签页
+func UpdateTag(c *gin.Context) {
 
-func UpdateTagHeat(c *gin.Context) {
-	// 更新数据库中标签的热度
-	totalHeat, err := logics.UpdateTagHeatLogic()
+	// 业务处理
+	tagRes, err := logics.UpdateTagArticleCountLogic() // 更新前端的标签页
+
+	// 返回响应
 	if err != nil {
-		// 热度更新失败，返回错误响应
+		// 更新失败，返回错误响应
 		e := response.NewAppErr(globals.StatusInternalServerError, err, nil)
 		response.Failed(c, 500, e)
 		return
 	}
-	// 热度更新成功，返回成功响应
-	d := response.NewAppData(globals.StatusOK, "热度更新成功", totalHeat)
+	// 更新成功，返回成功响应
+	d := response.NewAppData(globals.StatusOK, "文章数量更新成功", tagRes)
 	response.Success(c, 200, d)
 }

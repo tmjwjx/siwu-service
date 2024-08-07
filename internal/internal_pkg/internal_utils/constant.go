@@ -4,15 +4,6 @@ import (
 	"time"
 )
 
-// 常量
-
-type Kind int
-
-const (
-	User Kind = iota + 1
-	Article
-)
-
 // 验证码信息常量
 const (
 	Form          = "3174285493@qq.com" // 发送人
