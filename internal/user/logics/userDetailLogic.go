@@ -8,7 +8,7 @@ import (
 )
 
 // PersonalDataLogic 将用户信息存入数据库
-func PersonalDataLogic(u *requests.User, c *gin.Context) (error, int) {
+func PersonalDataLogic(u *requests.UserResponse, c *gin.Context) (error, int) {
 
 	// 验证Email是否唯一
 	result := repositories.QueryPersonEmail(u, c)
@@ -25,7 +25,7 @@ func PersonalDataLogic(u *requests.User, c *gin.Context) (error, int) {
 	}
 
 	// 将图片文件的路径相关信息存入数据库
-	err, status := controllers.UploadHandlerControllers(c, 1, u.ID)
+	err, status := controllers.UploadImagesControllers(c, "用户", u.User.ID)
 	if err != nil {
 		return err, status
 	}
@@ -33,7 +33,7 @@ func PersonalDataLogic(u *requests.User, c *gin.Context) (error, int) {
 }
 
 // ResponsePersonDateLogic 将用户信息响应给前端
-func ResponsePersonDateLogic(userID string, c *gin.Context) (*requests.User, error) {
+func ResponsePersonDateLogic(userID string, c *gin.Context) (*requests.UserResponse, error) {
 	user, err := repositories.SelectPersonData(userID)
 	return user, err
 }

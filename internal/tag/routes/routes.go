@@ -12,9 +12,7 @@ func Tag(e *gin.Engine) {
 	// 更新标签关注人数
 	r.POST("/fan_count", controllers.UpdateTagUserCount)
 
-	// 更新标签文章数量
-	r.POST("/article_count", controllers.UpdateTagArticleCount)
+	// 更新前端标签页
+	r.POST("/article_count", controllers.UpdateTag)
 
-	// 更新标签热度
-	r.POST("/heat", controllers.UpdateTagHeat)
 }

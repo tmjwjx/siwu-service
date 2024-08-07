@@ -1,11 +1,8 @@
 package requests
 
-import (
-	"gorm.io/gorm"
-	"time"
-)
+import "forum/internal/models"
 
-// User 用户简略信息
+/*// User 用户简略信息
 type User struct {
 	gorm.Model        //ID CreatedAt UpdatedAt DeletedAt
 	Nickname   string `json:"nickname" form:"nickname" validate:"nickname"` // 用户名	1
@@ -30,4 +27,12 @@ type UserDetail struct {
 	GithubLink        string     `json:"github_link" form:"github_link"`                 // Github链接	2
 	LastLoginTime     *time.Time `json:"last_login_time" form:"last_login_time"`         // 上次登录时间
 	CreateAccountTime *time.Time `json:"create_account_time" form:"create_account_time"` // 创建账号时间
+}*/
+
+type UserResponse struct {
+	User        models.User       `json:"user"`
+	UserDetail  models.UserDetail `json:"user_detail"`
+	UserTags    []string          `json:"user_tags"`
+	AllTagNames []string          `json:"all_tag_names"`
+	Path        string            `json:"path"`
 }
