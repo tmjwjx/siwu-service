@@ -1,7 +1,7 @@
 package requests
 
 type ReqPublish struct {
-	UserId     int      `json:"user_id" form:"user_id"`
+	UserId     uint     `json:"user_id" form:"user_id"`
 	Title      string   `json:"title" form:"title"`
 	Status     string   `json:"status" form:"status"`           // 文章属性（草稿，私有，公开）
 	CategoryID uint     `json:"category_id" form:"category_id"` // 所属类目ID，外键
