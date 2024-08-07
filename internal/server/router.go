@@ -9,12 +9,15 @@ import (
 
 // SetupRouter 启动处理函数
 func SetupRouter() {
-	
+
 	// 用户分路由
 	userRouter.User(globals.Router)
 
 	// 搜索分路由
 	articleRouter.Search()
+
+	//发布文章
+	articleRouter.Publish()
 
 	// 标签分路由
 	tagRouter.Tag(globals.Router)

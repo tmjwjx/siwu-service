@@ -26,7 +26,11 @@ func DBInit() {
 	)
 
 	var err error
-	globals.DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	globals.DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
+		//NamingStrategy: schema.NamingStrategy{
+		//	TablePrefix: "t_", // 设置表前缀
+		//},
+	})
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
