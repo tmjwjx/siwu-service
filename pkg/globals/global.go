@@ -25,4 +25,7 @@ var (
 
 	// Env 环境配置文件
 	Env string
+
+	// VerifyCode 验证码配置
+	VerifyCode *VerifyCodeConfig
 )
