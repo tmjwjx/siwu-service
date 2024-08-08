@@ -7,8 +7,8 @@ import (
 	"unicode"
 )
 
-// RandomVerifyCode 随机生成长度为 l 的数字字母混合验证码
-func RandomVerifyCode(l int) string {
+// RandomGenerateStrings 随机生成长度为 l 的数字字母混合的字符串
+func RandomGenerateStrings(l int) string {
 	rand.Seed(time.Now().UnixNano())
 	const letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	b := make([]byte, l)
@@ -16,6 +16,13 @@ func RandomVerifyCode(l int) string {
 		b[i] = letters[rand.Intn(len(letters))]
 	}
 	return string(b)
+}
+
+// IsValidNickname 判断用户名是否合法
+func IsValidNickname(nickname string) bool {
+	// 用户名可以包含数字、字母及中文，长度不超过 16 个字符
+	re := regexp.MustCompile(`^[\u4e00-\u9fa5A-Za-z0-9]{1,16}$`)
+	return re.MatchString(nickname)
 }
 
 // IsValidEmail 判断邮箱是否合法。

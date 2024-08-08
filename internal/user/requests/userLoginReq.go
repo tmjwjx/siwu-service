@@ -3,7 +3,7 @@ package requests
 // RegisterMsg 注册消息
 type RegisterMsg struct {
 	Email      string `json:"email"`       // 邮箱
-	Code       string `json:"code"`        // 验证码
+	VerifyCode string `json:"verify_code"` // 验证码
 	Password   string `json:"password"`    // 密码
 	RePassword string `json:"re_password"` // 重复密码
 }
@@ -14,9 +14,7 @@ type LogicMsg struct {
 	Password string `json:"password"` // 密码
 }
 
-// FindPassword 找回密码
-type FindPassword struct {
-	Email string `json:"email"` // 邮箱
-	Code  string `json:"code"`  // 验证码
-
+// ReqVerifyCode 请求验证码
+type ReqVerifyCode struct {
+	Email string `json:"email" form:"email"` // 邮箱
 }

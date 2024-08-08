@@ -9,6 +9,10 @@ func Tag(e *gin.Engine) {
 	// 分组
 	r := e.Group("/tag")
 
-	// 标签人数更新
+	// 更新标签关注人数
 	r.POST("/fan_count", controllers.UpdateTagUserCount)
+
+	// 更新前端标签页
+	r.POST("/article_count", controllers.UpdateTag)
+
 }
