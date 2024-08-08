@@ -20,7 +20,7 @@ func UploadHandlerLogic(c *gin.Context, home string, homeID uint) error {
 	files := form.File["upload[]"]
 	for _, file := range files {
 		// 将文件内容写入目标文件
-		err := c.SaveUploadedFile(file, "./static/images"+file.Filename)
+		err := c.SaveUploadedFile(file, "./static/images/"+file.Filename)
 		if err != nil {
 			//e := response.NewAppErr(globals.StatusInternalServerError, err, nil)
 			//response.Failed(c, e, 5000)
@@ -36,7 +36,7 @@ func UploadHandlerLogic(c *gin.Context, home string, homeID uint) error {
 			Name:   file.Filename,
 			Type:   "images/" + filepath.Ext(file.Filename), // filepath.Ext(filename) 获得文件的扩展名
 			Size:   file.Size,
-			Path:   "/images" + uniqueFilename,
+			Path:   "/images/" + uniqueFilename,
 		}
 
 		// 将文件插入数据库中
@@ -54,6 +54,16 @@ func GetImagesLogic(home string, homeID uint) (*[]models.Attachment, error) {
 	images, err := repositorys.GetImages(home, homeID)
 	if err != nil {
 		return nil, fmt.Errorf("GetImagesLogic -> %s", err)
+	}
+	return images, nil
+}
+
+// GetAdvertisementImageLogic 专门用于取数据库中的广告图片
+func GetAdvertisementImageLogic(home string, status int) (*[]models.Advertisement, error) {
+	// 查询出数据库中相应的所有图片路径
+	images, err := repositorys.GetAdvertisementImage(home, status)
+	if err != nil {
+		return nil, fmt.Errorf("GetAdvertisementImageLogic -> %s", err)
 	}
 	return images, nil
 }

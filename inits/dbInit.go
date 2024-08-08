@@ -45,7 +45,7 @@ func TableInit() {
 		&models.Administrator{}, &models.ArticleLike{},
 		&models.ArticleCollection{}, &models.Attachment{},
 		&models.User{}, &models.Article{},
-		&models.ArticleComment{})
+		&models.ArticleComment{}, &models.Advertisement{})
 	if err != nil {
 		globals.Log.Errorf("db.AutoMigrate err = %s", err)
 		return
