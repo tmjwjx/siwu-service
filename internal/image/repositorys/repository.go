@@ -27,3 +27,14 @@ func GetImages(home string, homeID uint) (*[]models.Attachment, error) {
 	}
 	return &images, nil
 }
+
+// GetAdvertisementImage 专门用于取数据库中的广告图片
+func GetAdvertisementImage(home string, status int) (*[]models.Advertisement, error) {
+	var images []models.Advertisement
+	// 查询出数据库中相应的所有图片路径
+	err := globals.DB.Select("path").Where("home = ? and status = ?", home, status).Find(&images).Error
+	if err != nil {
+		return nil, fmt.Errorf("GetAdvertisementImage -> %s", err)
+	}
+	return &images, nil
+}

@@ -1,6 +1,6 @@
 database:
   host: "192.168.10.4"
-  port: 3306
+  port: 3310
   user: "root"
   password: "123456"
   name: "forum"
