@@ -166,9 +166,6 @@ func QueryUserById(db *gorm.DB, id uint) *models.User {
 // // QueryFollowed 查询某id被谁关注了被关注者
 // func QueryFollowed(db *gorm.DB, follower uint) {
 //  }
-
-// todo
-
 // // QueryFollower 查询关注者
 // func QueryFollower(db *gorm.DB, followed uint) {
 //

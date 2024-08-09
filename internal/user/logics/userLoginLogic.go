@@ -217,7 +217,6 @@ func (u *UserReqContext) Follow(follow requests.FollowMsg) error {
 
 	// 判断是否已经关注过了，如果已经关注过了，再次点击就会取消关注
 	// repositories.Query
-	// todo
 	// for := range {
 	//
 	// }
