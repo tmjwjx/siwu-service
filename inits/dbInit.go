@@ -27,9 +27,9 @@ func DBInit() {
 
 	var err error
 	globals.DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
-		//NamingStrategy: schema.NamingStrategy{
+		// NamingStrategy: schema.NamingStrategy{
 		//	TablePrefix: "t_", // 设置表前缀
-		//},
+		// },
 	})
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
@@ -45,7 +45,7 @@ func TableInit() {
 		&models.Administrator{}, &models.ArticleLike{},
 		&models.ArticleCollection{}, &models.Attachment{},
 		&models.User{}, &models.Article{},
-		&models.ArticleComment{}, &models.Advertisement{})
+		&models.ArticleComment{}, &models.Advertisement{}, &models.UserVerifyCode{})
 	if err != nil {
 		globals.Log.Errorf("db.AutoMigrate err = %s", err)
 		return

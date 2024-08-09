@@ -14,7 +14,13 @@ type LogicMsg struct {
 	Password string `json:"password"` // 密码
 }
 
-// ReqVerifyCode 请求验证码
-type ReqVerifyCode struct {
+// VerifyCodeMsg 验证码消息
+type VerifyCodeMsg struct {
 	Email string `json:"email" form:"email"` // 邮箱
+}
+
+// FollowMsg 关注，取消关注消息
+type FollowMsg struct {
+	FollowerId uint `json:"follower_id"`
+	FollowedId uint `json:"followed_id"`
 }
