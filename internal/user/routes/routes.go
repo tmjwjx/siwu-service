@@ -7,6 +7,10 @@ import (
 
 // User 用户路由
 func User(e *gin.Engine) {
+
+	// 铃铛消息
+	//e.GET("/event", controllers.MessagePushCtrl)
+
 	// 分组
 	r := e.Group("/user")
 	// 注册

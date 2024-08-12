@@ -1,6 +1,7 @@
 package globals
 
 import (
+	"forum/internal/models"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
 	"go.uber.org/zap"
@@ -25,4 +26,7 @@ var (
 
 	// Env 环境配置文件
 	Env string
+
+	// SubscriberChannels 全局 map，用于存储各文章 ID 的 SSE 订阅者通道
+	SubscriberChannels = make(map[string]chan models.Event)
 )
