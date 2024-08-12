@@ -5,6 +5,8 @@ import (
 	"forum/pkg/globals"
 )
 
+//
+
 type AppData struct {
 	Code globals.AppCode `json:"code"`
 	Msg  string          `json:"msg"`
