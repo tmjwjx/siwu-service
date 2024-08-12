@@ -1,6 +1,6 @@
 database:
   host: "192.168.10.4"
-  port: 3306
+  port: 3310
   user: "root"
   password: "123456"
   name: "forum"
@@ -8,11 +8,20 @@ database:
 # redis 暂时未使用--
 
 redis:
-  host: "127.0.0.1"
+  host: "192.168.10.4"
   port: 6379
-  password: ""
+  password: "123456"
   db: 0
 
 app:
   host: "0.0.0.0"
   port: 8081
+
+# 发送邮件
+send_email:
+  From : "3174285493@qq.com"
+  host: "smtp.qq.com"
+  port: 587
+  username: "3174285493@qq.com"
+  authorizeCode: "mmureuzrdnmndfef"
+

@@ -1,0 +1,8 @@
+2024-08-03T17:30:17.846+0800	[34mINFO[0m	forum/main.go:11	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+2024-08-03T17:31:19.550+0800	INFO	forum/main.go:11	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+{"level":"INFO","ts":"2024-08-03T17:32:03.536+0800","caller":"forum/main.go:11","msg":"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"}
+{"level":"INFO","ts":"2024-08-03T18:58:39.952+0800","caller":"forum/main.go:10","msg":"info "}
+{"level":"ERROR","ts":"2024-08-03T18:58:39.952+0800","caller":"forum/main.go:11","msg":"error"}
+{"level":"ERROR","ts":"2024-08-03T18:58:39.954+0800","caller":"server/server.go:23","msg":"路由启动错误"}
+{"level":"INFO","ts":"2024-08-03T19:07:03.086+0800","caller":"forum/main.go:10","msg":"info "}
+{"level":"ERROR","ts":"2024-08-03T19:07:03.086+0800","caller":"forum/main.go:11","msg":"error"}

@@ -2,9 +2,8 @@ package requests
 
 // RegisterMsg 注册消息
 type RegisterMsg struct {
-	Nickname   string `json:"nickname"`    // 昵称
 	Email      string `json:"email"`       // 邮箱
-	Code       string `json:"code"`        // 验证码
+	VerifyCode string `json:"verify_code"` // 验证码
 	Password   string `json:"password"`    // 密码
 	RePassword string `json:"re_password"` // 重复密码
 }
@@ -15,13 +14,13 @@ type LogicMsg struct {
 	Password string `json:"password"` // 密码
 }
 
-// ReqVerifyCode 请求验证码
-type ReqVerifyCode struct {
+// VerifyCodeMsg 验证码消息
+type VerifyCodeMsg struct {
 	Email string `json:"email" form:"email"` // 邮箱
 }
 
-// // FindPassword 找回密码
-// type FindPassword struct {
-// 	Email string `json:"email"` // 邮箱
-// 	VerifyCode  string `json:"verify_code"`  // 验证码
-// }
+// FollowMsg 关注，取消关注消息
+type FollowMsg struct {
+	FollowerId uint `json:"follower_id"`
+	FollowedId uint `json:"followed_id"`
+}

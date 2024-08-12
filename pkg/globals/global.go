@@ -27,6 +27,10 @@ var (
 	// Env 环境配置文件
 	Env string
 
+	// SendEmailCfg 发送邮件配置
+	SendEmailCfg *SendEmailConfig
+)
+
 	// SubscriberChannels 全局 map，用于存储各文章 ID 的 SSE 订阅者通道
 	SubscriberChannels = make(map[string]chan models.Event)
 )

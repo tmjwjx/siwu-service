@@ -22,8 +22,19 @@ type App struct {
 	Port int    `yaml:"port"`
 }
 
+// SendEmailConfig 验证码配置
+type SendEmailConfig struct {
+	From          string `yaml:"from"`          // 发送者邮箱
+	Host          string `yaml:"host"`          // SMTP 服务器的主机地址
+	Port          int    `yaml:"port"`          // 服务器的端口号
+	Username      string `yaml:"username"`      // SMTP 服务器的用户名（通常是你的邮箱地址）
+	AuthorizeCode string `yaml:"authorizeCode"` // SMTP 服务器的密码（或者授权码）
+}
+
+// Config 总配置
 type Config struct {
-	Database DatabaseConfig `yaml:"database"`
-	Redis    RedisConfig    `yaml:"redis"`
-	App      App            `yaml:"app"`
+	Database     DatabaseConfig  `yaml:"database"`
+	Redis        RedisConfig     `yaml:"redis"`
+	App          App             `yaml:"app"`
+	SendEmailCfg SendEmailConfig `yaml:"verifyCode"`
 }
