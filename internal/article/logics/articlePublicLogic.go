@@ -32,11 +32,11 @@ func ArticleEditLogic(db *gorm.DB) (data interface{}, err error) {
 	if err != nil {
 		return nil, err
 	}
-	for _, categorie := range categories {
+	for _, category := range categories {
 		c = append(c, struct {
 			Value string `json:"value"`
 			Label string `json:"label"`
-		}{Value: categorie.Name, Label: categorie.Name})
+		}{Value: category.Name, Label: category.Name})
 	}
 
 	data = struct {
@@ -58,6 +58,6 @@ func ArticleEditLogic(db *gorm.DB) (data interface{}, err error) {
 
 // ArticlePublicLogic 发布文章
 func ArticlePublicLogic(db *gorm.DB, req requests.ReqPublish) error {
-
+	repositories.InsertArticlesRep(db, req)
 	return nil
 }
