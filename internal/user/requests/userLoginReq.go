@@ -24,3 +24,8 @@ type FollowMsg struct {
 	FollowerId uint `json:"follower_id"`
 	FollowedId uint `json:"followed_id"`
 }
+
+// RankMsg 用户排行消息
+type RankMsg struct {
+	Limit int `json:"limit" form:"limit"`
+}

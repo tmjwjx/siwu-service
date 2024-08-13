@@ -93,7 +93,7 @@ func SelectPersonData(userID string) (*requests.UserResponse, error) {
 	images, err := controllers.GetImagesControllers("用户", uintValue)
 	var path string
 	if err == nil {
-		//return nil, fmt.Errorf("SelectPersonData -> %s", err)
+		// return nil, fmt.Errorf("SelectPersonData -> %s", err)
 		// 获取图片路径
 		for _, image := range *images {
 			path = image.Path

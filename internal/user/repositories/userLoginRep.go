@@ -8,8 +8,6 @@ import (
 	"reflect"
 )
 
-// 注意：最好不要使用 .Update方法，Update 方法只更新指定的列，不会自动更新 UpdatedAt 字段。可以使用 .Save 或 .Updates 方法来自动更新 UpdatedAt 字段。
-
 // // InsertUser 创建用户
 // func InsertUser(db *gorm.DB, user *models.User) error {
 // 	// 向数据库中插入新的用户
@@ -86,15 +84,15 @@ func InsertFollow(db *gorm.DB, followerId uint, followedId uint) error {
 	return nil
 }
 
-// DeleteObjects 根据一个或多个条件删除一个或多个对象。
+// DeleteObjectsByModel 按照model模型，根据一个或多个条件删除一个或多个对象。
 // db: GORM 的数据库实例。
 // modelType: 要删除的模型类型的指针。
 // condition: 删除条件的键值对。
 // int64: 返回删除的记录数。
-func DeleteObjects(db *gorm.DB, modelType interface{}, condition map[string]interface{}) (int64, error) {
+func DeleteObjectsByModel(db *gorm.DB, modelType interface{}, condition map[string]interface{}) (int64, error) {
 	// 确保 modelType 是指针类型
 	if reflect.TypeOf(modelType).Kind() != reflect.Ptr {
-		return 0, fmt.Errorf("DeleteObjects() err: 数据模型必须是指针类型")
+		return 0, fmt.Errorf("DeleteObjectsByModel() err: 数据模型必须是指针类型")
 	}
 
 	// 构建查询条件
@@ -106,7 +104,29 @@ func DeleteObjects(db *gorm.DB, modelType interface{}, condition map[string]inte
 	// 执行删除操作
 	result := query.Delete(modelType)
 	if result.Error != nil {
-		return 0, fmt.Errorf("DeleteObjects() err: %v\t执行的查询语句为: %v", result.Error, result.Statement.SQL.String())
+		return 0, fmt.Errorf("DeleteObjectsByModel() err: %v\t执行的查询语句为: %v", result.Error, result.Statement.SQL.String())
+	}
+
+	// 返回删除的记录数
+	return result.RowsAffected, nil
+}
+
+// DeleteObjectsByTable 按照表名，根据一个或多个条件删除一个或多个对象。
+// db: GORM 的数据库实例。
+// tableName: 要删除的表名。
+// condition: 删除条件的键值对。
+// int64: 返回删除的记录数。
+func DeleteObjectsByTable(db *gorm.DB, tableName string, condition map[string]interface{}) (int64, error) {
+	// 构建查询条件
+	query := db.Table(tableName)
+	for key, value := range condition {
+		query = query.Where(fmt.Sprintf("%s = ?", key), value)
+	}
+
+	// 执行删除操作。query.Delete(nil)：删除符合条件的记录，不需要指定具体的模型类型。
+	result := query.Delete(nil)
+	if result.Error != nil {
+		return 0, fmt.Errorf("DeleteObjectsByModel() err: %v\t执行的查询语句为: %v", result.Error, result.Statement.SQL.String())
 	}
 
 	// 返回删除的记录数
@@ -118,24 +138,43 @@ func DeleteObjects(db *gorm.DB, modelType interface{}, condition map[string]inte
 // modelType: 要更新的模型类型的指针。
 // condition: 查询条件的键值对。
 // updates: 更新值的键值对。
-func UpdateObjects(db *gorm.DB, modelType interface{}, condition map[string]interface{}, updates map[string]interface{}) error {
-	// 确保模型类型是指针类型
-	modelValue := reflect.ValueOf(modelType)
-	if modelValue.Kind() != reflect.Ptr {
+// func UpdateObjects(db *gorm.DB, modelType interface{}, condition map[string]interface{}, updates map[string]interface{}) error {
+// 	// 确保模型类型是指针类型
+// 	modelValue := reflect.ValueOf(modelType)
+// 	if modelValue.Kind() != reflect.Ptr {
+// 		return fmt.Errorf("UpdateObjects() err: 数据模型必须是指针类型")
+// 	}
+//
+// 	// 获取模型的实例
+// 	modelInstance := reflect.New(modelValue.Elem().Type()).Interface()
+//
+// 	// 构建查询条件
+// 	query := db.Model(modelInstance)
+// 	for key, value := range condition {
+// 		query = query.Where(fmt.Sprintf("%s = ?", key), value)
+// 	}
+//
+// 	// 执行更新
+// 	result := query.Updates(updates)
+// 	if result.Error != nil {
+// 		return fmt.Errorf("UpdateObjects() err: %v", result.Error)
+// 	}
+//
+// 	return nil
+// }
+
+// UpdateObjects 根据一个或多个参数更新一个或多个对象。
+// db: GORM 的数据库实例。
+// model: 要更新的模型类型的指针，模型中要包含查询的参数。
+// updates: 更新值的键值对。
+func UpdateObjects(db *gorm.DB, model interface{}, updates map[string]interface{}) error {
+	// 检查 model 是否为指针类型
+	if reflect.TypeOf(model).Kind() != reflect.Ptr {
 		return fmt.Errorf("UpdateObjects() err: 数据模型必须是指针类型")
 	}
 
-	// 获取模型的实例
-	modelInstance := reflect.New(modelValue.Elem().Type()).Interface()
-
-	// 构建查询条件
-	query := db.Model(modelInstance)
-	for key, value := range condition {
-		query = query.Where(fmt.Sprintf("%s = ?", key), value)
-	}
-
-	// 执行更新
-	result := query.Updates(updates)
+	// 执行更新操作
+	result := db.Model(model).Where(model).Updates(updates)
 	if result.Error != nil {
 		return fmt.Errorf("UpdateObjects() err: %v", result.Error)
 	}
@@ -163,14 +202,6 @@ func QueryUserById(db *gorm.DB, id uint) *models.User {
 	return &user
 }
 
-// // QueryFollowed 查询某id被谁关注了被关注者
-// func QueryFollowed(db *gorm.DB, follower uint) {
-//  }
-// // QueryFollower 查询关注者
-// func QueryFollower(db *gorm.DB, followed uint) {
-//
-// }
-
 // QueryLastUserVerifyCodeByUserID 根据 UserID 查询最后一条 UserVerifyCode 记录（不论该数据的DeleteAt是否已经被赋值）
 func QueryLastUserVerifyCodeByUserID(db *gorm.DB, userID uint) (*models.UserVerifyCode, error) {
 	var userVerifyCode models.UserVerifyCode
@@ -181,6 +212,62 @@ func QueryLastUserVerifyCodeByUserID(db *gorm.DB, userID uint) (*models.UserVeri
 	}
 
 	return &userVerifyCode, nil
+}
+
+// QueryFollowed 查询id关注了谁。（查看我的关注）
+func QueryFollowed(db *gorm.DB, follower uint) ([]uint, error) {
+	var followedIDSli []uint
+	// 执行查询，获取所有关注的用户ID
+	// Pluck("followed_id", &followedIDs)：只提取 followed 字段的值，并存储到 followedIDs 切片中。
+	err := db.Table("user_follows").Where("follower_id = ?", follower).Pluck("followed_id", &followedIDSli).Error
+	if err != nil {
+		return nil, fmt.Errorf("QueryFollowed() err: %v", err)
+	}
+
+	return followedIDSli, nil
+}
+
+// QueryFollower 查询id被谁关注。（查看我的粉丝）
+func QueryFollower(db *gorm.DB, followed uint) ([]uint, error) {
+	var followerIDSli []uint
+	// 执行查询，获取所有关注的用户ID
+	err := db.Table("user_follows").Where("followed_id = ?", followed).Pluck("follower_id", &followerIDSli).Error
+	if err != nil {
+		return nil, fmt.Errorf("QueryFollowed() err: %v", err)
+	}
+
+	return followerIDSli, nil
+}
+
+// QueryUserRank 查询用户排行。根据文章数量和文章热度计算每个用户的热度得分，并按热度从高到低排序。
+// 作者榜单：1篇文章=2个热度，作者热度 = 文章数量 + 文章热度
+func QueryUserRank(db *gorm.DB, limit int) ([]uint, error) {
+	type UserRank struct {
+		UserID uint
+		Heat   int
+	}
+
+	var userRanks []UserRank
+
+	// 查询并计算每个用户的热度分数
+	err := db.Table("users").
+		Select("users.id as user_id, (count(articles.id) * 2 + sum(articles.heat)) as heat").
+		Joins("left join articles on articles.user_id = users.id").
+		Group("users.id").
+		Order("heat DESC").
+		Limit(limit).
+		Scan(&userRanks).Error
+	if err != nil {
+		return nil, fmt.Errorf("QueryUserRank() err: %v", err)
+	}
+
+	// 提取用户ID列表
+	userIdSli := make([]uint, len(userRanks))
+	for i, rank := range userRanks {
+		userIdSli[i] = rank.UserID
+	}
+
+	return userIdSli, nil
 }
 
 // QueryObject 根据一个或多个条件查询一个对象。

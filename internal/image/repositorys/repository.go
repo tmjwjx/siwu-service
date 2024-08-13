@@ -21,7 +21,7 @@ func InsertFile(attachment *requests.Attachment) error {
 func GetImages(home string, homeID uint) (*[]models.Attachment, error) {
 	var images []models.Attachment
 	// 查询出数据库中相应的所有图片路径
-	err := globals.DB.Select("path").Where("home = ? and homeID = ?", home, homeID).Find(&images).Error
+	err := globals.DB.Select("path").Where("home = ? and home_id = ?", home, homeID).Find(&images).Error
 	if err != nil {
 		return nil, fmt.Errorf("GetImages -> %s", err)
 	}

@@ -7,10 +7,6 @@ import (
 
 // User 用户路由
 func User(e *gin.Engine) {
-
-	// 铃铛消息
-	//e.GET("/event", controllers.MessagePushCtrl)
-
 	// 分组
 	r := e.Group("/user")
 	// 注册
@@ -21,10 +17,16 @@ func User(e *gin.Engine) {
 	r.POST("/login", controllers.Login)
 	// 关注
 	r.POST("/follow", controllers.Follow)
+	// 用户排行
+	r.GET("/rank", controllers.UserRank)
 
 	// 上传个人资料
 	e.POST("/form_personal_data", controllers.PersonalDataHandler)
 
 	// 前端获取用户资料
 	e.GET("/form_personal_data/:id", controllers.ResponsePersonDate)
+
+	// 铃铛消息
+	// e.GET("/event", controllers.MessagePushCtrl)
+
 }
