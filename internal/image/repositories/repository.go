@@ -1,4 +1,4 @@
-package repositorys
+package repositories
 
 import (
 	"fmt"
@@ -10,7 +10,7 @@ import (
 // InsertFile 将图片文件的路径相关的信息存入数据库中
 func InsertFile(attachment *requests.Attachment) error {
 	// 向数据库中存入文件数据
-	result := globals.DB.Create(attachment)
+	result := globals.DB.Model(&models.Attachment{}).Where("home = ? and home_id = ?", attachment.Home, attachment.HomeID).Save(attachment)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -21,7 +21,7 @@ func InsertFile(attachment *requests.Attachment) error {
 func GetImages(home string, homeID uint) (*[]models.Attachment, error) {
 	var images []models.Attachment
 	// 查询出数据库中相应的所有图片路径
-	err := globals.DB.Select("path").Where("home = ? and homeID = ?", home, homeID).Find(&images).Error
+	err := globals.DB.Select("path").Where("home = ? and home_id = ?", home, homeID).Find(&images).Error
 	if err != nil {
 		return nil, fmt.Errorf("GetImages -> %s", err)
 	}
