@@ -1,4 +1,4 @@
-package repositorys
+package repositories
 
 import (
 	"fmt"
@@ -10,7 +10,7 @@ import (
 // InsertFile 将图片文件的路径相关的信息存入数据库中
 func InsertFile(attachment *requests.Attachment) error {
 	// 向数据库中存入文件数据
-	result := globals.DB.Create(attachment)
+	result := globals.DB.Model(&models.Attachment{}).Where("home = ? and home_id = ?", attachment.Home, attachment.HomeID).Save(attachment)
 	if result.Error != nil {
 		return result.Error
 	}

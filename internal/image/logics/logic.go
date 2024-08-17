@@ -2,11 +2,13 @@ package logics
 
 import (
 	"fmt"
-	"forum/internal/image/repositorys"
+	"forum/internal/image/repositories"
 	"forum/internal/image/requests"
 	"forum/internal/models"
+	"forum/pkg/globals"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"os"
 	"path/filepath"
 )
 
@@ -19,16 +21,27 @@ func UploadHandlerLogic(c *gin.Context, home string, homeID uint) error {
 	// 提取文件
 	files := form.File["upload[]"]
 	for _, file := range files {
-		// 将文件内容写入目标文件
+		/*// 将文件内容写入目标文件
 		err := c.SaveUploadedFile(file, "./static/images/"+file.Filename)
 		if err != nil {
-			//e := response.NewAppErr(globals.StatusInternalServerError, err, nil)
-			//response.Failed(c, e, 5000)
 			return err
-		}
+		}*/
 
 		// 生成唯一的文件名
 		uniqueFilename := generateUniqueFilename(file.Filename)
+
+		// 删除文件系统中的图片
+		err := deleteFile(home, homeID)
+		if err != nil {
+			return err
+		}
+
+		// 将文件内容写入目标文件
+		err = c.SaveUploadedFile(file, "./static/images/"+uniqueFilename)
+		if err != nil {
+			return err
+		}
+
 		// 将文件路径及其相关信息存入数据库中
 		attachment := &requests.Attachment{
 			Home:   home,
@@ -40,7 +53,7 @@ func UploadHandlerLogic(c *gin.Context, home string, homeID uint) error {
 		}
 
 		// 将文件插入数据库中
-		err = repositorys.InsertFile(attachment)
+		err = repositories.InsertFile(attachment)
 		if err != nil {
 			return err
 		}
@@ -51,7 +64,7 @@ func UploadHandlerLogic(c *gin.Context, home string, homeID uint) error {
 
 // GetImagesLogic 从数据库中将图片路径取出
 func GetImagesLogic(home string, homeID uint) (*[]models.Attachment, error) {
-	images, err := repositorys.GetImages(home, homeID)
+	images, err := repositories.GetImages(home, homeID)
 	if err != nil {
 		return nil, fmt.Errorf("GetImagesLogic -> %s", err)
 	}
@@ -61,7 +74,7 @@ func GetImagesLogic(home string, homeID uint) (*[]models.Attachment, error) {
 // GetAdvertisementImageLogic 专门用于取数据库中的广告图片
 func GetAdvertisementImageLogic(home string, status int) (*[]models.Advertisement, error) {
 	// 查询出数据库中相应的所有图片路径
-	images, err := repositorys.GetAdvertisementImage(home, status)
+	images, err := repositories.GetAdvertisementImage(home, status)
 	if err != nil {
 		return nil, fmt.Errorf("GetAdvertisementImageLogic -> %s", err)
 	}
@@ -79,4 +92,22 @@ func generateUniqueFilename(filename string) string {
 
 	// 创建一个新的唯一文件名
 	return fmt.Sprintf("%s_%s%s", base, uniqueID, ext)
+}
+
+func deleteFile(home string, homeID uint) error {
+	var path string
+	// 查询要删除的图片文件路径
+	err := globals.DB.Model(models.Attachment{}).Where("home = ? and home_id = ?", home, homeID).Select("path").First(&path).Error
+	if err != nil {
+		//return fmt.Errorf("deleteFile -> %s", err)
+		// 没有查到说明文件系统中没有该图片，直接添加进入文件系统即可
+		return nil
+	}
+	path = "./static" + path
+	// 删除图片
+	err = os.Remove(path)
+	if err != nil {
+		return fmt.Errorf("deleteFile -> 文件系统中的图片删除失败 -> %s", err)
+	}
+	return nil
 }

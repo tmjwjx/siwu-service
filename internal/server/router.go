@@ -22,4 +22,7 @@ func SetupRouter() {
 	// 标签分路由
 	tagRouter.Tag(globals.Router)
 
+	// 评论分路由
+	articleRouter.Comment(globals.Router)
+
 }

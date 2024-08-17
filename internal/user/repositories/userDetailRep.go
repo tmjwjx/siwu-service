@@ -6,109 +6,269 @@ import (
 	"forum/internal/internal_pkg/internal_utils"
 	"forum/internal/models"
 	"forum/internal/user/requests"
-	"forum/pkg/globals"
-	"strconv"
+	"gorm.io/gorm"
 )
 
 // QueryPersonEmail 查询Email
-func QueryPersonEmail(userRequest *requests.UserRequest) error {
+func QueryPersonEmail(userAccountReq *requests.UserAccountReq, db *gorm.DB) error {
 
 	// 查询 Email 是否唯一
 	var user models.User
-	err := globals.DB.Where("email = ?", userRequest.User.Email).First(&user).Error
+	err := db.Where("email = ?", userAccountReq.Email).First(&user).Error
 	if err != nil {
 		return fmt.Errorf("QueryPersonEmail -> %s", err)
 	}
+
 	return nil
+
 }
 
-// UpdatePersonData 更新用户信息
-func UpdatePersonData(userRequest *requests.UserRequest) error {
+// UserDataRequest 更新用户个人资料
+func UserDataRequest(userDataReq *requests.UserDataReq, db *gorm.DB) error {
 
-	// 将前端传过来的 user 文本类数据插入到数据库中
-	// 更新用户信息
-	err := globals.DB.Model(&models.User{}).Where("id = ?", userRequest.User.ID).Updates(userRequest.User).Error
+	var user models.User
+
+	// 查询该用户是否存在
+	err := db.Model(&models.User{}).Where("id = ?", userDataReq.ID).First(&user).Error
 	if err != nil {
-		return fmt.Errorf("UpdatePersonData -> %s", err)
+		return fmt.Errorf("UserDataRequest -> 用户表中用户不存在 -> %s", err)
 	}
-	// 更新用户详情
-	err = globals.DB.Model(&models.UserDetail{}).Where("user_id = ?", userRequest.User.ID).Updates(userRequest.UserDetail).Error
+
+	// 更新 User 表中的 Nickname
+	err = db.Model(&user).Update("Nickname", userDataReq.Nickname).Error
+
 	if err != nil {
-		return fmt.Errorf("UpdatePersonData -> %s", err)
+		return fmt.Errorf("UserDataRequest -> 用户表中没有更新任何记录 -> %s", err)
+	}
+
+	// 更新 UserDetail 表
+
+	var userDetail models.UserDetail
+	// 查询该用户的外键是否存在
+	err = db.Where("user_id", userDataReq.ID).First(&userDetail).Error
+
+	if err != nil {
+		userDetail.UserID = userDataReq.ID
+		userDetail.CareerDirection = userDataReq.CareerDirection
+		userDetail.HomePage = userDataReq.HomePage
+		userDetail.Signature = userDataReq.Signature
+		//return fmt.Errorf("UserDataRequest -> 用户详情表中用户不存在 -> %s", err)
+		err = db.Create(&userDetail).Error
+		if err != nil {
+			return fmt.Errorf("UserDataRequest -> 用户详情表中数据插入失败 -> %s", err)
+		}
+	} else {
+		// 使用 Map 更新特定字段，如果 UserDataReq 结构体字段与数据库字段不一致时
+		updates := map[string]interface{}{
+			"careerDirection": userDataReq.CareerDirection,
+			"homePage":        userDataReq.HomePage, // 注意这里要使用数据库中的列名
+			"signature":       userDataReq.Signature,
+		}
+
+		// 更新用户详情表中相应的字段
+		err = db.Model(&userDetail).Select("CareerDirection", "HomePage", "Signature").Updates(updates).Error
+		if err != nil {
+			return fmt.Errorf("UserDataRequest -> 用户详情表中没有更新任何记录 -> %s", err)
+		}
 	}
 	// 更新用户标签
 	var existingTags []models.Tag
-	err = globals.DB.Where("name IN ?", userRequest.UserTags).Find(&existingTags).Error
+	err = db.Where("name IN ?", userDataReq.UserTags).Find(&existingTags).Error
 	if err != nil {
-		return fmt.Errorf("UpdatePersonData -> %s", err)
+		return fmt.Errorf("UserDataRequest -> %s", err)
 	}
+
 	// 找到所有传递过来的标签的ID
 	var tagIDs []uint
 	for _, tag := range existingTags {
 		tagIDs = append(tagIDs, tag.ID)
 	}
+
 	// 清除旧的用户标签关联
-	err = globals.DB.Where("user_id = ?", userRequest.User.ID).Delete(&models.UserTag{}).Error
+	err = db.Where("user_id = ?", userDataReq.ID).Delete(&models.UserTag{}).Error
 	if err != nil {
-		return fmt.Errorf("UpdatePersonData -> %s", err)
+		return fmt.Errorf("UserDataRequest -> %s", err)
 	}
+
 	// 添加新的用户标签关联
 	for _, tagID := range tagIDs {
-		globals.DB.Create(&models.UserTag{UserID: userRequest.User.ID, TagID: tagID})
+		db.Create(&models.UserTag{UserID: userDataReq.ID, TagID: tagID})
 	}
+
 	return nil
+
 }
 
-// SelectPersonData 查询用户信息
-func SelectPersonData(userID string) (*requests.UserResponse, error) {
+// UserAccountRequest 更新用户账号设置
+func UserAccountRequest(userAccountReq *requests.UserAccountReq, db *gorm.DB) error {
+
+	// 查询该用户是否存在
+	var user models.User
+	err := db.Where("id = ?", userAccountReq.ID).First(&user).Error
+
+	if err != nil {
+		return fmt.Errorf("UserAccountRequest -> 用户表中用户不存在 -> %s", err)
+	}
+
+	// 更新 User 表中的 email , password
+	err = db.Model(&user).Updates(map[string]interface{}{
+		"email":    userAccountReq.Email,
+		"password": userAccountReq.Password,
+	}).Error
+	if err != nil {
+		return fmt.Errorf("UserAccountRequest -> 更新 User 表中的 email , password -> %s", err)
+	}
+
+	// 查询该用户的外键是否存在
+	var userDetail models.UserDetail
+	err = db.Where("user_id = ?", userAccountReq.ID).First(&userDetail).Error
+
+	if err != nil {
+		//return fmt.Errorf("UserAccountRequest -> 用户详情表中用户不存在 -> %s", err)
+		userDetail.UserID = userAccountReq.ID
+		userDetail.BlogLink = userAccountReq.BlogLink
+		userDetail.WeiboLink = userAccountReq.WeiboLink
+		userDetail.GithubLink = userAccountReq.GithubLink
+
+		err := db.Create(&userDetail).Error
+		if err != nil {
+			return fmt.Errorf("UserAccountRequest -> 更新 UserDetail 表中的 BlogLink , WeiboLink , GithubLink字段失败 -> %s", err)
+		}
+	} else {
+		// 更新 UserDetail 表中的 BlogLink , WeiboLink , GithubLink
+		err = db.Model(&userDetail).Updates(map[string]interface{}{
+			"blog_link":   userAccountReq.BlogLink,
+			"weibo_link":  userAccountReq.WeiboLink,
+			"github_link": userAccountReq.GithubLink,
+		}).Error
+
+		if err != nil {
+			return fmt.Errorf("UserAccountRequest -> 更新 UserDetail 表中的 BlogLink , WeiboLink , GithubLink字段失败 -> %s", err)
+		}
+	}
+
+	return nil
+
+}
+
+// UserPrivateSetRequest 更新用户私信设置
+func UserPrivateSetRequest(userPrivateSetReq *requests.UserPrivateSettingsReq, db *gorm.DB) error {
+
+	var user models.User
+	// 查询该用户是否存在
+	err := db.Model(&models.User{}).Where("id = ?", userPrivateSetReq.ID).First(&user).Error
+	if err != nil {
+		//return fmt.Errorf("UserPrivateSetRequest -> %s", err)
+		// 数据库表中还没有该用户的数据，直接插入即可
+		user.ID = userPrivateSetReq.ID
+		user.PrivateSettings = userPrivateSetReq.PrivateSettings
+		err := db.Create(&user).Error
+		if err != nil {
+			return fmt.Errorf("UserPrivateSetRequest -> 用户私信设置插入数据失败1 -> %s", err)
+		}
+	} else {
+		// 数据库表中已经存在该用户的信息，直接更新用户信息
+		err := db.Model(&user).Select("PrivateSettings").Updates(userPrivateSetReq).Error
+		if err != nil {
+			return fmt.Errorf("UserPrivateSetRequest -> 用户私信设置插入数据失败2 -> %s", err)
+		}
+	}
+
+	return nil
+
+}
+
+// UserDataResponse 响应用户个人资料
+func UserDataResponse(userID uint, db *gorm.DB) (*requests.UserDataRes, error) {
 	var user models.User
 
-	// 查询 User 和关联的 UserDetail
-	if err := globals.DB.Preload("UserDetail").First(&user, userID).Error; err != nil {
-		return nil, fmt.Errorf("SelectPersonData -> %s", err)
+	err := db.Preload("UserDetail").Preload("Tags").First(&user, userID).Error
+	if err != nil {
+		return nil, fmt.Errorf("UserDataResponse -> %s", err)
 	}
-	// // 查询用户关联的 Tags 中的标签名字
-	var userTagsNames []string
-	if err := globals.DB.Model(&user).Association("Tags").Find(&userTagsNames, "name"); err != nil {
-		return nil, fmt.Errorf("SelectPersonData -> %s", err)
+
+	userDataRes := &requests.UserDataRes{
+		ID:              user.ID,
+		Nickname:        user.Nickname,
+		CareerDirection: user.UserDetail.CareerDirection,
+		HomePage:        user.UserDetail.HomePage,
+		Signature:       user.UserDetail.Signature,
 	}
+
+	for _, tag := range user.Tags {
+		userDataRes.UserTags = append(userDataRes.UserTags, tag.Name)
+	}
+
 	// 查询所有 Tags 的名字
 	var allTags []models.Tag
-	if err := globals.DB.Select("name").Find(&allTags).Error; err != nil {
+
+	if err := db.Select("name").Find(&allTags).Error; err != nil {
 		return nil, fmt.Errorf("SelectPersonData -> %s", err)
 	}
-	var allTagNames []string
+
 	for _, tag := range allTags {
-		allTagNames = append(allTagNames, tag.Name)
+		userDataRes.AllTagNames = append(userDataRes.AllTagNames, tag.Name)
 	}
+
 	// 获取用户头像图片
-	// 使用 strconv.ParseUint 将字符串解析为 uint64 类型
+	/*// 使用 strconv.ParseUint 将字符串解析为 uint64 类型
 	value, err := strconv.ParseUint(userID, 10, 32)
 	if err != nil {
 		return nil, fmt.Errorf("SelectPersonData -> %s", err)
 	}
 
 	// 将 uint64 类型转换为 uint
-	uintValue := uint(value)
-	images, err := controllers.GetImagesControllers("用户", uintValue)
-	var path string
+	uintValue := uint(value)*/
+	images, err := controllers.GetImagesControllers("用户", userID)
 	if err == nil {
-		// return nil, fmt.Errorf("SelectPersonData -> %s", err)
 		// 获取图片路径
 		for _, image := range *images {
-			path = image.Path
+			userDataRes.Path = image.Path
 		}
 	} else {
-		path = internal_utils.UserDefaultImage
+		userDataRes.Path = internal_utils.UserDefaultImage
 	}
 
-	// 组合数据
-	response := &requests.UserResponse{
-		User:        user,
-		UserDetail:  user.UserDetail,
-		UserTags:    userTagsNames,
-		AllTagNames: allTagNames,
-		Path:        path,
+	return userDataRes, nil
+
+}
+
+// UserAccountResponse 响应用户账号设置
+func UserAccountResponse(userID uint, db *gorm.DB) (*requests.UserAccountRes, error) {
+	var user models.User
+
+	err := db.Preload("UserDetail").First(&user, userID).Error
+	if err != nil {
+		return nil, fmt.Errorf("UserAccountResponse -> %s", err)
 	}
-	return response, nil
+
+	userAccountRes := &requests.UserAccountRes{
+		ID:         user.ID,
+		Email:      user.Email,
+		BlogLink:   user.UserDetail.BlogLink,
+		WeiboLink:  user.UserDetail.WeiboLink,
+		GithubLink: user.UserDetail.GithubLink,
+		Password:   user.Password,
+	}
+
+	return userAccountRes, nil
+
+}
+
+// UserPrivateSetResponse 响应用户私信设置
+func UserPrivateSetResponse(userID uint, db *gorm.DB) (*requests.UserPrivateSettingsRes, error) {
+	var user models.User
+
+	err := db.Select("PrivateSettings").First(&user, userID).Error
+	if err != nil {
+		return nil, fmt.Errorf("UserPrivateSetResponse -> %s", err)
+	}
+
+	userPrivateSetRes := &requests.UserPrivateSettingsRes{
+		ID:              userID,
+		PrivateSettings: user.PrivateSettings,
+	}
+
+	return userPrivateSetRes, nil
+
 }
