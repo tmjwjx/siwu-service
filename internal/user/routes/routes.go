@@ -13,6 +13,12 @@ func User(e *gin.Engine) {
 	r.POST("/register", controllers.Register)
 	// 用户请求验证码
 	r.GET("req_verify_code", controllers.ReqVerifyCode)
+	// 登录
+	r.POST("/login", controllers.Login)
+	// 关注
+	r.POST("/follow", controllers.Follow)
+	// 用户排行
+	r.GET("/rank", controllers.UserRank)
 
 	// 上传用户个人资料
 	r.POST("/form_personal_data", controllers.UserDataRequestCtrl)
@@ -31,4 +37,7 @@ func User(e *gin.Engine) {
 
 	// 前端获取用户私信设置数据
 	r.GET("/private_settings/:id", controllers.UserPrivateSetResponseCtrl)
+
+	// 铃铛消息
+	// e.GET("/event", controllers.MessagePushCtrl)
 }

@@ -21,8 +21,8 @@ func init() {
 	// 初始化表
 	TableInit()
 
-	// 初始化验证码配置
-	VerifyCodeInit()
+	// 初始化发送邮件配置
+	SendEmailCfgInit()
 
 	// 初始化日志文件
 	LogInit("logs", "forum")

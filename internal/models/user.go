@@ -13,6 +13,7 @@ type User struct {
 	//Path       string `json:"path" gorm:"not null"`             //头像路径
 	// 密码需要做加密功能
 	Heat            int         `json:"heat" gorm:"default:0"`       // 个人热度
+	AttentionCount uint        `json:"attention_count" gorm:"default:0"` // 关注了多少人数
 	FansCount       uint        `json:"fans_count" gorm:"default:0"` // 粉丝数
 	PrivateSettings string      `json:"private_settings"`
 	UserDetail      UserDetail  // 用户详情

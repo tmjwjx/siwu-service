@@ -35,7 +35,7 @@ func InsertArticlesRep(db *gorm.DB, req requests.ReqPublish) error {
 // UpdatePublishRep 设置文章的发布时间
 func UpdatePublishRep(db *gorm.DB, article *models.Article) error {
 
-	article.PublishedAt = time.Now()
+	*article.PublishedAt = time.Now()
 
 	// 更新数据库中的文章记录
 	if err := db.Save(article).Error; err != nil {
