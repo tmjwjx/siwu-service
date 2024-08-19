@@ -7,13 +7,28 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// TriggerEvent 模拟外部触发消息推送的函数
-func TriggerEvent(userId string, message string) {
+type MessageEvent interface {
+	PushMessage()
+}
+type Message struct {
+	Name   string
+	UserId string
+}
 
-	notifyChan, exists := globals.SubscriberChannels[userId]
-
+func (m Message) PushMessage() {
+	notifyChan, exists := globals.SubscriberChannels[m.UserId]
 	if exists {
-		notifyChan <- models.Event{Type: message} // 推送消息给指定用户的通道
+		notifyChan <- models.Event{Type: m.Name} // 推送消息给指定用户的通道
+	}
+}
+
+// TriggerEvent 模拟外部触发消息推送的函数
+func TriggerEvent(message MessageEvent) {
+	switch v := message.(type) {
+	case Message:
+		v.PushMessage()
+	default:
+		fmt.Printf("Unknown type\n")
 	}
 }
 
