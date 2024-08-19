@@ -8,6 +8,7 @@ import (
 // MessagePushCtrl 向用户实时发送更新数据
 func MessagePushCtrl(c *gin.Context) {
 
+	// 设置sse响应的响应头
 	c.Writer.Header().Set("Content-Type", "text/event-stream") // 标志了该响应为事件流类型
 	c.Writer.Header().Set("Cache-Control", "no-cache")         // 提示用户不要缓存响应
 	c.Writer.Header().Set("Connection", "keep-alive")          // 保持连接不断开，以便持续发送事件
