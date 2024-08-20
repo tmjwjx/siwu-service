@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Search 搜索文章
 func Search() {
 	// 搜索
 	userGroup := globals.Router.Group("/search")
@@ -15,6 +16,7 @@ func Search() {
 
 }
 
+// Publish 发布文章
 func Publish() {
 
 	// 搜索
