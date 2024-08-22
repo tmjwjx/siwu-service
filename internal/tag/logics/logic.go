@@ -3,12 +3,13 @@ package logics
 import (
 	"forum/internal/tag/repositories"
 	"forum/internal/tag/requests"
+	"gorm.io/gorm"
 )
 
 // UpdateTagUserCountLogic 更新数据库中标签的关注人数
-func UpdateTagUserCountLogic(tagID uint) (string, error) {
+func UpdateTagUserCountLogic(db *gorm.DB, tagID uint) (string, error) {
 	// 更新数据库中标签的关注人数
-	fansCount, err := repositories.UpdateTagUserCountReq(tagID)
+	fansCount, err := repositories.UpdateTagUserCountReq(db, tagID)
 	return fansCount, err
 }
 

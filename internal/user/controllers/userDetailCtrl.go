@@ -53,6 +53,7 @@ func UserDataRequestCtrl(c *gin.Context) {
 		d := response.NewAppData(globals.StatusOK, "用户信息更新成功", nil)
 		response.Success(c, 200, d)
 	}
+
 }
 
 // UserDataResponseCtrl 返回用户个人资料给前端

@@ -4,11 +4,10 @@ import (
 	"fmt"
 	"forum/internal/image/repositories"
 	"forum/internal/image/requests"
+	"forum/internal/internal_pkg/internal_utils"
 	"forum/internal/models"
-	"forum/pkg/globals"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"os"
 	"path/filepath"
 )
 
@@ -21,20 +20,22 @@ func UploadHandlerLogic(c *gin.Context, home string, homeID uint) error {
 	// 提取文件
 	files := form.File["upload[]"]
 	for _, file := range files {
-		/*// 将文件内容写入目标文件
-		err := c.SaveUploadedFile(file, "./static/images/"+file.Filename)
-		if err != nil {
-			return err
-		}*/
+
+		// 如果文件中没有图片，直接返回nil。
+		if file.Size == 0 {
+			return nil
+		}
 
 		// 生成唯一的文件名
 		uniqueFilename := generateUniqueFilename(file.Filename)
 
 		// 删除文件系统中的图片
-		err := deleteFile(home, homeID)
+		err := internal_utils.DeleteFile(home, homeID)
 		if err != nil {
 			return err
 		}
+
+		// 删除 attachments 表中的图片路径
 
 		// 将文件内容写入目标文件
 		err = c.SaveUploadedFile(file, "./static/images/"+uniqueFilename)
@@ -65,10 +66,11 @@ func UploadHandlerLogic(c *gin.Context, home string, homeID uint) error {
 // GetImagesLogic 从数据库中将图片路径取出
 func GetImagesLogic(home string, homeID uint) (*[]models.Attachment, error) {
 	images, err := repositories.GetImages(home, homeID)
-	if err != nil {
+	return images, err
+	/*if err != nil {
 		return nil, fmt.Errorf("GetImagesLogic -> %s", err)
 	}
-	return images, nil
+	return images, nil*/
 }
 
 // GetAdvertisementImageLogic 专门用于取数据库中的广告图片
@@ -94,7 +96,8 @@ func generateUniqueFilename(filename string) string {
 	return fmt.Sprintf("%s_%s%s", base, uniqueID, ext)
 }
 
-func deleteFile(home string, homeID uint) error {
+/*// DeleteFile 从文件系统中删除图片
+func DeleteFile(home string, homeID uint) error {
 	var path string
 	// 查询要删除的图片文件路径
 	err := globals.DB.Model(models.Attachment{}).Where("home = ? and home_id = ?", home, homeID).Select("path").First(&path).Error
@@ -110,4 +113,4 @@ func deleteFile(home string, homeID uint) error {
 		return fmt.Errorf("deleteFile -> 文件系统中的图片删除失败 -> %s", err)
 	}
 	return nil
-}
+}*/

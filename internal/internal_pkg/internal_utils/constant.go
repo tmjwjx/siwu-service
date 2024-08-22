@@ -20,13 +20,13 @@ const (
 // 默认图片路径
 const (
 	// UserDefaultImage 默认用户头像路径
-	UserDefaultImage = "/images/user_default_head_image"
+	UserDefaultImage = "/images/user_default_head_image.png"
 	// ArticleDefaultImage 默认文章图片路径
-	ArticleDefaultImage = "/images/article_default_image"
+	ArticleDefaultImage = "/images/article_default_image.png"
 	// TagDefaultImage 默认标签图片
-	TagDefaultImage = "/images/tag_default_image"
+	TagDefaultImage = "/images/tag_default_image.png"
 	// AdvertisementDefaultImage 默认广告图片
-	AdvertisementDefaultImage = "/images/advertisement_default_image"
+	AdvertisementDefaultImage = "/images/advertisement_default_image.png"
 )
 
 // 用于判断广告是否被使用

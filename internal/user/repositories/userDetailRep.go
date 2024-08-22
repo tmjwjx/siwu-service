@@ -28,16 +28,24 @@ func UserDataRequest(userDataReq *requests.UserDataReq, db *gorm.DB) error {
 
 	var user models.User
 
+	// 开启事务
+	tx := db.Begin()
+	if tx.Error != nil {
+		return fmt.Errorf("UserDataRequest -> 开启事务失败 -> %s", tx.Error)
+	}
+
 	// 查询该用户是否存在
-	err := db.Model(&models.User{}).Where("id = ?", userDataReq.ID).First(&user).Error
+	err := tx.Model(&models.User{}).Where("id = ?", userDataReq.ID).First(&user).Error
 	if err != nil {
+		tx.Rollback() // 回滚事务
 		return fmt.Errorf("UserDataRequest -> 用户表中用户不存在 -> %s", err)
 	}
 
 	// 更新 User 表中的 Nickname
-	err = db.Model(&user).Update("Nickname", userDataReq.Nickname).Error
+	err = tx.Model(&user).Update("Nickname", userDataReq.Nickname).Error
 
 	if err != nil {
+		tx.Rollback() // 回滚事务
 		return fmt.Errorf("UserDataRequest -> 用户表中没有更新任何记录 -> %s", err)
 	}
 
@@ -45,7 +53,7 @@ func UserDataRequest(userDataReq *requests.UserDataReq, db *gorm.DB) error {
 
 	var userDetail models.UserDetail
 	// 查询该用户的外键是否存在
-	err = db.Where("user_id", userDataReq.ID).First(&userDetail).Error
+	err = tx.Where("user_id", userDataReq.ID).First(&userDetail).Error
 
 	if err != nil {
 		userDetail.UserID = userDataReq.ID
@@ -53,8 +61,9 @@ func UserDataRequest(userDataReq *requests.UserDataReq, db *gorm.DB) error {
 		userDetail.HomePage = userDataReq.HomePage
 		userDetail.Signature = userDataReq.Signature
 		//return fmt.Errorf("UserDataRequest -> 用户详情表中用户不存在 -> %s", err)
-		err = db.Create(&userDetail).Error
+		err = tx.Create(&userDetail).Error
 		if err != nil {
+			tx.Rollback() // 回滚事务
 			return fmt.Errorf("UserDataRequest -> 用户详情表中数据插入失败 -> %s", err)
 		}
 	} else {
@@ -66,16 +75,18 @@ func UserDataRequest(userDataReq *requests.UserDataReq, db *gorm.DB) error {
 		}
 
 		// 更新用户详情表中相应的字段
-		err = db.Model(&userDetail).Select("CareerDirection", "HomePage", "Signature").Updates(updates).Error
+		err = tx.Model(&userDetail).Select("CareerDirection", "HomePage", "Signature").Updates(updates).Error
 		if err != nil {
+			tx.Rollback() // 回滚事务
 			return fmt.Errorf("UserDataRequest -> 用户详情表中没有更新任何记录 -> %s", err)
 		}
 	}
 	// 更新用户标签
 	var existingTags []models.Tag
-	err = db.Where("name IN ?", userDataReq.UserTags).Find(&existingTags).Error
+	err = tx.Where("name IN ?", userDataReq.UserTags).Find(&existingTags).Error
 	if err != nil {
-		return fmt.Errorf("UserDataRequest -> %s", err)
+		tx.Rollback() // 回滚事务
+		return fmt.Errorf("UserDataRequest -> 更新用户标签失败 -> %s", err)
 	}
 
 	// 找到所有传递过来的标签的ID
@@ -85,14 +96,25 @@ func UserDataRequest(userDataReq *requests.UserDataReq, db *gorm.DB) error {
 	}
 
 	// 清除旧的用户标签关联
-	err = db.Where("user_id = ?", userDataReq.ID).Delete(&models.UserTag{}).Error
+	err = tx.Where("user_id = ?", userDataReq.ID).Delete(&models.UserTag{}).Error
 	if err != nil {
-		return fmt.Errorf("UserDataRequest -> %s", err)
+		tx.Rollback() // 回滚事务
+		return fmt.Errorf("UserDataRequest -> 清除旧的用户标签关联失败 -> %s", err)
 	}
 
 	// 添加新的用户标签关联
 	for _, tagID := range tagIDs {
-		db.Create(&models.UserTag{UserID: userDataReq.ID, TagID: tagID})
+		err := tx.Create(&models.UserTag{UserID: userDataReq.ID, TagID: tagID}).Error
+		if err != nil {
+			tx.Rollback() // 回滚事务
+			return fmt.Errorf("UserDataRequest -> 添加新的用户标签关联失败 -> %s", err)
+		}
+	}
+
+	// 提交事务
+	err = tx.Commit().Error
+	if err != nil {
+		return fmt.Errorf("UserDataRequest -> 提交事务失败 -> %s", err)
 	}
 
 	return nil
@@ -102,26 +124,34 @@ func UserDataRequest(userDataReq *requests.UserDataReq, db *gorm.DB) error {
 // UserAccountRequest 更新用户账号设置
 func UserAccountRequest(userAccountReq *requests.UserAccountReq, db *gorm.DB) error {
 
+	// 开启事务
+	tx := db.Begin()
+	if tx.Error != nil {
+		return fmt.Errorf("UserAccountRequest -> 开启事务失败 -> %s", tx.Error)
+	}
+
 	// 查询该用户是否存在
 	var user models.User
-	err := db.Where("id = ?", userAccountReq.ID).First(&user).Error
+	err := tx.Where("id = ?", userAccountReq.ID).First(&user).Error
 
 	if err != nil {
+		tx.Rollback() // 回滚事务
 		return fmt.Errorf("UserAccountRequest -> 用户表中用户不存在 -> %s", err)
 	}
 
 	// 更新 User 表中的 email , password
-	err = db.Model(&user).Updates(map[string]interface{}{
+	err = tx.Model(&user).Updates(map[string]interface{}{
 		"email":    userAccountReq.Email,
 		"password": userAccountReq.Password,
 	}).Error
 	if err != nil {
+		tx.Rollback() // 回滚事务
 		return fmt.Errorf("UserAccountRequest -> 更新 User 表中的 email , password -> %s", err)
 	}
 
 	// 查询该用户的外键是否存在
 	var userDetail models.UserDetail
-	err = db.Where("user_id = ?", userAccountReq.ID).First(&userDetail).Error
+	err = tx.Where("user_id = ?", userAccountReq.ID).First(&userDetail).Error
 
 	if err != nil {
 		//return fmt.Errorf("UserAccountRequest -> 用户详情表中用户不存在 -> %s", err)
@@ -130,21 +160,29 @@ func UserAccountRequest(userAccountReq *requests.UserAccountReq, db *gorm.DB) er
 		userDetail.WeiboLink = userAccountReq.WeiboLink
 		userDetail.GithubLink = userAccountReq.GithubLink
 
-		err := db.Create(&userDetail).Error
+		err := tx.Create(&userDetail).Error
 		if err != nil {
+			tx.Rollback() // 回滚事务
 			return fmt.Errorf("UserAccountRequest -> 更新 UserDetail 表中的 BlogLink , WeiboLink , GithubLink字段失败 -> %s", err)
 		}
 	} else {
 		// 更新 UserDetail 表中的 BlogLink , WeiboLink , GithubLink
-		err = db.Model(&userDetail).Updates(map[string]interface{}{
+		err = tx.Model(&userDetail).Updates(map[string]interface{}{
 			"blog_link":   userAccountReq.BlogLink,
 			"weibo_link":  userAccountReq.WeiboLink,
 			"github_link": userAccountReq.GithubLink,
 		}).Error
 
 		if err != nil {
+			tx.Rollback() // 回滚事务
 			return fmt.Errorf("UserAccountRequest -> 更新 UserDetail 表中的 BlogLink , WeiboLink , GithubLink字段失败 -> %s", err)
 		}
+	}
+
+	// 提交事务
+	err = tx.Commit().Error
+	if err != nil {
+		return fmt.Errorf("UserAccountRequest -> 提交事务失败 -> %s", err)
 	}
 
 	return nil
@@ -154,24 +192,38 @@ func UserAccountRequest(userAccountReq *requests.UserAccountReq, db *gorm.DB) er
 // UserPrivateSetRequest 更新用户私信设置
 func UserPrivateSetRequest(userPrivateSetReq *requests.UserPrivateSettingsReq, db *gorm.DB) error {
 
+	// 开启事务
+	tx := db.Begin()
+	if tx.Error != nil {
+		return fmt.Errorf("UserPrivateSetRequest -> 开启事务失败 -> %s", tx.Error)
+	}
+
 	var user models.User
 	// 查询该用户是否存在
-	err := db.Model(&models.User{}).Where("id = ?", userPrivateSetReq.ID).First(&user).Error
+	err := tx.Model(&models.User{}).Where("id = ?", userPrivateSetReq.ID).First(&user).Error
 	if err != nil {
 		//return fmt.Errorf("UserPrivateSetRequest -> %s", err)
 		// 数据库表中还没有该用户的数据，直接插入即可
 		user.ID = userPrivateSetReq.ID
 		user.PrivateSettings = userPrivateSetReq.PrivateSettings
-		err := db.Create(&user).Error
+		err := tx.Create(&user).Error
 		if err != nil {
+			tx.Rollback() // 回滚事务
 			return fmt.Errorf("UserPrivateSetRequest -> 用户私信设置插入数据失败1 -> %s", err)
 		}
 	} else {
 		// 数据库表中已经存在该用户的信息，直接更新用户信息
-		err := db.Model(&user).Select("PrivateSettings").Updates(userPrivateSetReq).Error
+		err := tx.Model(&user).Select("PrivateSettings").Updates(userPrivateSetReq).Error
 		if err != nil {
+			tx.Rollback() // 回滚事务
 			return fmt.Errorf("UserPrivateSetRequest -> 用户私信设置插入数据失败2 -> %s", err)
 		}
+	}
+
+	// 提交事务
+	err = tx.Commit().Error
+	if err != nil {
+		return fmt.Errorf("UserPrivateSetRequest -> 提交事务失败 -> %s", err)
 	}
 
 	return nil

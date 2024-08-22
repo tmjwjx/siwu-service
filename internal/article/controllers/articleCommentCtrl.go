@@ -95,7 +95,7 @@ func GetRepliesRep2Ctrl(c *gin.Context) {
 		response.Failed(c, 500, e)
 		return
 	}
-	d := response.NewAppData(globals.StatusOK, "顶级评论响应成功", repliesRes)
+	d := response.NewAppData(globals.StatusOK, "评论回复响应成功", repliesRes)
 	response.Success(c, 200, d)
 }
 
