@@ -2,6 +2,7 @@ package inits
 
 import (
 	"fmt"
+	"forum/internal/models"
 	"forum/pkg/globals"
 	"github.com/spf13/viper"
 	"gorm.io/driver/mysql"
@@ -37,18 +38,17 @@ func DBInit() {
 
 // TableInit 初始化表
 func TableInit() {
-	// 用户模块
-	//err := globals.DB.AutoMigrate(&models.Category{},
-	//	&models.UserDetail{}, &models.UserMessage{},
-	//	&models.Tag{}, &models.Resource{},
-	//	&models.Administrator{}, &models.ArticleLike{},
-	//	&models.ArticleCollection{}, &models.Attachment{},
-	//	&models.User{}, &models.Article{},
-	//	&models.ArticleComment{}, &models.Advertisement{},
-	//	&models.UserVerifyCode{}, &models.CommentLike{})
-	//if err != nil {
-	//	globals.Log.Errorf("db.AutoMigrate err = %s", err)
-	//	return
-	//}
-	
+	//用户模块
+	err := globals.DB.AutoMigrate(&models.Category{},
+		&models.UserDetail{}, &models.UserMessage{},
+		&models.Tag{}, &models.Resource{},
+		&models.Administrator{}, &models.ArticleLike{},
+		&models.ArticleCollection{}, &models.Attachment{},
+		&models.User{}, &models.Article{},
+		&models.ArticleComment{}, &models.Advertisement{},
+		&models.UserVerifyCode{}, &models.CommentLike{})
+	if err != nil {
+		globals.Log.Errorf("db.AutoMigrate err = %s", err)
+		return
+	}
 }
