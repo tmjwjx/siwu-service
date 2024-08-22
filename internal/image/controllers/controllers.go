@@ -26,10 +26,11 @@ func UploadImagesControllers(c *gin.Context, home string, homeID uint) (error, i
 // GetImagesControllers 从数据库中将图片路径取出
 func GetImagesControllers(home string, homeID uint) (*[]models.Attachment, error) {
 	images, err := logics.GetImagesLogic(home, homeID)
-	if err != nil {
+	/*if err != nil {
 		return nil, fmt.Errorf("GetImagesControllers -> %s", err)
 	}
-	return images, nil
+	return images, nil*/
+	return images, err
 }
 
 // GetAdvertisementImageCtrl 专门用于取数据库中的广告图片

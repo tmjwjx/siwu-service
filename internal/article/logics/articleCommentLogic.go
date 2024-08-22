@@ -28,13 +28,13 @@ func GetRepliesLogic(req *requests.RepliesReq) (*[]models.ArticleComment, error)
 }*/
 
 // GetTopLevelCommentsLogic 返回顶级评论
-func GetTopLevelCommentsLogic(req *requests.TopCommentsReq) (*[]requests.TopCommentsRes, error) {
+func GetTopLevelCommentsLogic(req *requests.TopCommentsReq) (*[]*requests.TopCommentsRes, error) {
 	topCommentsRes, err := repositories.GetTopLevelCommentsRep(req)
 	return topCommentsRes, err
 }
 
 // GetRepliesRep2Logic 返回评论回复
-func GetRepliesRep2Logic(req *requests.RepliesReq2) (*[]requests.RepliesRes, error) {
+func GetRepliesRep2Logic(req *requests.RepliesReq2) (*[]*requests.RepliesRes, error) {
 	repliesRes, err := repositories.GetRepliesRep2Rep(req)
 	return repliesRes, err
 }

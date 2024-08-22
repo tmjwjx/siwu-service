@@ -16,7 +16,7 @@ func InsertCommentRep(articleCommentReq *requests.ArticleCommentReq, db *gorm.DB
 	// 开启事务
 	tx := db.Begin()
 	if tx.Error != nil {
-		return fmt.Errorf("InsertCommentRep -> %s", tx.Error)
+		return fmt.Errorf("InsertCommentRep -> 开启事务失败 -> %s", tx.Error)
 	}
 
 	// 构建要插入的结构体
@@ -31,13 +31,14 @@ func InsertCommentRep(articleCommentReq *requests.ArticleCommentReq, db *gorm.DB
 	// 插入评论
 	err := tx.Create(&articleComment).Error
 	if err != nil {
-		return fmt.Errorf("InsertCommentRep -> %s", err)
+		tx.Rollback() // 回滚事务
+		return fmt.Errorf("InsertCommentRep -> 插入评论失败 ->  %s", err)
 	}
 
 	// 提交事务
 	err = tx.Commit().Error
 	if err != nil {
-		return fmt.Errorf("InsertCommentRep -> %s", err)
+		return fmt.Errorf("InsertCommentRep -> 提交事务失败 -> %s", err)
 	}
 	return nil
 }
@@ -85,15 +86,30 @@ func buildCommentTree(comment *requests.ArticleCommentRes, commentMap map[uint][
 }*/
 
 // GetTopLevelCommentsRep 返回顶级评论
-func GetTopLevelCommentsRep(req *requests.TopCommentsReq) (*[]requests.TopCommentsRes, error) {
-	var topCommentsRes []requests.TopCommentsRes
+func GetTopLevelCommentsRep(req *requests.TopCommentsReq) (*[]*requests.TopCommentsRes, error) {
+	var topCommentsRes []*requests.TopCommentsRes
 	var count int64
+	var articleComments []models.ArticleComment
 
 	// 查询顶级评论
-	err := globals.DB.Model(&models.ArticleComment{}).Where("article_id = ? AND parent_id IS NULL", req.ArticleID).
-		Order("created_at asc").Limit(req.Limit).Offset(req.Offset).Find(&topCommentsRes).Error
+	err := globals.DB.Where("article_id = ? AND parent_id IS NULL", req.ArticleID).
+		Order("created_at asc").Limit(req.Limit).Offset(req.Offset).Find(&articleComments).Error
 	if err != nil {
 		return nil, fmt.Errorf("GetTopLevelCommentsRep -> %s", err)
+	}
+	for _, comment := range articleComments {
+		topComment := &requests.TopCommentsRes{
+			ID:           comment.ID,
+			CreateAT:     comment.CreatedAt,
+			ArticleID:    comment.ArticleID,
+			UserID:       comment.UserID,
+			HighestID:    comment.HighestID,
+			ParentID:     comment.ParentID,
+			ParentUserID: comment.ParentUserID,
+			Content:      comment.Content,
+			LikesCount:   comment.LikesCount,
+		}
+		topCommentsRes = append(topCommentsRes, topComment)
 	}
 
 	for _, comment := range topCommentsRes {
@@ -114,22 +130,23 @@ func GetTopLevelCommentsRep(req *requests.TopCommentsReq) (*[]requests.TopCommen
 		// 查询用户头像
 		images, err := controllers.GetImagesControllers("用户", comment.ID)
 		if err != nil {
+			// 数据库中没有该用户的头像图片，直接使用默认的头像图片
 			comment.Path = internal_utils.UserDefaultImage
-		}
-		for _, image := range *images {
-			comment.Path = image.Path
+		} else {
+			for _, image := range *images {
+				comment.Path = image.Path
+			}
 		}
 
 		// 用户发的评论中的图片
 		CommentImages, err := controllers.GetImagesControllers("评论", comment.ID)
 		if err != nil {
 			comment.CommentPath = ""
+		} else {
+			for _, image := range *CommentImages {
+				comment.CommentPath = image.Path
+			}
 		}
-
-		for _, image := range *CommentImages {
-			comment.CommentPath = image.Path
-		}
-
 	}
 
 	return &topCommentsRes, nil
@@ -166,12 +183,28 @@ func GetRepliesRep(req *requests.RepliesReq) (*[]models.ArticleComment, error) {
 }*/
 
 // GetRepliesRep2Rep 返回评论回复
-func GetRepliesRep2Rep(req *requests.RepliesReq2) (*[]requests.RepliesRes, error) {
-	var repliesRes []requests.RepliesRes
+func GetRepliesRep2Rep(req *requests.RepliesReq2) (*[]*requests.RepliesRes, error) {
+	var repliesRes []*requests.RepliesRes
+	var articleComments []models.ArticleComment
 
-	err := globals.DB.Where("highest_id = ?", req.HighestID).Order("create_at asc").Limit(req.Limit).Offset(req.Offset).Find(&repliesRes).Error
+	err := globals.DB.Where("highest_id = ?", req.HighestID).Order("created_at asc").Limit(req.Limit).Offset(req.Offset).Find(&articleComments).Error
 	if err != nil {
 		return nil, fmt.Errorf("GetRepliesRep2Rep -> %s", err)
+	}
+
+	for _, comment := range articleComments {
+		replies := &requests.RepliesRes{
+			ID:           comment.ID,
+			CreateAT:     comment.CreatedAt,
+			ArticleID:    comment.ArticleID,
+			UserID:       comment.UserID,
+			HighestID:    comment.HighestID,
+			ParentID:     comment.ParentID,
+			ParentUserID: comment.ParentUserID,
+			Content:      comment.Content,
+			LikesCount:   comment.LikesCount,
+		}
+		repliesRes = append(repliesRes, replies)
 	}
 
 	for _, comment := range repliesRes {
@@ -185,11 +218,12 @@ func GetRepliesRep2Rep(req *requests.RepliesReq2) (*[]requests.RepliesRes, error
 		// 查询用户头像
 		images, err := controllers.GetImagesControllers("用户", comment.ID)
 		if err != nil {
-			comment.ParentPath = internal_utils.UserDefaultImage
-		}
-
-		for _, image := range *images {
-			comment.Path = image.Path
+			// 数据库中没有该用户的头像图片，直接使用默认的头像图片
+			comment.Path = internal_utils.UserDefaultImage
+		} else {
+			for _, image := range *images {
+				comment.Path = image.Path
+			}
 		}
 
 		// 查询用户回复对象的名字
@@ -199,25 +233,25 @@ func GetRepliesRep2Rep(req *requests.RepliesReq2) (*[]requests.RepliesRes, error
 		}
 
 		// 查询用户回复对象的头像
-		images2, err := controllers.GetImagesControllers("用户", *comment.ParentID)
+		images2, err := controllers.GetImagesControllers("用户", *comment.ParentUserID)
 		if err != nil {
+			// 数据库中没有该用户回复对象的头像图片，直接使用默认的头像图片
 			comment.ParentPath = internal_utils.UserDefaultImage
-		}
-
-		for _, image := range *images2 {
-			comment.ParentPath = image.Path
+		} else {
+			for _, image := range *images2 {
+				comment.ParentPath = image.Path
+			}
 		}
 
 		// 用户发的评论中的图片
 		CommentImages, err := controllers.GetImagesControllers("评论", comment.ID)
 		if err != nil {
-			comment.ParentPath = ""
+			comment.CommentPath = ""
+		} else {
+			for _, image := range *CommentImages {
+				comment.CommentPath = image.Path
+			}
 		}
-
-		for _, image := range *CommentImages {
-			comment.CommentPath = image.Path
-		}
-
 	}
 
 	return &repliesRes, nil
@@ -229,20 +263,23 @@ func DeleteCommentRep(req *requests.DelComment, db *gorm.DB) error {
 	// 开启事务
 	tx := db.Begin()
 	if tx.Error != nil {
-		return fmt.Errorf("DeleteCommentRep -> %s", tx.Error)
+		return fmt.Errorf("DeleteCommentRep -> 开启事务失败 -> %s", tx.Error)
 	}
 
 	// 删除评论
-	err := tx.Model(&models.ArticleComment{}).Where("id = ?", req.ID).Delete(nil).Error
-	if err != nil {
+	result := tx.Model(&models.ArticleComment{}).Where("id = ?", req.ID).Delete(nil)
+	if result.Error != nil {
 		tx.Rollback() // 回滚事务
-		return fmt.Errorf("DeleteCommentRep -> %s", err)
+		return fmt.Errorf("DeleteCommentRep -> %s", result.Error)
+	} else if result.RowsAffected == 0 {
+		tx.Rollback() // 回滚事务
+		return fmt.Errorf("没有找到匹配的记录或记录已经被删除")
 	}
 
 	//提交事务
-	err = tx.Commit().Error
+	err := tx.Commit().Error
 	if err != nil {
-		return fmt.Errorf("DeleteCommentRep -> %s", err)
+		return fmt.Errorf("DeleteCommentRep -> 提交事务失败 -> %s", err)
 	}
 
 	return nil
@@ -250,29 +287,70 @@ func DeleteCommentRep(req *requests.DelComment, db *gorm.DB) error {
 
 // UpdatePraiseCountRep 更新点赞的数量
 func UpdatePraiseCountRep(req *requests.PraiseCount, db *gorm.DB) error {
+
 	// 开启事务
 	tx := db.Begin()
 	if tx.Error != nil {
-		return fmt.Errorf("UpdatePraiseCountRep -> %s", tx.Error)
+		return fmt.Errorf("UpdatePraiseCountRep -> 开启事务失败 -> %s", tx.Error)
 	}
 
-	// 更新评论的点赞数量
-	if req.Status == 1 {
-		err := tx.Model(&models.ArticleComment{}).Where("id = ?", req.ID).UpdateColumn("likes_count", gorm.Expr("likes_count + ?", 1)).Error
-		if err != nil {
-			return fmt.Errorf("UpdatePraiseCountRep -> %s", err)
+	// 更新 comment_likes 表中的数据
+	commentLike := &models.CommentLike{
+		CommentID: req.ID,
+		UserID:    req.UserID,
+	}
+
+	if req.Status == 1 || req.Status == 2 {
+
+		// 更新评论的点赞数量
+		if req.Status == 1 {
+
+			err := tx.Model(&models.ArticleComment{}).Where("id = ?", req.ID).UpdateColumn("likes_count", gorm.Expr("likes_count + ?", 1)).Error
+			if err != nil {
+				tx.Rollback() // 回滚事务
+				return fmt.Errorf("UpdatePraiseCountRep1 -> 更新评论的点赞数量 -> %s", err)
+			}
+
+			// 每个用户只能对一个评论点赞一次，所以先查询一下，该用户是否已经点赞过该评论了。
+			err = tx.Where("comment_id = ? and user_id = ?", req.ID, req.UserID).First(&commentLike).Error
+			if err != nil {
+				// 如果没有查询到，说明该用户没对该评论点赞过，可以点赞，否则，直接跳过。
+				err := tx.Create(&commentLike).Error
+				if err != nil {
+					tx.Rollback() // 回滚事务
+					return fmt.Errorf("DeleteCommentRep1 -> 更新 comment_likes 表中的数据失败 -> %s", err)
+				}
+			}
+
+		} else if req.Status == 2 {
+			err := tx.Model(&models.ArticleComment{}).Where("id = ?", req.ID).UpdateColumn("likes_count", gorm.Expr("likes_count - ?", 1)).Error
+			if err != nil {
+				tx.Rollback() // 回滚事务
+				return fmt.Errorf("UpdatePraiseCountRep2 -> 更新评论的点赞数量 -> %s", err)
+			}
+
+			// 每个用户只能对一个评论点赞一次，所以先查询一下，该用户是否已经点赞过该评论了。
+			err = tx.Where("comment_id = ? and user_id = ?", req.ID, req.UserID).First(&commentLike).Error
+			if err == nil {
+				// 如果查询到了，说明该用户对该评论点赞过，可以删除点赞，否则，直接跳过。
+				err := tx.Delete(&commentLike).Error
+				if err != nil {
+					tx.Rollback() // 回滚事务
+					return fmt.Errorf("DeleteCommentRep2 -> 更新 comment_likes 表中的数据失败 -> %s", err)
+				}
+			}
+
 		}
-	} else if req.Status == 2 {
-		err := tx.Model(&models.ArticleComment{}).Where("id = ?", req.ID).UpdateColumn("likes_count", gorm.Expr("likes_count - ?", 1)).Error
-		if err != nil {
-			return fmt.Errorf("UpdatePraiseCountRep -> %s", err)
-		}
+
+	} else {
+		return fmt.Errorf("UpdatePraiseCountRep -> 更新点赞的数量失败 -> status 的值只能是 1 或 2, 1:代表增加点赞, 2:代表取消点赞")
 	}
 
 	//提交事务
 	err := tx.Commit().Error
 	if err != nil {
-		return fmt.Errorf("DeleteCommentRep -> %s", err)
+		return fmt.Errorf("DeleteCommentRep -> 提交事务失败 -> %s", err)
 	}
+
 	return nil
 }
