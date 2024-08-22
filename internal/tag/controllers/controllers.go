@@ -18,7 +18,7 @@ func UpdateTagUserCount(c *gin.Context) {
 	}
 
 	// 业务处理
-	fansCount, err := logics.UpdateTagUserCountLogic(tag.ID)
+	fansCount, err := logics.UpdateTagUserCountLogic(globals.DB, tag.ID)
 
 	// 返回响应
 	if err != nil {
@@ -46,6 +46,7 @@ func UpdateTag(c *gin.Context) {
 		return
 	}
 	// 更新成功，返回成功响应
-	d := response.NewAppData(globals.StatusOK, "文章数量更新成功", tagRes)
+	d := response.NewAppData(globals.StatusOK, "标签页数据更新成功", tagRes)
 	response.Success(c, 200, d)
+
 }

@@ -1,0 +1,329 @@
+package repositories
+
+import (
+	"fmt"
+	"forum/internal/article/requests"
+	"forum/internal/image/controllers"
+	"forum/internal/internal_pkg/internal_utils"
+	"forum/internal/models"
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+// ShowCommentsListRep 展示评论列表
+func ShowCommentsListRep(db *gorm.DB, req *requests.CommentsListReq) (*[]*requests.CommentsListRes, error) {
+
+	var commentsListRes []*requests.CommentsListRes
+	var comments []models.ArticleComment
+	var user models.User
+	var article models.Article
+
+	// 查询评论信息
+	err := db.Limit(req.Limit).Offset(req.Offset).Find(&comments).Error
+	if err != nil {
+		return nil, fmt.Errorf("ShowCommentsListRep -> 查询评论信息失败 -> %s", err)
+	}
+
+	for _, comment := range comments {
+
+		// 查询用户信息
+		// 这里要把 user 结构体中存储的上次的查询结果，清空一下，否则会影响下次的查询
+		user = models.User{}
+
+		err := db.Where("id = ?", comment.UserID).First(&user).Error
+		if err != nil {
+			return nil, fmt.Errorf("ShowCommentsListRep -> 查询用户信息失败 -> %s", err)
+		}
+
+		// 查询文章信息
+		//这里要把 article 结构体中存储的上次的查询结果，清空一下，否则会影响下次的查询
+		article = models.Article{}
+
+		err = db.Where("id = ?", comment.ArticleID).First(&article).Error
+		if err != nil {
+			return nil, fmt.Errorf("ShowCommentsListRep -> 查询文章信息失败 -> %s", err)
+		}
+
+		commentRes := &requests.CommentsListRes{
+			ID:        comment.ID,
+			Nickname:  user.Nickname,
+			Email:     user.Email,
+			ArticleID: comment.ArticleID,
+			Content:   comment.Content,
+			Title:     article.Title,
+			Summary:   article.Summary,
+		}
+
+		// 这里要把 user 结构体中存储的上次的查询结果，清空一下，否则会影响下次的查询
+		user = models.User{}
+
+		// 查询用户回复对象信息
+		err = db.Where("id = ?", comment.ParentUserID).First(&user).Error
+		if err != nil {
+			return nil, fmt.Errorf("ShowCommentsListRep -> 查询用户回复对象信息失败 -> %s", err)
+		}
+
+		commentRes.ParentNickname = user.Nickname
+
+		// 查询用户头像
+		images, err := controllers.GetImagesControllers("用户", comment.UserID)
+		if err != nil {
+			commentRes.Path = internal_utils.UserDefaultImage
+		} else {
+			for _, image := range *images {
+				commentRes.Path = image.Path
+			}
+		}
+
+		// 查询用户发的评论图片
+		images2, err := controllers.GetImagesControllers("评论", comment.ID)
+		if err != nil {
+			commentRes.CommentPath = ""
+		} else {
+			for _, image := range *images2 {
+				commentRes.CommentPath = image.Path
+			}
+		}
+
+		commentsListRes = append(commentsListRes, commentRes)
+
+	}
+
+	return &commentsListRes, nil
+}
+
+// AddCommentRep 添加评论
+func AddCommentRep(c *gin.Context, db *gorm.DB, req *requests.AddCommentReq) (error, int) {
+
+	// 开启事务
+	tx := db.Begin()
+	if tx.Error != nil {
+		return fmt.Errorf("AddCommentRep -> 开启事务失败 -> %s", tx.Error), 500
+	}
+
+	// 创建要插入的数据模型
+	comment := &models.ArticleComment{
+		ArticleID:    req.ArticleID,
+		UserID:       req.UserID,
+		HighestID:    req.HighestID,
+		ParentID:     req.ParentID,
+		ParentUserID: req.ParentUserID,
+		Content:      req.Content,
+		LikesCount:   req.LikesCount,
+	}
+
+	// 插入数据
+	err := tx.Create(comment).Error
+	if err != nil {
+		tx.Rollback() // 回滚事务
+		return fmt.Errorf("AddCommentRep -> 添加评论失败 -> %s", err), 500
+	}
+
+	// 获取新插入的评论的ID
+	err = tx.First(comment).Error
+	if err != nil {
+		tx.Rollback() // 回滚事务
+		return fmt.Errorf("AddCommentRep -> 获取新插入的评论的ID失败 -> %s", err), 500
+	}
+
+	// 将评论的图片存到文件系统中
+	err, status := controllers.UploadImagesControllers(c, "评论", comment.ID)
+	if err != nil {
+		return err, status
+	}
+
+	//提交事务
+	err = tx.Commit().Error
+	if err != nil {
+		return fmt.Errorf("AddCommentRep -> 提交事务失败 -> %s", err), 500
+	}
+
+	return nil, 200
+
+}
+
+// BsDeleteCommentRep 删除评论
+func BsDeleteCommentRep(db *gorm.DB, req *requests.DelCommentReq) error {
+
+	// 开启事务
+	tx := db.Begin()
+	if tx.Error != nil {
+		return fmt.Errorf("BsDeleteCommentRep -> 开启事务失败 -> %s", tx.Error)
+	}
+
+	// 删除评论
+	result := tx.Model(&models.ArticleComment{}).Where("id = ?", req.ID).Delete(nil)
+	if result.Error != nil {
+		tx.Rollback() // 回滚事务
+		return fmt.Errorf("BsDeleteCommentRep -> 删除评论失败 -> %s", result.Error)
+	} else if result.RowsAffected == 0 {
+		tx.Rollback() // 回滚事务
+		return fmt.Errorf("没有找到匹配的记录或记录已经被删除")
+	}
+
+	//提交事务
+	err := tx.Commit().Error
+	if err != nil {
+		return fmt.Errorf("BsDeleteCommentRep -> 提交事务失败 -> %s", err)
+	}
+
+	return nil
+}
+
+// BatchDelCommentRep 批量删除
+func BatchDelCommentRep(db *gorm.DB, req *requests.BsBatchDelCommentReq) error {
+
+	// 开启事务
+	tx := db.Begin()
+	if tx.Error != nil {
+		return fmt.Errorf("BatchDelCommentRep1 -> 开启事务失败 -> %s", tx.Error)
+	}
+
+	// 删除评论
+	for _, id := range req.ID {
+
+		// 之后如果没删除成功，就将没删除成功的标签名返回给后台
+
+		result := tx.Model(&models.ArticleComment{}).Where("id = ?", id).Delete(nil)
+		if result.Error != nil {
+			// 回滚事务
+			tx.Rollback()
+			return fmt.Errorf("BatchDelCommentRep2 -> 评论批量删除失败 -> %s", result.Error)
+		} else if result.RowsAffected == 0 {
+			// 回滚事务
+			tx.Rollback()
+			return fmt.Errorf("BatchDelCommentRep3 -> 没有找到匹配的记录或记录已经被删除")
+		}
+
+		// 删除文件系统中的图片
+		err := internal_utils.DeleteFile("评论", id)
+		if err != nil {
+			return fmt.Errorf("BatchDelCommentRep4 -> 删除文件系统中的图片失败 -> %s", err)
+		}
+
+	}
+
+	// 提交事务
+	err := tx.Commit().Error
+	if err != nil {
+		return fmt.Errorf("BatchDelCommentRep5 -> 提交事务失败 -> %s", err)
+	}
+
+	return nil
+
+}
+
+// UpdateCommentRep 更新评论
+func UpdateCommentRep(c *gin.Context, db *gorm.DB, req *requests.UpdateCommentReq) (error, int) {
+
+	// 开启事务
+	tx := db.Begin()
+	if tx.Error != nil {
+		return fmt.Errorf("UpdateCommentRep -> 开启事务失败 -> %s", tx.Error), 500
+	}
+
+	// 更新评论内容
+	err := tx.Model(models.ArticleComment{}).Where("id = ?", req.ID).Update("Content", req.Content).Error
+	if err != nil {
+		// 回滚事务
+		tx.Rollback()
+		return fmt.Errorf("UpdateCommentRep -> 更新评论内容失败 -> %s", err), 500
+	}
+
+	// 更新评论图片
+	err, status := controllers.UploadImagesControllers(c, "评论", req.ID)
+	if err != nil {
+		return fmt.Errorf("UpdateCommentRep -> 更新评论图片失败 -> %s", err), status
+	}
+
+	// 提交事务
+	err = tx.Commit().Error
+	if err != nil {
+		return fmt.Errorf("UpdateCommentRep -> 提交事务失败 -> %s", err), 500
+	}
+
+	return nil, 200
+}
+
+// QueryCommentRep 查询某个用户的全部评论
+func QueryCommentRep(db *gorm.DB, req *requests.QueryCommentReq) (*[]*requests.QueryCommentRes, error) {
+
+	var queryCommentRes []*requests.QueryCommentRes
+	var comments []models.ArticleComment
+	var user models.User
+	var article models.Article
+
+	// 查询评论信息
+	err := db.Where("user_id = ?", req.UserID).Limit(req.Limit).Offset(req.Offset).Find(&comments).Error
+	if err != nil {
+		return nil, fmt.Errorf("QueryCommentRep -> %s", err)
+	}
+
+	for _, comment := range comments {
+
+		// 查询用户信息
+		//这里要把 user 结构体中存储的上次的查询结果，清空一下，否则会影响下次的查询
+		user = models.User{}
+
+		err := db.Where("id = ?", comment.UserID).First(&user).Error
+		if err != nil {
+			return nil, fmt.Errorf("QueryCommentRep -> 查询用户信息失败 -> %s", err)
+		}
+
+		// 查询文章信息
+		//这里要把 article 结构体中存储的上次的查询结果，清空一下，否则会影响下次的查询
+		article = models.Article{}
+
+		err = db.Where("id = ?", comment.ArticleID).First(&article).Error
+		if err != nil {
+			return nil, fmt.Errorf("QueryCommentRep -> 查询文章信息失败 -> %s", err)
+		}
+
+		commentRes := &requests.QueryCommentRes{
+			ID:        comment.ID,
+			Nickname:  user.Nickname,
+			Email:     user.Email,
+			ArticleID: comment.ArticleID,
+			Content:   comment.Content,
+			Title:     article.Title,
+			Summary:   article.Summary,
+		}
+
+		// 这里要把 user 结构体中存储的上次的查询结果，清空一下，否则会影响下次的查询
+		user = models.User{}
+
+		// 查询用户回复对象信息
+		err = db.Where("id = ?", comment.ParentUserID).First(&user).Error
+		if err != nil {
+			return nil, fmt.Errorf("QueryCommentRep -> 查询用户回复对象信息失败 -> %s", err)
+		}
+
+		commentRes.ParentNickname = user.Nickname
+
+		// 查询用户头像
+		images, err := controllers.GetImagesControllers("用户", comment.UserID)
+		if err != nil {
+			commentRes.Path = internal_utils.UserDefaultImage
+		} else {
+			for _, image := range *images {
+				commentRes.Path = image.Path
+			}
+		}
+
+		// 查询用户发的评论图片
+		images2, err := controllers.GetImagesControllers("评论", comment.ID)
+		if err != nil {
+			commentRes.CommentPath = ""
+		} else {
+			for _, image := range *images2 {
+				commentRes.CommentPath = image.Path
+			}
+		}
+
+		queryCommentRes = append(queryCommentRes, commentRes)
+
+	}
+
+	return &queryCommentRes, nil
+
+}

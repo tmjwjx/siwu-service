@@ -68,13 +68,14 @@ func (u *UserReqContext) Register(registerMsg requests.RegisterMsg) error {
 	}
 
 	// 更新用户密码
-	err = repositories.UpdateObjects(u.DB, &models.User{}, map[string]interface{}{"id": userID, "email": email}, map[string]interface{}{"password": encryptedPassword})
+	// err = repositories.UpdateObjects(u.DB, &models.User{}, map[string]interface{}{"id": userID, "email": email}, map[string]interface{}{"password": encryptedPassword})
+	err = repositories.UpdateObjects(u.DB, &models.User{Model: gorm.Model{ID: userID}, Email: email}, map[string]interface{}{"password": encryptedPassword})
 	if err != nil {
 		return fmt.Errorf("UserReqContext.Register() err: %v", err)
 	}
 
 	// 删除该用户对应的全部验证码
-	_, err = repositories.DeleteObjects(u.DB, &models.UserVerifyCode{}, map[string]interface{}{"user_id": userID})
+	_, err = repositories.DeleteObjectsByModel(u.DB, &models.UserVerifyCode{}, map[string]interface{}{"user_id": userID})
 	if err != nil {
 		return fmt.Errorf("UserReqContext.Register() err: %v", err)
 	}
@@ -216,22 +217,50 @@ func (u *UserReqContext) Follow(follow requests.FollowMsg) error {
 	}
 
 	// 判断是否已经关注过了，如果已经关注过了，再次点击就会取消关注
-	// repositories.Query
-	// for := range {
-	//
-	// }
-	//
-	//
-	// // 如果关注关系不存在，就添加这条关系
-	// if {
-	//
-	// }else { // 如果关注关系已经存在了，就删除这条关系
-	//
-	// }
+	// 我的关注
+	followedIDSli, err := repositories.QueryFollowed(u.DB, followerId)
+	if err != nil {
+		return fmt.Errorf("UserReqContext.Follow() -> %v: ", err)
+	}
+	// 是否已经关注过 followedId
+	var isFollowed = false
+	for _, id := range followedIDSli {
+		if id == followedId {
+			isFollowed = true
+			break
+		}
+	}
 
-	// 插入数据
-	if err := repositories.InsertFollow(u.DB, followerId, followedId); err != nil {
-		return fmt.Errorf("UserReqContext.Follow() -> %v", err)
+	// followedId的粉丝
+	followerIDSli, err := repositories.QueryFollower(u.DB, followedId)
+	if err != nil {
+		return fmt.Errorf("UserReqContext.Follow() -> %v: ", err)
+	}
+
+	// 关注
+	if !isFollowed {
+		if err := repositories.InsertFollow(u.DB, followerId, followedId); err != nil {
+			return fmt.Errorf("UserReqContext.Follow() -> %v", err)
+		}
+		//  followerId关注数量+1，followedId粉丝数量+1
+		if err = repositories.UpdateObjects(u.DB, &models.User{Model: gorm.Model{ID: followerId}}, map[string]interface{}{"attention_count": len(followedIDSli) + 1}); err != nil {
+			return fmt.Errorf("UserReqContext.Follow() -> %v", err)
+		}
+		if err = repositories.UpdateObjects(u.DB, &models.User{Model: gorm.Model{ID: followedId}}, map[string]interface{}{"fans_count": len(followerIDSli) + 1}); err != nil {
+			return fmt.Errorf("UserReqContext.Follow() -> %v", err)
+		}
+
+	} else { // 取消关注
+		if _, err := repositories.DeleteObjectsByTable(u.DB, "user_follows", map[string]interface{}{"follower_id": followerId, "followed_id": followedId}); err != nil {
+			return fmt.Errorf("UserReqContext.Follow() -> %v", err)
+		}
+		//  followerId关注数量-1，followedId粉丝数量-1
+		if err = repositories.UpdateObjects(u.DB, &models.User{Model: gorm.Model{ID: followerId}}, map[string]interface{}{"attention_count": len(followedIDSli) - 1}); err != nil {
+			return fmt.Errorf("UserReqContext.Follow() -> %v", err)
+		}
+		if err = repositories.UpdateObjects(u.DB, &models.User{Model: gorm.Model{ID: followedId}}, map[string]interface{}{"fans_count": len(followerIDSli) - 1}); err != nil {
+			return fmt.Errorf("UserReqContext.Follow() -> %v", err)
+		}
 	}
 
 	return nil

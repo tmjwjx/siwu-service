@@ -1,2 +1,5 @@
 /configs/local.yaml
-/logs
+logs/
+.idea/
+.Ds_Store
+static
