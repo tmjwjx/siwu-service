@@ -90,6 +90,9 @@ func Login(c *gin.Context) {
 		return
 	}
 
+	email := logicMsg.Email
+	password := logicMsg.Password
+
 	// 判断数据是否合法
 
 	// 检验邮箱是否合法
@@ -110,7 +113,16 @@ func Login(c *gin.Context) {
 	}
 
 	// 成功
-	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", nil))
+	// response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", nil))
+
+	// 生成token
+	token, err := internal_utils.GenerateToken(email, password)
+	fmt.Println("生成的token为：", token)
+	if err != nil {
+		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("Login() -> %v", err), nil))
+		return
+	}
+	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", token))
 }
 
 // Follow 关注
