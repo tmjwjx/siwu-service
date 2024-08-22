@@ -20,6 +20,16 @@ func User(e *gin.Engine) {
 	// 用户排行
 	r.GET("/rank", controllers.UserRank)
 
+	// // 受保护的路由，需要 JWT 验证
+	// protected := r.Group("/api")
+	// protected.Use(middlewares.JWTAuth())
+	// protected.GET("/protected", func(c *gin.Context) {
+	// 	claims := c.MustGet("claims").(*models.User)
+	// 	c.JSON(http.StatusOK, gin.H{
+	// 		"email": claims.Email,
+	// 	})
+	// })
+
 	// 上传用户个人资料
 	r.POST("/form_personal_data", controllers.UserDataRequestCtrl)
 
