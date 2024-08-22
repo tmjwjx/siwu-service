@@ -40,7 +40,7 @@ func AddTagRep(c *gin.Context, db *gorm.DB, req *requests.BsAddTagReq) (error, i
 	if err != nil {
 		// 回滚事务
 		tx.Rollback()
-		return fmt.Errorf("AddTagRep -> 将处图片之外的信息存到数据库中失败 -> %s", err), 500
+		return fmt.Errorf("AddTagRep -> 将除图片之外的信息存到数据库中失败 -> %s", err), 500
 	}
 
 	// 获取标签的的ID
@@ -124,7 +124,7 @@ func BatchDelTagRep(db *gorm.DB, req *requests.BsBatchDelTagReq) error {
 		} else if result.RowsAffected == 0 {
 			// 回滚事务
 			tx.Rollback()
-			return fmt.Errorf("BatchDelTagRep2 -> 没有找到匹配的记录或记录已经被删除")
+			return fmt.Errorf("BatchDelTagRep2 -> 没有找到 id : %d 的记录或记录已经被删除", id)
 		}
 
 		// 删除文件系统中的图片
@@ -154,15 +154,23 @@ func UpdateTagRep(c *gin.Context, db *gorm.DB, req *requests.BsUpTagReq) (error,
 		return fmt.Errorf("UpdateTagRep -> 开启事务失败 -> %s", tx.Error), 500
 	}
 
+	var tag models.Tag
 	// 更新标签头像以外得信息
-	err := tx.Model(&models.Tag{}).Where("id = ?", req.ID).Updates(map[string]interface{}{
+	err := tx.Model(&models.Tag{}).Where("id = ? and deleted_at is null", req.ID).First(&tag).Error
+
+	if err != nil {
+		// 回滚事务
+		tx.Rollback()
+		return fmt.Errorf("UpdateTagRep -> 该标签不存在 -> %s", err), 500
+	}
+
+	err = tx.Model(&tag).Updates(map[string]interface{}{
 		"name":          req.Name,
 		"description":   req.Description,
 		"article_count": req.ArticleCount,
 		"heat":          req.Heat,
 		"fans_count":    req.FansCount,
 	}).Error
-
 	if err != nil {
 		// 回滚事务
 		tx.Rollback()
