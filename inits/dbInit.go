@@ -68,14 +68,6 @@ func TableInit() {
 		&models.UserTag{},
 	)
 
-	//err := globals.DB.AutoMigrate(&models.Category{},
-	//	&models.UserDetail{}, &models.UserMessage{},
-	//	&models.Tag{}, &models.Resource{},
-	//	&models.Administrator{}, &models.ArticleLike{},
-	//	&models.Attachment{},
-	//	&models.User{}, &models.Article{},
-	//	&models.ArticleComment{}, &models.Advertisement{},
-	//	&models.UserVerifyCode{}, &models.CommentLike{}, &models.ArticleCollection{})
 	if err != nil {
 		globals.Log.Errorf("db.AutoMigrate err = %s", err)
 		return
