@@ -42,7 +42,7 @@ func Run() {
 		globals.Log.Errorf("路由启动错误")
 		return
 	}
-	// 运行结束时 缓存区的信息写入到文件中
+	// 运行结束时 缓存区的信息写入到文件中#
 	defer globals.Log.Sync()
 
 }
