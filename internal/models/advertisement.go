@@ -2,6 +2,8 @@ package models
 
 import "gorm.io/gorm"
 
+// Advertisement
+// @Description:广告
 type Advertisement struct {
 	gorm.Model        //ID CreatedAt UpdatedAt DeletedAt
 	Home       string `json:"home"`   // 广告图片属于哪个页面
