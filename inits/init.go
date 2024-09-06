@@ -33,4 +33,5 @@ func init() {
 	// 某一个控制器报错，不影响整体
 	// 日志自动记录
 	globals.Router.Use(gin.Recovery())
+
 }

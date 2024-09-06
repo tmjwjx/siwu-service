@@ -22,5 +22,6 @@ func LogInit(logPath, appName string) {
 	core := zapcore.NewTee(consoleCore, fileCore)
 
 	logger := zap.New(core, zap.AddCaller())
+
 	globals.Log = logger.Sugar()
 }

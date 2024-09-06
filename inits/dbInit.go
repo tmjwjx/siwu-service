@@ -12,11 +12,11 @@ import (
 
 // DBInit 初始化mysql
 func DBInit() {
-	
+
 	if err := viper.UnmarshalKey("database", &globals.AppConfig.Database); err != nil {
 		log.Fatalf("无法解码为结构: %s", err)
 	}
-	
+
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 		globals.AppConfig.Database.User,
 		globals.AppConfig.Database.Password,
@@ -24,7 +24,7 @@ func DBInit() {
 		globals.AppConfig.Database.Port,
 		globals.AppConfig.Database.Name,
 	)
-	
+
 	var err error
 	globals.DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
 		// NamingStrategy: schema.NamingStrategy{

@@ -25,3 +25,7 @@ send_email:
   username: "3174285493@qq.com"
   authorizeCode: "mmureuzrdnmndfef"
 
+# 静态资源存储
+static:
+  prefix: "/images"
+  path: "./static/images"
