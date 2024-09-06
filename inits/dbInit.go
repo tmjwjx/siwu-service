@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/viper"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
 	"log"
 )
 
@@ -27,26 +28,54 @@ func DBInit() {
 
 	var err error
 	globals.DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
-		// NamingStrategy: schema.NamingStrategy{
-		//	TablePrefix: "t_", // 设置表前缀
-		// },
+		DisableForeignKeyConstraintWhenMigrating: true, // 取消外键约束
+		NamingStrategy: schema.NamingStrategy{
+			TablePrefix: "sw_", // 设置表前缀
+		},
 	})
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 }
 
-// TableInit 初始化表
+// TableInit
+//
+//	@Description: 初始化表
 func TableInit() {
 	//用户模块
-	err := globals.DB.AutoMigrate(&models.Category{},
-		&models.UserDetail{}, &models.UserMessage{},
-		&models.Tag{}, &models.Resource{},
-		&models.Administrator{}, &models.ArticleLike{},
-		&models.ArticleCollection{}, &models.Attachment{},
-		&models.User{}, &models.Article{},
-		&models.ArticleComment{}, &models.Advertisement{},
-		&models.UserVerifyCode{}, &models.CommentLike{})
+
+	err := globals.DB.AutoMigrate(
+		&models.Administrator{},
+		&models.Advertisement{},
+		&models.Attachment{},
+		&models.Resource{},
+
+		&models.User{},
+		&models.Category{},
+		&models.Article{},
+		&models.Tag{},
+
+		&models.ArticleComment{},
+		&models.ArticleCollection{},
+		&models.ArticleLike{},
+		&models.ArticleTag{},
+		&models.CommentLike{},
+
+		&models.UserDetail{},
+		&models.UserFollow{},
+		&models.UserMessage{},
+		&models.UserVerifyCode{},
+		&models.UserTag{},
+	)
+
+	//err := globals.DB.AutoMigrate(&models.Category{},
+	//	&models.UserDetail{}, &models.UserMessage{},
+	//	&models.Tag{}, &models.Resource{},
+	//	&models.Administrator{}, &models.ArticleLike{},
+	//	&models.Attachment{},
+	//	&models.User{}, &models.Article{},
+	//	&models.ArticleComment{}, &models.Advertisement{},
+	//	&models.UserVerifyCode{}, &models.CommentLike{}, &models.ArticleCollection{})
 	if err != nil {
 		globals.Log.Errorf("db.AutoMigrate err = %s", err)
 		return

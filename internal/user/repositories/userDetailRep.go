@@ -23,7 +23,12 @@ func QueryPersonEmail(userAccountReq *requests.UserAccountReq, db *gorm.DB) erro
 
 }
 
-// UserDataRequest 更新用户个人资料
+// UserDataRequest
+//
+//	@Description:
+//	@param        userDataReq *requests.UserDataReq
+//	@param        db *gorm.DB
+//	@return       error
 func UserDataRequest(userDataReq *requests.UserDataReq, db *gorm.DB) error {
 
 	var user models.User
@@ -56,7 +61,7 @@ func UserDataRequest(userDataReq *requests.UserDataReq, db *gorm.DB) error {
 	err = tx.Where("user_id", userDataReq.ID).First(&userDetail).Error
 
 	if err != nil {
-		userDetail.UserID = userDataReq.ID
+		userDetail.ID = userDataReq.ID
 		userDetail.CareerDirection = userDataReq.CareerDirection
 		userDetail.HomePage = userDataReq.HomePage
 		userDetail.Signature = userDataReq.Signature
