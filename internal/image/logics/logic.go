@@ -6,6 +6,7 @@ import (
 	"forum/internal/image/requests"
 	"forum/internal/internal_pkg/internal_utils"
 	"forum/internal/models"
+	"forum/pkg/globals"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"path/filepath"
@@ -38,7 +39,7 @@ func UploadHandlerLogic(c *gin.Context, home string, homeID uint) error {
 		// 删除 attachments 表中的图片路径
 
 		// 将文件内容写入目标文件
-		err = c.SaveUploadedFile(file, "./static/images/"+uniqueFilename)
+		err = c.SaveUploadedFile(file, globals.SConfig.Path+"/"+uniqueFilename)
 		if err != nil {
 			return err
 		}
@@ -50,7 +51,7 @@ func UploadHandlerLogic(c *gin.Context, home string, homeID uint) error {
 			Name:   file.Filename,
 			Type:   "images/" + filepath.Ext(file.Filename), // filepath.Ext(filename) 获得文件的扩展名
 			Size:   file.Size,
-			Path:   "/images/" + uniqueFilename,
+			Path:   globals.SConfig.Prefix + "/" + uniqueFilename,
 		}
 
 		// 将文件插入数据库中

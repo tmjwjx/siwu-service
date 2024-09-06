@@ -6,6 +6,7 @@ import (
 	"forum/pkg/globals"
 	"golang.org/x/crypto/bcrypt"
 	"math/rand"
+	"os"
 	"time"
 )
 
@@ -78,5 +79,14 @@ func DeleteFile(home string, homeID uint) error {
 		return fmt.Errorf("DeleteFile -> 提交事务失败 -> %s", err)
 	}
 
+	return nil
+}
+
+// CreateFolder 创建存储静态文件的目录路径文件夹
+func CreateFolder(path string) error {
+	err := os.MkdirAll(path, 0755)
+	if err != nil {
+		return fmt.Errorf("CreateFolder -> 创建存储静态文件的目录路径文件夹失败 -> %s", err)
+	}
 	return nil
 }
