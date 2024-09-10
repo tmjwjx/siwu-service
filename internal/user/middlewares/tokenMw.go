@@ -2,7 +2,6 @@ package middlewares
 
 import (
 	"fmt"
-	"forum/internal/internal_pkg/internal_utils"
 	"forum/pkg/globals"
 	"forum/pkg/response"
 	"github.com/gin-gonic/gin"
@@ -19,7 +18,7 @@ func JWTAuth() gin.HandlerFunc {
 			return
 		}
 
-		user, err := internal_utils.ParseToken(token)
+		user, err := token.ParseToken(token)
 		if err != nil {
 			response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("无效的令牌"), nil))
 			c.Abort()

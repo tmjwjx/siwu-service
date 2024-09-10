@@ -70,7 +70,7 @@ func InsertFollow(db *gorm.DB, followerId uint, followedId uint) error {
 	}
 
 	// 插入数据
-	result := db.Table("user_follows").Create(followData)
+	result := db.Table("sw_user_follows").Create(followData)
 
 	// 检查是否有错误
 	if result.Error != nil {
@@ -219,7 +219,7 @@ func QueryFollowed(db *gorm.DB, follower uint) ([]uint, error) {
 	var followedIDSli []uint
 	// 执行查询，获取所有关注的用户ID
 	// Pluck("followed_id", &followedIDs)：只提取 followed 字段的值，并存储到 followedIDs 切片中。
-	err := db.Table("user_follows").Where("follower_id = ?", follower).Pluck("followed_id", &followedIDSli).Error
+	err := db.Table("sw_user_follows").Where("follower_id = ?", follower).Pluck("followed_id", &followedIDSli).Error
 	if err != nil {
 		return nil, fmt.Errorf("QueryFollowed() err: %v", err)
 	}
@@ -231,7 +231,7 @@ func QueryFollowed(db *gorm.DB, follower uint) ([]uint, error) {
 func QueryFollower(db *gorm.DB, followed uint) ([]uint, error) {
 	var followerIDSli []uint
 	// 执行查询，获取所有关注的用户ID
-	err := db.Table("user_follows").Where("followed_id = ?", followed).Pluck("follower_id", &followerIDSli).Error
+	err := db.Table("sw_user_follows").Where("followed_id = ?", followed).Pluck("follower_id", &followerIDSli).Error
 	if err != nil {
 		return nil, fmt.Errorf("QueryFollowed() err: %v", err)
 	}
@@ -250,10 +250,10 @@ func QueryUserRank(db *gorm.DB, limit int) ([]uint, error) {
 	var userRanks []UserRank
 
 	// 查询并计算每个用户的热度分数
-	err := db.Table("users").
-		Select("users.id as user_id, (count(articles.id) * 2 + sum(articles.heat)) as heat").
-		Joins("left join articles on articles.user_id = users.id").
-		Group("users.id").
+	err := db.Table("sw_users").
+		Select("sw_users.id as user_id, (count(sw_articles.id) * 2 + sum(sw_articles.heat)) as heat").
+		Joins("left join sw_articles on sw_articles.user_id = sw_users.id").
+		Group("sw_users.id").
 		Order("heat DESC").
 		Limit(limit).
 		Scan(&userRanks).Error

@@ -7,6 +7,7 @@ import (
 	"forum/internal/user/requests"
 	"forum/pkg/globals"
 	"forum/pkg/response"
+	"forum/pkg/token"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -91,7 +92,6 @@ func Login(c *gin.Context) {
 	}
 
 	email := logicMsg.Email
-	password := logicMsg.Password
 
 	// 判断数据是否合法
 
@@ -116,13 +116,13 @@ func Login(c *gin.Context) {
 	// response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", nil))
 
 	// 生成token
-	token, err := internal_utils.GenerateToken(email, password)
-	fmt.Println("生成的token为：", token)
+	tok, err := token.GenerateToken(email)
+	fmt.Println("生成的token为：", tok)
 	if err != nil {
 		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("Login() -> %v", err), nil))
 		return
 	}
-	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", token))
+	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", tok))
 }
 
 // Follow 关注

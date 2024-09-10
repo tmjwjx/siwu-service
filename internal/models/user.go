@@ -1,7 +1,6 @@
 package models
 
 import (
-	"github.com/dgrijalva/jwt-go"
 	"gorm.io/gorm"
 )
 
@@ -23,5 +22,4 @@ type User struct {
 	ArticleCollections []Article        `gorm:"many2many:article_collections"`                                              // 收藏的文章
 	ArticleComments    []ArticleComment `gorm:"many2many:article_comments"`                                                 // 文章的评论                                  // 用户对评论的点赞
 	Users              []User           `gorm:"many2many:user_follows;joinForeignKey:FollowedID;JoinReferences:FollowerID"` // 关注的用户列表
-	jwt.StandardClaims                  // StandardClaims 是jwt-go提供的标准声明结构体，包含了 exp（过期时间）、iss（发行者）等常见字段。
 }
