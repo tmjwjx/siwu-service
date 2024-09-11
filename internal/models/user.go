@@ -14,7 +14,7 @@ type User struct {
 	Heat               int              `json:"heat" gorm:"default:0"`             // 个人热度
 	AttentionCount     uint             `json:"attention_count" gorm:"default:0"`  // 关注了多少人数
 	FansCount          uint             `json:"fans_count" gorm:"default:0"`       // 粉丝数
-	PrivateSettings    string           `json:"private_settings"`
+	PrivateSettings    string           `json:"private_settings"`                  // 私信设置
 	UserDetail         UserDetail       // 用户详情
 	UserMessage        UserMessage      // 通知用户信息
 	Tags               []Tag            `gorm:"many2many:user_tags"`

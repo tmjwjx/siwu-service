@@ -17,7 +17,7 @@ func SetupRouter() {
 	articleRouter.Search()
 
 	// 发布文章
-	articleRouter.Publish()
+	articleRouter.Article()
 
 	// 标签分路由
 	tagRouter.Tag(globals.Router)

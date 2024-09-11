@@ -1,0 +1,42 @@
+package requests
+
+import "time"
+
+// ArticleListReq
+// @Description: 获取文章列表
+type ArticleListReq struct {
+	Page             int       `json:"page"`              // 分页页码
+	Limit            int       `json:"limit"`             // 每页条数
+	ArticleCondition int       `json:"article_condition"` // 文章状态（是否封禁）
+	StartTime        time.Time `json:"startTime"`         // 发布开始时间
+	EndTime          time.Time `json:"endTime"`           // 发布截至时间
+	Title            string    `json:"title"`             // 文章标题
+	ArticleTags      []int     `json:"article_tags"`      // 文章标签id，数组类型
+	Username         string    `json:"username"`          // 发布人用户名
+	ViewsCount       int       `json:"views_count"`       // 文章浏览量
+	LikesCount       int       `json:"likes_count"`       // 文章点赞量
+	CollectionsCount int       `json:"collections_count"` // 文章收藏量
+	CommentsCount    int       `json:"comments_count"`    // 文章评论量
+	Heat             int       `json:"heat"`              // 文章热度
+}
+
+type SearchArticleListRes struct {
+	ID               uint     `json:"id"`                // 文章ID
+	Title            string   `json:"title"`             // 文章标题
+	ArticleCondition int      `json:"article_condition"` // 文章状态
+	ViewsCount       int      `json:"views_count"`       // 浏览数
+	LikesCount       int      `json:"likes_count"`       // 点赞数
+	CollectionsCount int      `json:"collections_count"` // 收藏数
+	CommentsCount    string   `json:"comments_count"`    // 评论数
+	Heat             int      `json:"heat"`              // 热度
+	Username         string   `json:"username"`          // 发布人用户名
+	PublishedAt      string   `json:"published_at"`      // 发布时间
+	UpdatedAt        string   `json:"updated_at"`        // 更新时间
+	TagID            []int    `json:"tag_id"`            // 标签ID
+	TagName          []string `json:"tag_name"`          // 标签名称
+}
+
+type TagsRes struct {
+	TagID   int    `json:"tag_id"`   // 标签ID
+	TagName string `json:"tag_name"` // 标签名称
+}
