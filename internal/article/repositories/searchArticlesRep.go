@@ -5,6 +5,7 @@ import (
 	"forum/internal/article/requests"
 	"forum/internal/models"
 	"forum/pkg/globals"
+	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
@@ -67,92 +68,109 @@ func SearchArticlesRep(db *gorm.DB, req *requests.ReqSearch) (articles []models.
 // @return       data
 // @return       err
 func SearchArticlesListRep(db *gorm.DB, req *requests.ArticleListReq) (data interface{}, err error) {
-	var res []requests.SearchArticleListRes
+	var articleList []requests.ArcList
 
-	query := db.Model(&models.Article{})
-	//.Preload("User")
-	query.Select(
-		"sw_articles.id, " +
-			"title, " +
-			"article_condition, " +
-			"views_count, " +
-			"likes_count, " +
-			"collections_count, " +
-			"comments_count, " +
-			"sw_articles.heat, " +
-			"sw_users.nickname, " +
-			"sw_articles.published_at, " +
-			"sw_articles.updated_at, " +
-			"sw_tags.id AS tag_id, " +
-			"sw_tags.name AS tag_name").
-		Joins("LEFT JOIN sw_users ON sw_users.id = sw_articles.user_id").
-		Joins("LEFT JOIN sw_article_tags ON sw_article_tags.article_id = sw_articles.id").
-		Joins("LEFT JOIN sw_tags ON sw_tags.id = sw_article_tags.tag_id")
+	query := db.Model(&models.Article{}).Preload("Tags")
+	//query.Select(
+	//	"sw_articles.id, " +
+	//		"title, " +
+	//		"article_condition, " +
+	//		"views_count, " +
+	//		"likes_count, " +
+	//		"collections_count, " +
+	//		"comments_count, " +
+	//		"sw_articles.heat, " +
+	//		"sw_users.nickname, " +
+	//		//"sw_tags.id AS tag_id, " +
+	//		//"sw_tags.name AS tag_name, "
+	//		"sw_articles.published_at, " +
+	//		"sw_articles.updated_at")
+	//Joins("LEFT JOIN sw_users ON sw_users.id = sw_articles.user_id")
+	//Joins("LEFT JOIN sw_article_tags ON sw_article_tags.article_id = sw_articles.id").
+	//Joins("LEFT JOIN sw_tags ON sw_tags.id = sw_article_tags.tag_id")
 
 	// 状态
-	query = query.Where("article_condition = ?", req.ArticleCondition)
+	//query = query.Where("article_condition = ?", req.ArticleCondition)
 
 	// 时间
-	if !req.StartTime.IsZero() && !req.EndTime.IsZero() {
-		query = query.Where("published_at BETWEEN ? AND ?", req.StartTime, req.EndTime)
-	} else {
-		if !req.StartTime.IsZero() {
-			query = query.Where("published_at >= ?", req.StartTime)
-		}
-		if !req.EndTime.IsZero() {
-			query = query.Where("published_at <= ?", req.EndTime)
-		}
-	}
-
-	// 公开文章
-	query = query.Where("status = ?", "public")
-
-	// 关键字
-	if req.Title != "" {
-		query = query.Where("title LIKE ?", "%"+req.Title+"%")
-	}
-
-	// 标签id
-	if len(req.ArticleTags) > 0 {
-		query = query.Where("sw_article_tags.tag_id IN (?)", req.ArticleTags)
-	}
-
-	// 发布人用户名
-	if req.Username != "" {
-		query = query.Where("sw_users.nickname = ?", req.Username)
-	}
-
-	// 浏览量 点赞量 收藏量 评论数量 热度
-	if req.ViewsCount != 0 {
-		query = query.Where("views_count >= ?", req.ViewsCount)
-	}
-	if req.LikesCount != 0 {
-		query = query.Where("likes_count >= ?", req.LikesCount)
-	}
-	if req.CollectionsCount != 0 {
-		query = query.Where("collections_count >= ?", req.CollectionsCount)
-	}
-	if req.CommentsCount != 0 {
-		query = query.Where("comments_count >= ?", req.CommentsCount)
-	}
-	if req.Heat != 0 {
-		query = query.Where("sw_articles.heat >= ?", req.Heat)
-	}
-
-	// 分页
-	if req.Limit != 0 {
-		offset := (req.Page - 1) * req.Limit
-		query = query.Limit(req.Limit).Offset(offset)
-	}
+	//if !req.StartTime.IsZero() && !req.EndTime.IsZero() {
+	//	query = query.Where("published_at BETWEEN ? AND ?", req.StartTime, req.EndTime)
+	//} else {
+	//	if !req.StartTime.IsZero() {
+	//		query = query.Where("published_at >= ?", req.StartTime)
+	//	}
+	//	if !req.EndTime.IsZero() {
+	//		query = query.Where("published_at <= ?", req.EndTime)
+	//	}
+	//}
+	//
+	//// 公开文章
+	//query = query.Where("status = ?", "public")
+	//
+	//// 关键字
+	//if req.Title != "" {
+	//	query = query.Where("title LIKE ?", "%"+req.Title+"%")
+	//}
+	//
+	//// 标签id
+	//if len(req.ArticleTags) > 0 {
+	//	query = query.Where("sw_article_tags.tag_id IN (?)", req.ArticleTags)
+	//}
+	//
+	//// 发布人用户名
+	//if req.Username != "" {
+	//	query = query.Where("sw_users.nickname = ?", req.Username)
+	//}
+	//
+	//// 浏览量 点赞量 收藏量 评论数量 热度
+	//if req.ViewsCount != 0 {
+	//	query = query.Where("views_count >= ?", req.ViewsCount)
+	//}
+	//if req.LikesCount != 0 {
+	//	query = query.Where("likes_count >= ?", req.LikesCount)
+	//}
+	//if req.CollectionsCount != 0 {
+	//	query = query.Where("collections_count >= ?", req.CollectionsCount)
+	//}
+	//if req.CommentsCount != 0 {
+	//	query = query.Where("comments_count >= ?", req.CommentsCount)
+	//}
+	//if req.Heat != 0 {
+	//	query = query.Where("sw_articles.heat >= ?", req.Heat)
+	//}
+	//
+	//// 分页
+	//if req.Limit != 0 {
+	//	offset := (req.Page - 1) * req.Limit
+	//	query = query.Limit(req.Limit).Offset(offset)
+	//}
 
 	// 执行查询
-	if err = query.Find(&res).Error; err != nil {
+	if err = query.Find(&articleList).Error; err != nil {
 		globals.Log.Errorf("err = %s", err)
 		return // 结束函数执行
 	}
 
-	fmt.Println(res)
-	data = res
+	//articleMap := make(map[uint]requests.SearchArticleListRes)
+	//for _, article := range articleList {
+	//	_, exists := articleMap[article.ID]
+	//	if !exists {
+	//		var tags []requests.TagsRes
+	//
+	//		db.Model(&models.ArticleTag{}).
+	//			Select("sw_tags.id AS tag_id, "+
+	//				"sw_tags.name AS tag_name").
+	//			Joins("LEFT JOIN sw_tags ON sw_tags.id = sw_article_tags.tag_id").
+	//			Where("article_id = ?", article.ID).Find(&tags)
+	//
+	//		article.Tags = append(article.Tags, tags...)
+	//
+	//		articleMap[article.ID] = article
+	//	}
+	//}
+
+	//fmt.Println(articleList)
+	data = gin.H{"article_list": articleList}
 
 	return data, err
 }
