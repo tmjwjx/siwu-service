@@ -27,7 +27,11 @@ func Article() {
 		// 发布文章
 		articleGroup.POST("/publish", controllers.ArticlePublishCtrl)
 		// 获取文章列表
-		articleGroup.POST("/getlist", controllers.GetArticleList)
+		articleGroup.POST("/get_list", controllers.GetArticleList)
+		// 封禁文章
+		articleGroup.GET("/ban", controllers.BanArticlesCtrl)
+		// 删除文章
+		articleGroup.DELETE("/delete", controllers.DeleteArticlesCtrl)
 	}
 
 }

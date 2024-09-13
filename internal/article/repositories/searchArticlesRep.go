@@ -7,6 +7,7 @@ import (
 	"forum/pkg/globals"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"strconv"
 )
 
 // SearchArticlesRep 搜索文章
@@ -155,25 +156,42 @@ func SearchArticlesListRep(db *gorm.DB, req *requests.ArticleListReq) (data inte
 		return // 结束函数执行
 	}
 
-	//articleMap := make(map[uint]requests.SearchArticleListRes)
-	//for _, article := range articleList {
-	//	_, exists := articleMap[article.ID]
-	//	if !exists {
-	//		var tags []requests.TagsRes
-	//
-	//		db.Model(&models.ArticleTag{}).
-	//			Select("sw_tags.id AS tag_id, "+
-	//				"sw_tags.name AS tag_name").
-	//			Joins("LEFT JOIN sw_tags ON sw_tags.id = sw_article_tags.tag_id").
-	//			Where("article_id = ?", article.ID).Find(&tags)
-	//
-	//		article.Tags = append(article.Tags, tags...)
-	//
-	//		articleMap[article.ID] = article
-	//	}
-	//}
-
 	data = gin.H{"article_list": articleList}
 
 	return data, err
+}
+
+// BanArticlesRep
+// @Description: 封禁文章
+// @param        db *gorm.DB
+// @param        id string
+// @return       error
+func BanArticlesRep(db *gorm.DB, id string) error {
+	// 修改文章状态
+	if err := db.Model(&models.Article{}).Where("id = ?", id).Update("article_condition", 2).Error; err != nil {
+		globals.Log.Errorf("err = %s", err)
+		return err
+	}
+	return nil
+}
+
+// DeleteArticlesRep
+// @Description: 删除文章
+// @param        db *gorm.DB
+// @param        id string
+// @return       error
+func DeleteArticlesRep(db *gorm.DB, id string) error {
+	// 删除文章
+
+	idInt, _ := strconv.Atoi(id)
+	result := db.Delete(&models.Article{}, idInt) // 使用模型类型 + ID
+	if result.Error != nil {
+		return result.Error
+	}
+
+	//if err := db.Where("id = ?", id).Delete(&models.Article{}).Error; err != nil {
+	//	globals.Log.Errorf("err = %s", err)
+	//	return err
+	//}
+	return nil
 }
