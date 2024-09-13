@@ -19,8 +19,9 @@ type Article struct {
 	Status           string     `json:"status" gorm:"type:enum('draft','private','public');default:'draft'"` // 文章属性（草稿，私有，公开）
 	CategoryID       uint       `json:"category_id" gorm:"default:0;index"`                                  // 所属类目ID，外键
 	Summary          string     `json:"summary" gorm:"type:text"`                                            // 文章摘要
-	PublishedAt      *time.Time `json:"published_at"`                                                        // 发布时间 可以为空(草稿)
+	PublishedAt      *time.Time `json:"published_at"`                                                        // 发布时间 可以为空(如草稿)
 	Content          string     `json:"content" gorm:"type:text;not null"`                                   // 文章内容
+	ArticleCondition int        `json:"article_condition"`                                                   // 是否封禁 1：正常 2：封禁
 	Tags             []Tag      `gorm:"many2many:article_tags"`
 	UserLikes        []User     `gorm:"many2many:article_likes"`       //点赞的人
 	UserCollections  []User     `gorm:"many2many:article_collections"` // 收藏的文章

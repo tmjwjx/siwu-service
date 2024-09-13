@@ -6,5 +6,5 @@ import "gorm.io/gorm"
 type Resource struct {
 	gorm.Model        //ID CreatedAt UpdatedAt DeletedAt
 	Icon       string `json:"icon_path" gorm:"not null"`   // 网站图标
-	HelloWorld string `json:"hello_world" gorm:"not null"` //标题
+	HelloWorld string `json:"hello_world" gorm:"not null"` // 标题
 }

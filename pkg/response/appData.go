@@ -31,6 +31,7 @@ func (e *AppErr) MarshalJSON() ([]byte, error) {
 
 // NewAppData 生产一个成功消息响应结构体
 func NewAppData(code globals.AppCode, msg string, data interface{}) *AppData {
+
 	return &AppData{
 		Code: code,
 		Msg:  msg,

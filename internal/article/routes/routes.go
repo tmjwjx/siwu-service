@@ -16,8 +16,8 @@ func Search() {
 
 }
 
-// Publish 发布文章
-func Publish() {
+// Article 发布文章
+func Article() {
 
 	// 搜索
 	articleGroup := globals.Router.Group("/article")
@@ -26,6 +26,8 @@ func Publish() {
 		articleGroup.GET("/edit", controllers.ArticleEditCtrl)
 		// 发布文章
 		articleGroup.POST("/publish", controllers.ArticlePublishCtrl)
+		// 获取文章列表
+		articleGroup.POST("/getlist", controllers.GetArticleList)
 	}
 
 }
