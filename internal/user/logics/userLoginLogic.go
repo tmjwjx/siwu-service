@@ -50,7 +50,7 @@ func (u *UserReqContext) Register(registerMsg requests.RegisterMsg) error {
 	if userVerifyCode.DeletedAt.Valid {
 		return fmt.Errorf("UserReqContext.Register() : 验证码%s已失效", verifyCode)
 	}
-	// 判断用户输入的验证码是否等于数据库中的验证码
+	// 检验验证码是否正确（不区分大小写）
 	if !strings.EqualFold(verifyCode, userVerifyCode.VerifyCode) {
 		return fmt.Errorf("UserReqContext.Register() : 验证码%s输入错误", verifyCode)
 	}
@@ -143,7 +143,7 @@ func (u *UserReqContext) ReqVerifyCode(reqVerifyCode requests.VerifyCodeMsg) err
 	}
 
 	// 给用户发送验证码
-	body := fmt.Sprintf("你的验证码为 %s，有效时间为 %d 分钟\n", verifyCode, int(internal_utils.VerifyCodeEffectiveDuration.Minutes()))
+	body := fmt.Sprintf("你的验证码为 %s，不区分大小写，有效时间为 %d 分钟\n", verifyCode, int(internal_utils.VerifyCodeEffectiveDuration.Minutes()))
 	err := u.SendEmail(email, internal_utils.VerifyCodeSubject, body)
 	if err != nil {
 		return fmt.Errorf("UserReqContext.VerifyCodeMsg() -> %v", err)

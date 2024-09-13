@@ -38,3 +38,9 @@ type Config struct {
 	App          App             `yaml:"app"`
 	SendEmailCfg SendEmailConfig `yaml:"verifyCode"`
 }
+
+// StaticConfig 静态文件配置
+type StaticConfig struct {
+	Prefix string `yaml:"prefix"` //  URL 路径前缀
+	Path   string `yaml:"path"`   // 本地文件系统中的目录路径
+}

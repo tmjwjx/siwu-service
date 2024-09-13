@@ -2,33 +2,28 @@ package routes
 
 import (
 	"forum/internal/user/controllers"
+	"forum/pkg/token"
 	"github.com/gin-gonic/gin"
 )
 
 // User 用户路由
 func User(e *gin.Engine) {
+	// 注册
+	e.POST("/user/register", controllers.Register)
+	// 用户请求验证码
+	e.GET("/user/req_verify_code", controllers.ReqVerifyCode)
+	// 登录
+	e.POST("/user/login", controllers.Login)
+
 	// 分组
 	r := e.Group("/user")
-	// 注册
-	r.POST("/register", controllers.Register)
-	// 用户请求验证码
-	r.GET("req_verify_code", controllers.ReqVerifyCode)
-	// 登录
-	r.POST("/login", controllers.Login)
+	// token
+	r.Use(token.AuthMiddleware())
+
 	// 关注
 	r.POST("/follow", controllers.Follow)
 	// 用户排行
 	r.GET("/rank", controllers.UserRank)
-
-	// // 受保护的路由，需要 JWT 验证
-	// protected := r.Group("/api")
-	// protected.Use(middlewares.JWTAuth())
-	// protected.GET("/protected", func(c *gin.Context) {
-	// 	claims := c.MustGet("claims").(*models.User)
-	// 	c.JSON(http.StatusOK, gin.H{
-	// 		"email": claims.Email,
-	// 	})
-	// })
 
 	// 上传用户个人资料
 	r.POST("/form_personal_data", controllers.UserDataRequestCtrl)
