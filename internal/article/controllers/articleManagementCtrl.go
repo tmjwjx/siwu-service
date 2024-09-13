@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"forum/internal/article/logics"
 	"forum/internal/article/requests"
 	"forum/pkg/globals"
@@ -28,7 +27,7 @@ func GetArticleList(c *gin.Context) {
 		response.Failed(c, http.StatusBadRequest, data)
 		return // 结束函数执行
 	}
-	fmt.Printf("%v", req)
+	globals.Log.Info("%v", req)
 
 	// 进入业务层
 	articleList, err := logics.GetArticleList(db, req)
