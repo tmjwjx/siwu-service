@@ -1,7 +1,6 @@
 package repositories
 
 import (
-	"errors"
 	"fmt"
 	"forum/internal/models"
 	"gorm.io/gorm"
@@ -270,61 +269,61 @@ func QueryUserRank(db *gorm.DB, limit int) ([]uint, error) {
 	return userIdSli, nil
 }
 
-// QueryObject 根据一个或多个条件查询一个对象。
-// db: GORM 的数据库实例。
-// modelType: 要更新的模型类型的指针。
-// condition: 查询条件的键值对。
-// interface{}: 返回指针类型。
-func QueryObject(db *gorm.DB, modelType interface{}, condition map[string]interface{}) (interface{}, error) {
-	// 确保模型类型是指针类型
-	modelValue := reflect.ValueOf(modelType)
-	if modelValue.Kind() != reflect.Ptr {
-		return nil, fmt.Errorf("QueryObject() err: 数据模型必须是指针类型")
-	}
-
-	// 创建一个新实例，用于存储查询结果
-	result := reflect.New(reflect.TypeOf(modelType).Elem()).Interface()
-
-	// 构建查询
-	query := db.Model(modelType)
-	for key, value := range condition {
-		query = query.Where(fmt.Sprintf("%s = ?", key), value)
-	}
-
-	queryResult := query.First(result)
-	// 如果错误是“record not found”
-	if errors.Is(queryResult.Error, gorm.ErrRecordNotFound) {
-		fmt.Println("QueryObject() 记录未找到")
-		return nil, nil
-	} else if queryResult.Error != nil { // 如果是其他错误
-		return nil, fmt.Errorf("QueryObject() err: 查找对象失败\t执行的查询语句为: %v", queryResult.Statement.SQL.String())
-	}
-
-	return result, nil
-}
-
-// QueryObjects 根据一个或多个条件查询一个或多个对象。
-// db: GORM 的数据库实例。
-// modelType: 不是指针类型。
-// condition: 查询条件的键值对。
-// interface{}: 返回结构体实例切片。
-func QueryObjects(db *gorm.DB, modelType interface{}, condition map[string]interface{}) (interface{}, error) {
-	// 获取模型的类型，并创建切片类型的实例
-	modelTypeValue := reflect.TypeOf(modelType)
-	sliceType := reflect.SliceOf(modelTypeValue)
-	sliceValue := reflect.New(sliceType).Interface()
-
-	// 构建查询条件
-	query := db.Model(modelType)
-	for key, value := range condition {
-		query = query.Where(fmt.Sprintf("%s = ?", key), value)
-	}
-
-	// 执行查询，将结果存储到切片中
-	result := query.Find(sliceValue)
-	if result.Error != nil {
-		return nil, fmt.Errorf("QueryObjects() err: %v\t执行的查询语句为: %v", result.Error, query.Statement.SQL.String())
-	}
-
-	return sliceValue, nil
-}
+// // QueryObject 根据一个或多个条件查询一个对象。
+// // db: GORM 的数据库实例。
+// // modelType: 要更新的模型类型的指针。
+// // condition: 查询条件的键值对。
+// // interface{}: 返回指针类型。
+// func QueryObject(db *gorm.DB, modelType interface{}, condition map[string]interface{}) (interface{}, error) {
+// 	// 确保模型类型是指针类型
+// 	modelValue := reflect.ValueOf(modelType)
+// 	if modelValue.Kind() != reflect.Ptr {
+// 		return nil, fmt.Errorf("QueryObject() err: 数据模型必须是指针类型")
+// 	}
+//
+// 	// 创建一个新实例，用于存储查询结果
+// 	result := reflect.New(reflect.TypeOf(modelType).Elem()).Interface()
+//
+// 	// 构建查询
+// 	query := db.Model(modelType)
+// 	for key, value := range condition {
+// 		query = query.Where(fmt.Sprintf("%s = ?", key), value)
+// 	}
+//
+// 	queryResult := query.First(result)
+// 	// 如果错误是“record not found”
+// 	if errors.Is(queryResult.Error, gorm.ErrRecordNotFound) {
+// 		fmt.Println("QueryObject() 记录未找到")
+// 		return nil, nil
+// 	} else if queryResult.Error != nil { // 如果是其他错误
+// 		return nil, fmt.Errorf("QueryObject() err: 查找对象失败\t执行的查询语句为: %v", queryResult.Statement.SQL.String())
+// 	}
+//
+// 	return result, nil
+// }
+//
+// // QueryObjects 根据一个或多个条件查询一个或多个对象。
+// // db: GORM 的数据库实例。
+// // modelType: 不是指针类型。
+// // condition: 查询条件的键值对。
+// // interface{}: 返回结构体实例切片。
+// func QueryObjects(db *gorm.DB, modelType interface{}, condition map[string]interface{}) (interface{}, error) {
+// 	// 获取模型的类型，并创建切片类型的实例
+// 	modelTypeValue := reflect.TypeOf(modelType)
+// 	sliceType := reflect.SliceOf(modelTypeValue)
+// 	sliceValue := reflect.New(sliceType).Interface()
+//
+// 	// 构建查询条件
+// 	query := db.Model(modelType)
+// 	for key, value := range condition {
+// 		query = query.Where(fmt.Sprintf("%s = ?", key), value)
+// 	}
+//
+// 	// 执行查询，将结果存储到切片中
+// 	result := query.Find(sliceValue)
+// 	if result.Error != nil {
+// 		return nil, fmt.Errorf("QueryObjects() err: %v\t执行的查询语句为: %v", result.Error, query.Statement.SQL.String())
+// 	}
+//
+// 	return sliceValue, nil
+// }

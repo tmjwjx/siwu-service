@@ -3,6 +3,7 @@ package response
 import (
 	"encoding/json"
 	"forum/pkg/globals"
+	"github.com/gin-gonic/gin"
 )
 
 type AppData struct {
@@ -31,6 +32,9 @@ func (e *AppErr) MarshalJSON() ([]byte, error) {
 
 // NewAppData 生产一个成功消息响应结构体
 func NewAppData(code globals.AppCode, msg string, data interface{}) *AppData {
+	if data == nil {
+		data = gin.H{}
+	}
 
 	return &AppData{
 		Code: code,
@@ -41,6 +45,10 @@ func NewAppData(code globals.AppCode, msg string, data interface{}) *AppData {
 
 // NewAppErr 生产一个失败消息响应结构体
 func NewAppErr(code globals.AppCode, err error, data interface{}) *AppErr {
+	if data == nil {
+		data = gin.H{}
+	}
+
 	return &AppErr{
 		Code: code,
 		Err:  err,
