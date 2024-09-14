@@ -2,6 +2,7 @@ package server
 
 import (
 	articleRouter "forum/internal/article/routes"
+	roleRouter "forum/internal/roleManage/routes"
 	tagRouter "forum/internal/tag/routes"
 	userRouter "forum/internal/user/routes"
 	"forum/pkg/globals"
@@ -25,4 +26,6 @@ func SetupRouter() {
 	// 评论分路由
 	articleRouter.Comment(globals.Router)
 
+	// 角色分路由
+	roleRouter.Role(globals.Router)
 }

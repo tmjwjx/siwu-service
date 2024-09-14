@@ -42,7 +42,7 @@ func DBInit() {
 //
 //	@Description: 初始化表
 func TableInit() {
-	//用户模块
+	// 用户模块
 
 	err := globals.DB.AutoMigrate(
 		&models.Administrator{},
@@ -66,6 +66,10 @@ func TableInit() {
 		&models.UserMessage{},
 		&models.UserVerifyCode{},
 		&models.UserTag{},
+
+		// 角色模块
+		&models.Role{},
+		&models.UserRole{},
 	)
 
 	if err != nil {

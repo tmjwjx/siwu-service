@@ -17,7 +17,7 @@ func User(e *gin.Engine) {
 
 	// 分组
 	r := e.Group("/user")
-	// token
+	// token 校验
 	r.Use(token.AuthMiddleware())
 
 	// 关注
