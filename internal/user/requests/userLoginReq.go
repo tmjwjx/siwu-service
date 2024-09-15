@@ -25,7 +25,18 @@ type FollowMsg struct {
 	FollowedId uint `json:"followed_id"`
 }
 
-// RankMsg 用户排行消息
-type RankMsg struct {
-	Limit int `json:"limit" form:"limit"`
+// UserRankMsg 用户排行消息
+type UserRankMsg struct {
+	Page  int `json:"page"`
+	Limit int `json:"limit"`
 }
+
+// todo
+// // UserRankReq 响应用户排行消息
+// type UserRankReq struct {
+// 	Id        uint   `json:"id"`
+// 	Nickname  string `json:"nickname"`
+// 	Signature string `json:"signature"`
+//
+// 	// 头像图片字段
+// }

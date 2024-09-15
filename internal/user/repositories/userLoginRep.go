@@ -240,33 +240,21 @@ func QueryFollower(db *gorm.DB, followed uint) ([]uint, error) {
 
 // QueryUserRank 查询用户排行。根据文章数量和文章热度计算每个用户的热度得分，并按热度从高到低排序。
 // 作者榜单：1篇文章=2个热度，作者热度 = 文章数量 + 文章热度
-func QueryUserRank(db *gorm.DB, limit int) ([]uint, error) {
-	type UserRank struct {
-		UserID uint
-		Heat   int
+func QueryUserRank(db *gorm.DB, page int, limit int) ([]*models.User, error) {
+	var users []*models.User
+	// 查询语句：根据用户的热度分数查询
+	query := db.Model(&models.User{}).Order("heat DESC")
+
+	if page > 0 && limit > 0 {
+		// 计算偏移量 (从第几条记录开始查询)
+		offset := (page - 1) * limit
+		query = query.Offset(offset).Limit(limit)
 	}
-
-	var userRanks []UserRank
-
-	// 查询并计算每个用户的热度分数
-	err := db.Table("sw_users").
-		Select("sw_users.id as user_id, (count(sw_articles.id) * 2 + sum(sw_articles.heat)) as heat").
-		Joins("left join sw_articles on sw_articles.user_id = sw_users.id").
-		Group("sw_users.id").
-		Order("heat DESC").
-		Limit(limit).
-		Scan(&userRanks).Error
-	if err != nil {
+	if err := query.Find(&users).Error; err != nil {
 		return nil, fmt.Errorf("QueryUserRank() err: %v", err)
 	}
 
-	// 提取用户ID列表
-	userIdSli := make([]uint, len(userRanks))
-	for i, rank := range userRanks {
-		userIdSli[i] = rank.UserID
-	}
-
-	return userIdSli, nil
+	return users, nil
 }
 
 // // QueryObject 根据一个或多个条件查询一个对象。

@@ -112,9 +112,6 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	// 成功
-	// response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", nil))
-
 	// 生成token
 	tok, err := token.GenerateToken(email)
 	fmt.Println("生成的token为：", tok)
@@ -122,31 +119,5 @@ func Login(c *gin.Context) {
 		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("Login() -> %v", err), nil))
 		return
 	}
-	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", tok))
-}
-
-// Follow 关注
-func Follow(c *gin.Context) {
-	userLogic := logics.NewUserLogic(globals.DB, c, globals.SendEmailCfg)
-	// 绑定数据
-	var followMsg requests.FollowMsg
-	if err := c.ShouldBind(&followMsg); err != nil {
-		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("Follow() -> %v", err), nil))
-		return
-	}
-
-	// 简单检验数据
-	if followMsg.FollowerId == followMsg.FollowedId {
-		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("Follow() : id%d不能关注%d", followMsg.FollowerId, followMsg.FollowedId), nil))
-		return
-	}
-
-	// 业务逻辑
-	if err := userLogic.Follow(followMsg); err != nil {
-		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("Follow() -> %v", err), nil))
-		return
-	}
-
-	// 成功
-	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", nil))
+	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", gin.H{"token": tok}))
 }
