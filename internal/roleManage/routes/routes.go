@@ -2,7 +2,6 @@ package routes
 
 import (
 	"forum/internal/roleManage/controllers"
-	"forum/pkg/token"
 	"github.com/gin-gonic/gin"
 )
 
@@ -11,7 +10,7 @@ func Role(e *gin.Engine) {
 	// 分组
 	r := e.Group("/role")
 	// token 校验
-	r.Use(token.AuthMiddleware())
+	// r.Use(token.AuthMiddleware())
 
 	// 添加角色
 	r.POST("/add_role", controllers.AddRole)

@@ -2,7 +2,6 @@ package routes
 
 import (
 	"forum/internal/user/controllers"
-	"forum/pkg/token"
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,7 +17,7 @@ func User(e *gin.Engine) {
 	// 分组
 	r := e.Group("/user")
 	// token 校验
-	r.Use(token.AuthMiddleware())
+	// r.Use(token.AuthMiddleware())
 
 	// 关注
 	r.POST("/follow", controllers.Follow)
