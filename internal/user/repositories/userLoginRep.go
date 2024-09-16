@@ -257,6 +257,16 @@ func QueryUserRank(db *gorm.DB, page int, limit int) ([]*models.User, error) {
 	return users, nil
 }
 
+// QueryUserDetailsById 通过用户ID查找用户详情
+func QueryUserDetailsById(db *gorm.DB, id uint) *models.UserDetail {
+	var userDetail models.UserDetail
+	d := db.Model(&models.UserDetail{}).Where("user_id = ?", id).Select("*").Scan(&userDetail)
+	if d.RowsAffected == 0 {
+		return nil
+	}
+	return &userDetail
+}
+
 // // QueryObject 根据一个或多个条件查询一个对象。
 // // db: GORM 的数据库实例。
 // // modelType: 要更新的模型类型的指针。
