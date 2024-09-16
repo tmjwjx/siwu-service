@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"forum/internal/internal_pkg/internal_utils"
 	"forum/internal/user/logics"
+	"forum/internal/user/repositories"
 	"forum/internal/user/requests"
 	"forum/pkg/globals"
 	"forum/pkg/response"
@@ -91,8 +92,6 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	email := logicMsg.Email
-
 	// 判断数据是否合法
 
 	// 检验邮箱是否合法
@@ -112,9 +111,14 @@ func Login(c *gin.Context) {
 		return
 	}
 
+	// 通过email查询id
+	user := repositories.QueryUserByEmail(userLogic.DB, logicMsg.Email)
+	if user == nil {
+		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("Login() err: 不存在email为 %v 的用户", logicMsg.Email), nil))
+		return
+	}
 	// 生成token
-	tok, err := token.GenerateToken(email)
-	fmt.Println("生成的token为：", tok)
+	tok, err := token.GenerateToken(user.ID)
 	if err != nil {
 		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("Login() -> %v", err), nil))
 		return
