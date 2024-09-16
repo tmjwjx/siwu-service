@@ -39,14 +39,26 @@ func Follow(c *gin.Context) {
 
 // UserRank 用户热度排行
 func UserRank(c *gin.Context) {
+	// // 从上下文中获取 email
+	// id, exists := c.Get("id")
+	// if !exists {
+	// 	response.Failed(c, http.StatusUnauthorized, response.NewAppErr(globals.StatusUnauthorized, fmt.Errorf("UserRank() err = 无法获取 email"), nil))
+	// 	return
+	// }
+	// // 类型断言
+	// emailStr := id.(uint)
+	// fmt.Println(emailStr)
+
 	// 绑定数据
 	page, err := strconv.Atoi(c.Query("page"))
 	if err != nil {
 		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("UserRank() err = 数据类型转换错误"), nil))
+		return
 	}
 	limit, err := strconv.Atoi(c.Query("limit"))
 	if err != nil {
 		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("UserRank() err = 数据类型转换错误"), nil))
+		return
 	}
 	var rankMsg requests.UserRankMsg
 	rankMsg.Page = page

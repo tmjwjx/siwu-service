@@ -15,15 +15,15 @@ var jwtSecret = []byte("siwu-web-service.forumSetJwtSecret_S@mpl3ComplexS3cretK3
 
 // Claims 自定义的 Claims 结构体
 type Claims struct {
-	Email                string `json:"email"`
-	jwt.RegisteredClaims        // 包含标准的 JWT 声明
+	ID                   uint `json:"id"`
+	jwt.RegisteredClaims      // 包含标准的 JWT 声明
 }
 
-// GenerateToken 使用用户的 email 和 password 生成 JWT token。
-func GenerateToken(email string) (string, error) {
+// GenerateToken 使用用户的 ID 生成 JWT token。
+func GenerateToken(id uint) (string, error) {
 	// 创建声明 Claims
 	claims := Claims{
-		Email: email,
+		ID: id,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 2)), // 过期时间
 			IssuedAt:  jwt.NewNumericDate(time.Now()),                    // 签发时间
@@ -39,8 +39,6 @@ func GenerateToken(email string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-
-	fmt.Println("GenerateToken   ", tokenString)
 	return tokenString, nil
 }
 
@@ -64,13 +62,12 @@ func ValidateToken(tokenString string) (*Claims, error) {
 	return nil, fmt.Errorf("无效的 token")
 }
 
-// AuthMiddleware JWT 认证中间件。在 JWT 验证通过后，将 email 存储在上下文中，供后续路由使用。
+// AuthMiddleware JWT 认证中间件。在 JWT 验证通过后，将 ID 存储在上下文中，供后续路由使用。
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tokenString := c.GetHeader("Authorization")
 		if tokenString == "" {
 			response.Failed(c, http.StatusUnauthorized, response.NewAppErr(globals.StatusUnauthorized, fmt.Errorf("AuthMiddleware() : 缺少授权标头 Authorization"), nil))
-			// c.JSON(http.StatusUnauthorized, gin.H{"error": "Missing Authorization header"})
 			// 中止剩余的中间件和处理函数执行，直接返回响应
 			c.Abort()
 			return
@@ -81,18 +78,14 @@ func AuthMiddleware() gin.HandlerFunc {
 
 		// 验证并解析 Token
 		claims, err := ValidateToken(tokenString)
-		fmt.Println("AuthMiddleware  ", claims)
-
 		if err != nil {
 			response.Failed(c, http.StatusUnauthorized, response.NewAppErr(globals.StatusUnauthorized, fmt.Errorf("AuthMiddleware() : 无效的 token"), nil))
-			// c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 			c.Abort()
 			return
 		}
 
-		// 将用户 email 和 password 信息保存到上下文中
-		c.Set("email", claims.Email)
-
+		// 将用户 ID 保存到上下文中
+		c.Set("id", claims.ID)
 		c.Next()
 	}
 }
