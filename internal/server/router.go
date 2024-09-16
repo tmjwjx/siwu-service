@@ -13,11 +13,8 @@ func SetupRouter() {
 	// 用户分路由
 	userRouter.User(globals.Router)
 
-	// 搜索分路由
-	articleRouter.Search()
-
-	// 发布文章
-	articleRouter.Article()
+	// 文章分路由
+	articleRouter.Article(globals.Router)
 
 	// 标签分路由
 	tagRouter.Tag(globals.Router)

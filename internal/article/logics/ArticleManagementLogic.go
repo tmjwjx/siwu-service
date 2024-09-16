@@ -7,12 +7,12 @@ import (
 	"gorm.io/gorm"
 )
 
-// GetArticleList
+// GetArticleListLogic
 // @Description: 检索获取已经发布的文章列表
 // @param        db *gorm.DB
 // @return       data
 // @return       err
-func GetArticleList(db *gorm.DB, req *requests.ArticleListReq) (data interface{}, err error) {
+func GetArticleListLogic(db *gorm.DB, req *requests.ArticleListReq) (data interface{}, err error) {
 
 	data, err = repositories.SearchArticlesListRep(db, req)
 	//if err != nil {

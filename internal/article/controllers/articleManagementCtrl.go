@@ -30,7 +30,7 @@ func GetArticleList(c *gin.Context) {
 	globals.Log.Info("%v", req)
 
 	// 进入业务层
-	articleList, err := logics.GetArticleList(db, req)
+	articleList, err := logics.GetArticleListLogic(db, req)
 	if err != nil {
 		globals.Log.Errorf("获取文章列表失败 err = %s", err)
 		data := response.NewAppErr(globals.StatusInternalServerError, err, nil)

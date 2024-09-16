@@ -2,26 +2,17 @@ package routes
 
 import (
 	"forum/internal/article/controllers"
-	"forum/pkg/globals"
 	"github.com/gin-gonic/gin"
 )
 
-// Search 搜索文章
-func Search() {
-	// 搜索
-	userGroup := globals.Router.Group("/search")
-	{
-		userGroup.GET("/query", controllers.ArticleSearchCtrl)
-	}
-
-}
-
 // Article 发布文章
-func Article() {
+func Article(e *gin.Engine) {
 
 	// 搜索
-	articleGroup := globals.Router.Group("/article")
+	articleGroup := e.Group("/article")
 	{
+		// 文章搜索框
+		articleGroup.GET("/search_box", controllers.ArticleSearchCtrl)
 		// 编辑界面
 		articleGroup.GET("/edit", controllers.ArticleEditCtrl)
 		// 发布文章
