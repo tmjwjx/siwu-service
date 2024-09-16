@@ -31,12 +31,11 @@ type UserRankMsg struct {
 	Limit int `json:"limit"`
 }
 
-// todo
-// // UserRankReq 响应用户排行消息
-// type UserRankReq struct {
-// 	Id        uint   `json:"id"`
-// 	Nickname  string `json:"nickname"`
-// 	Signature string `json:"signature"`
-//
-// 	// 头像图片字段
-// }
+// UserRankReq 响应用户排行消息
+type UserRankReq struct {
+	Id              uint   `json:"id"`
+	Nickname        string `json:"nickname"`
+	CareerDirection string `json:"career_direction"`
+	AvatarPath      string `json:"avatar_path"` // 头像图片
+	IsFollowed      int    `json:"is_followed"` // 用户是否关注了这个排行榜上的用户：未关注：0，已关注：1，这个用户是自己：2
+}

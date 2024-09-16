@@ -2,9 +2,12 @@ package logics
 
 import (
 	"fmt"
+	"forum/internal/image/controllers"
+	"forum/internal/internal_pkg/internal_utils"
 	"forum/internal/models"
 	"forum/internal/user/repositories"
 	"forum/internal/user/requests"
+	"forum/pkg/utils"
 	"gorm.io/gorm"
 )
 
@@ -76,14 +79,57 @@ func (u *UserReqContext) Follow(follow requests.FollowMsg) error {
 }
 
 // UserRank 用户热度排行
-func (u *UserReqContext) UserRank(msg requests.UserRankMsg) ([]*models.User, error) {
-	// 查询
-	userRank, err := repositories.QueryUserRank(u.DB, msg.Page, msg.Limit)
+func (u *UserReqContext) UserRank(id uint, msg requests.UserRankMsg) ([]*requests.UserRankReq, error) {
+	userRankReqSli := make([]*requests.UserRankReq, msg.Limit)
+
+	// 查询排行榜：每个用户id，昵称
+	usersRank, err := repositories.QueryUserRank(u.DB, msg.Page, msg.Limit)
 	if err != nil {
 		return nil, fmt.Errorf("UserReqContext.UserRank() -> %v", err)
 	}
 
-	// 选择需要的数据
+	// 查询每个用户是否已关注（用户是否关注了这个排行榜上的用户：用户是否关注了这个排行榜上的用户：未关注：0，已关注：1，这个用户是自己：2）
+	// 查询 id 关注了谁
+	ids, err := repositories.QueryFollowed(u.DB, id)
+	if err != nil {
+		return nil, fmt.Errorf("UserReqContext.UserRank() -> %v", err)
+	}
+	// 将uint切片转换为map
+	m := utils.UintToMap(ids)
 
-	return userRank, nil
+	// 查询每个id的详细信息
+	for i, v := range usersRank {
+		// 查询用户的职业描述
+		userDetail := repositories.QueryUserDetailsById(u.DB, v.ID)
+
+		userRankReqSli[i] = &requests.UserRankReq{
+			Id:              v.ID,
+			Nickname:        v.Nickname,
+			CareerDirection: userDetail.CareerDirection,
+		}
+
+		// 查询用户的头像路径
+		userImgs, err := controllers.GetImagesControllers("user", v.ID)
+		if err != nil {
+			// 数据库中没有该用户的头像，使用默认的头像
+			userRankReqSli[i].AvatarPath = internal_utils.UserDefaultImage
+		} else {
+			userRankReqSli[i].AvatarPath = (*userImgs)[0].Path
+		}
+
+		// 未关注：0，已关注：1，这个用户是自己：2
+		if v.ID == id {
+			userRankReqSli[i].IsFollowed = 2
+		} else {
+			// 判断用户是否关注该id
+			_, ok := m[v.ID]
+			if !ok {
+				userRankReqSli[i].IsFollowed = 0
+			} else {
+				userRankReqSli[i].IsFollowed = 1
+			}
+		}
+	}
+
+	return userRankReqSli, nil
 }

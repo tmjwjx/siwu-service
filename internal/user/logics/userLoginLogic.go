@@ -103,6 +103,13 @@ func (u *UserReqContext) ReqVerifyCode(reqVerifyCode requests.VerifyCodeMsg) err
 			return fmt.Errorf("UserReqContext.VerifyCodeMsg() -> %v", err)
 		}
 
+		// 查询该email对应的id
+		us := repositories.QueryUserByEmail(u.DB, email)
+		// 向 UserDetail 用户详情表中插入数据
+		if err := repositories.InsertObject(u.DB, &models.UserDetail{UserID: us.ID}); err != nil {
+			return fmt.Errorf("UserReqContext.VerifyCodeMsg() -> %v", err)
+		}
+
 		// 获取用户id
 		user = repositories.QueryUserByEmail(u.DB, email)
 		// 将验证码插入到 UserVerifyCode表

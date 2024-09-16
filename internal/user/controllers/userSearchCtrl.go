@@ -39,15 +39,14 @@ func Follow(c *gin.Context) {
 
 // UserRank 用户热度排行
 func UserRank(c *gin.Context) {
-	// // 从上下文中获取 email
-	// id, exists := c.Get("id")
-	// if !exists {
-	// 	response.Failed(c, http.StatusUnauthorized, response.NewAppErr(globals.StatusUnauthorized, fmt.Errorf("UserRank() err = 无法获取 email"), nil))
-	// 	return
-	// }
-	// // 类型断言
-	// emailStr := id.(uint)
-	// fmt.Println(emailStr)
+	// 从上下文中获取 id
+	str, exists := c.Get("id")
+	if !exists {
+		response.Failed(c, http.StatusUnauthorized, response.NewAppErr(globals.StatusUnauthorized, fmt.Errorf("UserRank() err = 无法获取 email"), nil))
+		return
+	}
+	// 类型断言
+	id := str.(uint)
 
 	// 绑定数据
 	page, err := strconv.Atoi(c.Query("page"))
@@ -76,12 +75,12 @@ func UserRank(c *gin.Context) {
 
 	// 业务逻辑
 	userLogic := logics.NewUserLogic(globals.DB, c, globals.SendEmailCfg)
-	userResponses, err := userLogic.UserRank(rankMsg)
+	userRankRep, err := userLogic.UserRank(id, rankMsg)
 	if err != nil {
 		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("UserRank() -> %v", err), nil))
 		return
 	}
 
 	// 成功
-	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", gin.H{"user_heat_rank": userResponses}))
+	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", gin.H{"user_heat_rank": userRankRep}))
 }
