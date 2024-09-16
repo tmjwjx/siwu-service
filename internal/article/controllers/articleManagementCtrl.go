@@ -30,7 +30,7 @@ func GetArticleList(c *gin.Context) {
 	globals.Log.Info("%v", req)
 
 	// 进入业务层
-	articleList, err := logics.GetArticleList(db, req)
+	articleList, err := logics.GetArticleListLogic(db, req)
 	if err != nil {
 		globals.Log.Errorf("获取文章列表失败 err = %s", err)
 		data := response.NewAppErr(globals.StatusInternalServerError, err, nil)
@@ -40,5 +40,51 @@ func GetArticleList(c *gin.Context) {
 
 	// 返回响应
 	data := response.NewAppData(globals.StatusOK, "成功", articleList)
+	response.Success(c, http.StatusOK, data)
+}
+
+// BanArticlesCtrl
+// @Description: 封禁文章
+// @param        c *gin.Context
+func BanArticlesCtrl(c *gin.Context) {
+	// 初始化需要的变量
+	db := globals.DB
+
+	// 绑定查询参数到变量
+	id := c.Query("id")
+
+	// 进入业务层
+	err := logics.BanArticlesLocal(db, id)
+	if err != nil {
+		data := response.NewAppErr(globals.StatusInternalServerError, err, nil)
+		response.Failed(c, http.StatusInternalServerError, data)
+		return
+	}
+
+	// 返回响应
+	data := response.NewAppData(globals.StatusOK, "成功", nil)
+	response.Success(c, http.StatusOK, data)
+}
+
+// DeleteArticlesCtrl
+// @Description: 删除文章
+// @param        c *gin.Context
+func DeleteArticlesCtrl(c *gin.Context) {
+	// 初始化需要的变量
+	db := globals.DB
+
+	// 绑定查询参数到变量
+	id := c.Query("id")
+
+	// 进入业务层
+	err := logics.DeleteArticlesLocal(db, id)
+	if err != nil {
+		data := response.NewAppErr(globals.StatusInternalServerError, err, nil)
+		response.Failed(c, http.StatusInternalServerError, data)
+		return
+	}
+
+	// 返回响应
+	data := response.NewAppData(globals.StatusOK, "成功", nil)
 	response.Success(c, http.StatusOK, data)
 }
