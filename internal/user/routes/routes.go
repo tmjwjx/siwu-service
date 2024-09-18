@@ -46,4 +46,25 @@ func User(e *gin.Engine) {
 
 	// 铃铛消息
 	// e.GET("/event", controllers.MessagePushCtrl)
+
+	// 用户管理
+	// 重置用户密码
+	r.POST("/reset", controllers.Reset)
+	// 添加用户
+	r.POST("/add", controllers.Add)
+	// 删除用户
+	r.DELETE("/delete", controllers.Delete)
+	// 编辑用户
+	r.POST("/edit", controllers.Edit)
+	// 获取所有用户列表
+	r.POST("/list", controllers.List)
+	// 导入用户表
+	r.POST("/import", controllers.Import)
+	// 导出用户表
+	r.GET("/export", controllers.Export)
+	// 	下载导入用户模版excel
+	r.GET("/import/template", controllers.ImportTemplate)
+	// 获取当前用户基本信息
+	r.GET("/getInfo", controllers.GetInfo)
+
 }

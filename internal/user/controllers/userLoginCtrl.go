@@ -17,9 +17,9 @@ import (
 
 // Register 用户注册
 func Register(c *gin.Context) {
-	userLogic := logics.NewUserLogic(globals.DB, c, globals.SendEmailCfg)
+	userReqContext := logics.NewUserReqContext(globals.DB, c, globals.SendEmailCfg)
 	// 绑定数据
-	var registerMsg requests.RegisterMsg
+	var registerMsg requests.RegisterReq
 	if err := c.ShouldBind(&registerMsg); err != nil {
 		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("Register() err: %v", err), nil))
 		return
@@ -46,7 +46,7 @@ func Register(c *gin.Context) {
 	}
 
 	// 业务逻辑
-	err := userLogic.Register(registerMsg)
+	err := userReqContext.Register(registerMsg)
 	if err != nil {
 		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("Register() -> %v", err), nil))
 		return
@@ -58,9 +58,9 @@ func Register(c *gin.Context) {
 
 // ReqVerifyCode 用户请求验证码
 func ReqVerifyCode(c *gin.Context) {
-	userLogic := logics.NewUserLogic(globals.DB, c, globals.SendEmailCfg)
+	userReqContext := logics.NewUserReqContext(globals.DB, c, globals.SendEmailCfg)
 	// 绑定数据
-	var verifyCodeMsg requests.VerifyCodeMsg
+	var verifyCodeMsg requests.VerifyCodeReq
 	if err := c.ShouldBind(&verifyCodeMsg); err != nil {
 		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("ReqVerifyCode() -> %v", err), nil))
 		return
@@ -73,7 +73,7 @@ func ReqVerifyCode(c *gin.Context) {
 	}
 
 	// 业务逻辑
-	if err := userLogic.ReqVerifyCode(verifyCodeMsg); err != nil {
+	if err := userReqContext.ReqVerifyCode(verifyCodeMsg); err != nil {
 		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("ReqVerifyCode() -> %v", err), nil))
 		return
 	}
@@ -84,9 +84,9 @@ func ReqVerifyCode(c *gin.Context) {
 
 // Login 登录
 func Login(c *gin.Context) {
-	userLogic := logics.NewUserLogic(globals.DB, c, globals.SendEmailCfg)
+	userReqContext := logics.NewUserReqContext(globals.DB, c, globals.SendEmailCfg)
 	// 绑定数据
-	var logicMsg requests.LogicMsg
+	var logicMsg requests.LogicReq
 	if err := c.ShouldBind(&logicMsg); err != nil {
 		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("Login() -> %v", err), nil))
 		return
@@ -106,13 +106,13 @@ func Login(c *gin.Context) {
 	}
 
 	// 业务逻辑
-	if err := userLogic.Login(logicMsg); err != nil {
+	if err := userReqContext.Login(logicMsg); err != nil {
 		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("Login() -> %v", err), nil))
 		return
 	}
 
 	// 通过email查询id
-	user := repositories.QueryUserByEmail(userLogic.DB, logicMsg.Email)
+	user := repositories.QueryUserByEmail(userReqContext.DB, logicMsg.Email)
 	if user == nil {
 		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("Login() err: 不存在email为 %v 的用户", logicMsg.Email), nil))
 		return

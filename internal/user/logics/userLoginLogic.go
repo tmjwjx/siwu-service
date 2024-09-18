@@ -21,7 +21,7 @@ type UserReqContext struct {
 	SendEmailCfg *globals.SendEmailConfig // 发送邮件
 }
 
-func NewUserLogic(db *gorm.DB, c *gin.Context, sendEmailCfg *globals.SendEmailConfig) *UserReqContext {
+func NewUserReqContext(db *gorm.DB, c *gin.Context, sendEmailCfg *globals.SendEmailConfig) *UserReqContext {
 	return &UserReqContext{
 		DB:           db,
 		Ctx:          c,
@@ -30,7 +30,7 @@ func NewUserLogic(db *gorm.DB, c *gin.Context, sendEmailCfg *globals.SendEmailCo
 }
 
 // Register 注册
-func (u *UserReqContext) Register(registerMsg requests.RegisterMsg) error {
+func (u *UserReqContext) Register(registerMsg requests.RegisterReq) error {
 	// 在数据库中完善数据（用户获取验证码时已在数据库中创建了User，UserVerifyCode数据）
 	email := registerMsg.Email
 	verifyCode := registerMsg.VerifyCode
@@ -83,7 +83,7 @@ func (u *UserReqContext) Register(registerMsg requests.RegisterMsg) error {
 }
 
 // ReqVerifyCode 用户请求验证码
-func (u *UserReqContext) ReqVerifyCode(reqVerifyCode requests.VerifyCodeMsg) error {
+func (u *UserReqContext) ReqVerifyCode(reqVerifyCode requests.VerifyCodeReq) error {
 	// 随机生成验证码
 	verifyCode := internal_utils.RandomGenerateStrings(internal_utils.VerifyCodeLen)
 	email := reqVerifyCode.Email
@@ -100,21 +100,21 @@ func (u *UserReqContext) ReqVerifyCode(reqVerifyCode requests.VerifyCodeMsg) err
 		password := internal_utils.RandomGenerateStrings(12)
 		// 使用InsertObject()方法向user表中插入新数据，model参数必须是指针类型
 		if err := repositories.InsertObject(u.DB, &models.User{Nickname: name, Email: email, Password: password}); err != nil {
-			return fmt.Errorf("UserReqContext.VerifyCodeMsg() -> %v", err)
+			return fmt.Errorf("UserReqContext.VerifyCodeReq() -> %v", err)
 		}
 
 		// 查询该email对应的id
 		us := repositories.QueryUserByEmail(u.DB, email)
 		// 向 UserDetail 用户详情表中插入数据
 		if err := repositories.InsertObject(u.DB, &models.UserDetail{UserID: us.ID}); err != nil {
-			return fmt.Errorf("UserReqContext.VerifyCodeMsg() -> %v", err)
+			return fmt.Errorf("UserReqContext.VerifyCodeReq() -> %v", err)
 		}
 
 		// 获取用户id
 		user = repositories.QueryUserByEmail(u.DB, email)
 		// 将验证码插入到 UserVerifyCode表
 		if err := repositories.InsertObject(u.DB, &models.UserVerifyCode{UserID: user.ID, VerifyCode: verifyCode}); err != nil {
-			return fmt.Errorf("UserReqContext.VerifyCodeMsg() -> %v", err)
+			return fmt.Errorf("UserReqContext.VerifyCodeReq() -> %v", err)
 		}
 
 	} else { // 如果已经有用户使用，而且发送验证码的冷却时间到了，插入一条数据
@@ -122,13 +122,13 @@ func (u *UserReqContext) ReqVerifyCode(reqVerifyCode requests.VerifyCodeMsg) err
 		if err != nil { // 执行错误，没有查询到验证码（可能是手动删除了数据库中的验证码，所以报错）
 			// 插入一条新的验证码数据
 			if err = repositories.InsertObject(u.DB, &models.UserVerifyCode{UserID: user.ID, VerifyCode: verifyCode}); err != nil {
-				return fmt.Errorf("UserReqContext.VerifyCodeMsg() -> %v", err)
+				return fmt.Errorf("UserReqContext.VerifyCodeReq() -> %v", err)
 			}
 			// 给用户发送验证码
 			body := fmt.Sprintf("你的验证码为 %s，有效时间为 %d 分钟\n", verifyCode, int(internal_utils.VerifyCodeEffectiveDuration.Minutes()))
 			err := u.SendEmail(email, internal_utils.VerifyCodeSubject, body)
 			if err != nil {
-				return fmt.Errorf("UserReqContext.VerifyCodeMsg() -> %v", err)
+				return fmt.Errorf("UserReqContext.VerifyCodeReq() -> %v", err)
 			}
 			return nil
 		}
@@ -140,12 +140,12 @@ func (u *UserReqContext) ReqVerifyCode(reqVerifyCode requests.VerifyCodeMsg) err
 		duration := now.Sub(userVerifyCode.UpdatedAt)
 		// 如果冷却时间未到，返回错误
 		if duration < internal_utils.VerifyCodeCoolTime {
-			return fmt.Errorf("UserReqContext.VerifyCodeMsg() err: 发送验证码正在冷却时间中")
+			return fmt.Errorf("UserReqContext.VerifyCodeReq() err: 发送验证码正在冷却时间中")
 		}
 
 		// 插入一条新的验证码数据
 		if err = repositories.InsertObject(u.DB, &models.UserVerifyCode{UserID: user.ID, VerifyCode: verifyCode}); err != nil {
-			return fmt.Errorf("UserReqContext.VerifyCodeMsg() -> %v", err)
+			return fmt.Errorf("UserReqContext.VerifyCodeReq() -> %v", err)
 		}
 	}
 
@@ -153,7 +153,7 @@ func (u *UserReqContext) ReqVerifyCode(reqVerifyCode requests.VerifyCodeMsg) err
 	body := fmt.Sprintf("你的验证码为 %s，不区分大小写，有效时间为 %d 分钟\n", verifyCode, int(internal_utils.VerifyCodeEffectiveDuration.Minutes()))
 	err := u.SendEmail(email, internal_utils.VerifyCodeSubject, body)
 	if err != nil {
-		return fmt.Errorf("UserReqContext.VerifyCodeMsg() -> %v", err)
+		return fmt.Errorf("UserReqContext.VerifyCodeReq() -> %v", err)
 	}
 
 	return nil
@@ -186,7 +186,7 @@ func (u *UserReqContext) SendEmail(to string, subject string, body string) error
 }
 
 // Login 登录
-func (u *UserReqContext) Login(logicMsg requests.LogicMsg) error {
+func (u *UserReqContext) Login(logicMsg requests.LogicReq) error {
 	// 判断邮箱和密码是否匹配
 	email := logicMsg.Email
 	password := logicMsg.Password

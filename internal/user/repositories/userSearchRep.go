@@ -6,29 +6,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// InsertFollow 向中间表中插入关注与被关注信息
-func InsertFollow(db *gorm.DB, followerId uint, followedId uint) error {
-	// 构建要插入的数据
-	followData := map[string]interface{}{
-		"follower_id": followerId,
-		"followed_id": followedId,
-	}
-
-	// 插入数据
-	result := db.Table("sw_user_follows").Create(followData)
-
-	// 检查是否有错误
-	if result.Error != nil {
-		return fmt.Errorf("InsertFollow() err: %v", result.Error)
-	}
-	// 检查是否插入成功
-	if result.RowsAffected == 0 {
-		return fmt.Errorf("InsertFollow() err: 插入关注记录失败")
-	}
-
-	return nil
-}
-
 // QueryLastUserVerifyCodeByUserID 根据 UserID 查询最后一条 UserVerifyCode 记录（不论该数据的DeleteAt是否已经被赋值）
 func QueryLastUserVerifyCodeByUserID(db *gorm.DB, userID uint) (*models.UserVerifyCode, error) {
 	var userVerifyCode models.UserVerifyCode

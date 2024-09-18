@@ -45,7 +45,7 @@ func TableInit() {
 	// 用户模块
 
 	err := globals.DB.AutoMigrate(
-		&models.Administrator{},
+		// &models.Administrator{},
 		&models.Advertisement{},
 		&models.Attachment{},
 		&models.Resource{},
@@ -69,7 +69,7 @@ func TableInit() {
 
 		// 角色模块
 		&models.Role{},
-		&models.UserRole{},
+		&models.AdminRole{},
 	)
 
 	if err != nil {

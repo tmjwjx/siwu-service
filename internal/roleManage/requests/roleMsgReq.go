@@ -1,7 +1,7 @@
 package requests
 
-// Role 添加角色
-type Role struct {
+// RoleReq 添加角色请求
+type RoleReq struct {
 	Id     uint   `json:"id"`
 	Name   string `json:"name"`
 	Code   string `json:"code"`
@@ -9,13 +9,13 @@ type Role struct {
 	Sort   int    `json:"sort"`
 }
 
-// RoleIds 根据Id切片删除Role
-type RoleIds struct {
+// RoleIdsReq 根据Id切片删除Role请求
+type RoleIdsReq struct {
 	Ids []uint `json:"ids"`
 }
 
-// SearchRole 检索Role
-type SearchRole struct {
+// SearchRoleReq 检索Role请求
+type SearchRoleReq struct {
 	Name   string `json:"name"`
 	Code   string `json:"code"`
 	Status int    `json:"status"`
@@ -24,8 +24,8 @@ type SearchRole struct {
 	Limit  int    `json:"limit"`
 }
 
-// DispatchRole 为用户分配角色
-type DispatchRole struct {
+// DispatchRoleReq 为用户分配角色请求
+type DispatchRoleReq struct {
 	UserId uint   `json:"user_id"`
 	Ids    []uint `json:"ids"`
 }
