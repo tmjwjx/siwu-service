@@ -13,11 +13,11 @@ import (
 
 // Follow 关注和取消关注
 func Follow(c *gin.Context) {
-	userLogic := logics.NewUserLogic(globals.DB, c, globals.SendEmailCfg)
+	userReqContext := logics.NewUserReqContext(globals.DB, c, globals.SendEmailCfg)
 	// 绑定数据
-	var followMsg requests.FollowMsg
+	var followMsg requests.FollowReq
 	if err := c.ShouldBind(&followMsg); err != nil {
-		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("Follow() -> %v", err), nil))
+		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("Follow() err: %v", err), nil))
 		return
 	}
 
@@ -28,7 +28,7 @@ func Follow(c *gin.Context) {
 	}
 
 	// 业务逻辑
-	if err := userLogic.Follow(followMsg); err != nil {
+	if err := userReqContext.Follow(followMsg); err != nil {
 		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("Follow() -> %v", err), nil))
 		return
 	}
@@ -59,7 +59,7 @@ func UserRank(c *gin.Context) {
 		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("UserRank() err = 数据类型转换错误"), nil))
 		return
 	}
-	var rankMsg requests.UserRankMsg
+	var rankMsg requests.UserRankReq
 	rankMsg.Page = page
 	rankMsg.Limit = limit
 
@@ -74,8 +74,8 @@ func UserRank(c *gin.Context) {
 	}
 
 	// 业务逻辑
-	userLogic := logics.NewUserLogic(globals.DB, c, globals.SendEmailCfg)
-	userRankRep, err := userLogic.UserRank(id, rankMsg)
+	userReqContext := logics.NewUserReqContext(globals.DB, c, globals.SendEmailCfg)
+	userRankRep, err := userReqContext.UserRank(id, rankMsg)
 	if err != nil {
 		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("UserRank() -> %v", err), nil))
 		return

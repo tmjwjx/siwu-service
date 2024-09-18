@@ -7,9 +7,14 @@ import (
 	"reflect"
 )
 
+// 用户共用方法
+
 // InsertObject 插入一条数据。
+//
 // db: GORM 的数据库实例。
 // model: 指针类型。
+//
+// Returns an error
 func InsertObject(db *gorm.DB, model interface{}) error {
 	// 检查 data 是否为指针类型
 	if reflect.TypeOf(model).Kind() != reflect.Ptr {
@@ -29,8 +34,11 @@ func InsertObject(db *gorm.DB, model interface{}) error {
 }
 
 // InsertObjects 插入多条数据。
+//
 // db: GORM 的数据库实例。
 // models: 切片类型。
+//
+// Returns an error
 func InsertObjects(db *gorm.DB, models interface{}) error {
 	// 确保传入的 models 是一个切片
 	modelsValue := reflect.ValueOf(models)
@@ -50,10 +58,12 @@ func InsertObjects(db *gorm.DB, models interface{}) error {
 }
 
 // DeleteObjectsByModel 按照model模型，根据一个或多个条件删除一个或多个对象。
+//
 // db: GORM 的数据库实例。
 // modelType: 要删除的模型类型的指针。
 // condition: 删除条件的键值对。
-// int64: 返回删除的记录数。
+//
+// Returns int64:返回删除的记录数。
 func DeleteObjectsByModel(db *gorm.DB, modelType interface{}, condition map[string]interface{}) (int64, error) {
 	// 确保 modelType 是指针类型
 	if reflect.TypeOf(modelType).Kind() != reflect.Ptr {
@@ -77,10 +87,12 @@ func DeleteObjectsByModel(db *gorm.DB, modelType interface{}, condition map[stri
 }
 
 // DeleteObjectsByTable 按照表名，根据一个或多个条件删除一个或多个对象。
+//
 // db: GORM 的数据库实例。
 // tableName: 要删除的表名。
 // condition: 删除条件的键值对。
-// int64: 返回删除的记录数。
+//
+// Returns int64: 返回删除的记录数；error: 错误
 func DeleteObjectsByTable(db *gorm.DB, tableName string, condition map[string]interface{}) (int64, error) {
 	// 构建查询条件
 	query := db.Table(tableName)
@@ -99,9 +111,12 @@ func DeleteObjectsByTable(db *gorm.DB, tableName string, condition map[string]in
 }
 
 // UpdateObjects 根据一个或多个参数更新一个或多个对象。
+//
 // db: GORM 的数据库实例。
 // model: 要更新的模型类型的指针，模型中要包含查询的参数。
 // updates: 更新值的键值对。
+//
+// Returns error: 错误
 func UpdateObjects(db *gorm.DB, model interface{}, updates map[string]interface{}) error {
 	// 检查 model 是否为指针类型
 	if reflect.TypeOf(model).Kind() != reflect.Ptr {

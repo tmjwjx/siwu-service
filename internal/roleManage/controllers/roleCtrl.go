@@ -14,7 +14,7 @@ import (
 // AddRole 添加角色
 func AddRole(c *gin.Context) {
 	// 绑定数据
-	var role requests.Role
+	var role requests.RoleReq
 	if err := c.ShouldBind(&role); err != nil {
 		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("AddRole() err: 绑定数据错误"), nil))
 		return
@@ -33,7 +33,7 @@ func AddRole(c *gin.Context) {
 // DeleteRole 删除角色
 func DeleteRole(c *gin.Context) {
 	// 绑定数据
-	var ids requests.RoleIds
+	var ids requests.RoleIdsReq
 	if err := c.ShouldBind(&ids); err != nil {
 		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("DeleteRole() err: 绑定数据错误"), nil))
 		return
@@ -52,19 +52,19 @@ func DeleteRole(c *gin.Context) {
 // SearchRole 检索角色
 func SearchRole(c *gin.Context) {
 	// 绑定数据
-	var searchRole requests.SearchRole
+	var searchRole requests.SearchRoleReq
 	if err := c.ShouldBind(&searchRole); err != nil {
-		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("SearchRole() err: 绑定数据错误"), nil))
+		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("SearchRoleReq() err: 绑定数据错误"), nil))
 		return
 	}
 
 	// 检验数据
 	if searchRole.Page <= 0 {
-		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("SearchRole() err: Page参数必须为正数"), nil))
+		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("SearchRoleReq() err: Page参数必须为正数"), nil))
 		return
 	}
 	if searchRole.Limit <= 0 {
-		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("SearchRole() err: limit参数必须为正数"), nil))
+		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("SearchRoleReq() err: limit参数必须为正数"), nil))
 		return
 	}
 
@@ -72,7 +72,7 @@ func SearchRole(c *gin.Context) {
 	roleReqContext := logics.NewRoleReqContext(globals.DB, c)
 	roles, err := roleReqContext.SearchRole(searchRole)
 	if err != nil {
-		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("SearchRole() -> %v", err), nil))
+		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("SearchRoleReq() -> %v", err), nil))
 		return
 	}
 
@@ -82,7 +82,7 @@ func SearchRole(c *gin.Context) {
 // UpdateRole 更新角色
 func UpdateRole(c *gin.Context) {
 	// 绑定数据
-	var role requests.Role
+	var role requests.RoleReq
 	if err := c.ShouldBind(&role); err != nil {
 		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("UpdateRole() err: 绑定数据错误"), nil))
 		return
@@ -107,7 +107,7 @@ func GetRoleName(c *gin.Context) {
 	roleReqContext := logics.NewRoleReqContext(globals.DB, c)
 	roles, err := roleReqContext.GetRoleName(status)
 	if err != nil {
-		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("SearchRole() -> %v", err), nil))
+		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("SearchRoleReq() -> %v", err), nil))
 		return
 	}
 
@@ -138,16 +138,16 @@ func GetDetail(c *gin.Context) {
 // DispatchRole 给用户分配角色
 func DispatchRole(c *gin.Context) {
 	// 绑定数据
-	var dispatchRole requests.DispatchRole
+	var dispatchRole requests.DispatchRoleReq
 	if err := c.ShouldBind(&dispatchRole); err != nil {
-		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("DispatchRole() err: 绑定数据错误"), nil))
+		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("DispatchRoleReq() err: 绑定数据错误"), nil))
 		return
 	}
 
 	// 业务逻辑
 	roleReqContext := logics.NewRoleReqContext(globals.DB, c)
 	if err := roleReqContext.DispatchRole(dispatchRole); err != nil {
-		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("DispatchRole() -> %v", err), nil))
+		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("DispatchRoleReq() -> %v", err), nil))
 		return
 	}
 

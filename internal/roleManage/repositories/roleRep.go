@@ -76,28 +76,6 @@ func DeleteObjectsByModel(db *gorm.DB, modelType interface{}, condition map[stri
 	return result.RowsAffected, nil
 }
 
-// DeleteObjectsByTable 按照表名，根据一个或多个条件删除一个或多个对象。
-// db: GORM 的数据库实例。
-// tableName: 要删除的表名。
-// condition: 删除条件的键值对。
-// int64: 返回删除的记录数。
-func DeleteObjectsByTable(db *gorm.DB, tableName string, condition map[string]interface{}) (int64, error) {
-	// 构建查询条件
-	query := db.Table(tableName)
-	for key, value := range condition {
-		query = query.Where(fmt.Sprintf("%s = ?", key), value)
-	}
-
-	// 执行删除操作。query.Delete(nil)：删除符合条件的记录，不需要指定具体的模型类型。
-	result := query.Delete(nil)
-	if result.Error != nil {
-		return 0, fmt.Errorf("DeleteObjectsByModel() err: %v\t执行的查询语句为: %v", result.Error, result.Statement.SQL.String())
-	}
-
-	// 返回删除的记录数
-	return result.RowsAffected, nil
-}
-
 // UpdateObjects 根据一个或多个参数更新一个或多个对象。
 // db: GORM 的数据库实例。
 // model: 要更新的模型类型的指针，模型中要包含查询的参数。
