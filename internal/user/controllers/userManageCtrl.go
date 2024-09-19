@@ -33,7 +33,7 @@ func Reset(c *gin.Context) {
 // Add 添加用户
 func Add(c *gin.Context) {
 	// 绑定数据
-	var addReq requests.AddAndEditReq
+	var addReq requests.AddReq
 	err := c.ShouldBind(&addReq)
 	if err != nil {
 		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("Add() err: %v", err), nil))
@@ -49,11 +49,12 @@ func Add(c *gin.Context) {
 
 	// 业务逻辑
 	userReqContext := logics.NewUserReqContext(globals.DB, c, globals.SendEmailCfg)
-	if err = userReqContext.Add(addReq); err != nil {
+	id, err := userReqContext.Add(addReq)
+	if err != nil {
 		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("Add() -> %v", err), nil))
 		return
 	}
-	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", nil))
+	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", gin.H{"id": id}))
 }
 
 // Delete 删除用户
@@ -78,7 +79,7 @@ func Delete(c *gin.Context) {
 // Edit 编辑用户
 func Edit(c *gin.Context) {
 	// 绑定数据
-	var editReq requests.AddAndEditReq
+	var editReq requests.EditReq
 	err := c.ShouldBind(&editReq)
 	if err != nil {
 		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("Edit() err: %v", err), nil))
@@ -87,11 +88,10 @@ func Edit(c *gin.Context) {
 
 	// 业务逻辑
 	userReqContext := logics.NewUserReqContext(globals.DB, c, globals.SendEmailCfg)
-	if err := userReqContext.Edit(editReq); err != nil {
+	if err = userReqContext.Edit(editReq); err != nil {
 		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("Edit() -> %v", err), nil))
 		return
 	}
-
 	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", nil))
 }
 

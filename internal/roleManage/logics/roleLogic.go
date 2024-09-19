@@ -57,8 +57,10 @@ func (r *RoleReqContext) SearchRole(searchRole requests.SearchRoleReq) ([]*model
 	if searchRole.Code != "" {
 		conditions["code"] = searchRole.Code
 	}
-	// searchRole.Status == 0 代表着全部
-	conditions["status"] = searchRole.Status
+	// status == 0 代表着全部
+	if searchRole.Status != 0 {
+		conditions["status"] = searchRole.Status
+	}
 
 	// 查询
 	roleSli, err := repositories.QueryRolesByPage(r.DB, conditions, searchRole.Page, searchRole.Limit)

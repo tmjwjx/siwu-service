@@ -14,10 +14,10 @@ type LogicReq struct {
 	Password string `json:"password"` // 密码
 }
 
-// VerifyCodeReq 验证码消息请求
-type VerifyCodeReq struct {
-	Email string `json:"email" form:"email"` // 邮箱
-}
+// // VerifyCodeReq 验证码消息请求
+// type VerifyCodeReq struct {
+// 	Email string `json:"email" form:"email"` // 邮箱
+// }
 
 // FollowReq 关注，取消关注请求
 type FollowReq struct {
