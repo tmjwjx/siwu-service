@@ -83,10 +83,9 @@ func (u *UserReqContext) Register(registerMsg requests.RegisterReq) error {
 }
 
 // ReqVerifyCode 用户请求验证码
-func (u *UserReqContext) ReqVerifyCode(reqVerifyCode requests.VerifyCodeReq) error {
+func (u *UserReqContext) ReqVerifyCode(email string) error {
 	// 随机生成验证码
 	verifyCode := internal_utils.RandomGenerateStrings(internal_utils.VerifyCodeLen)
-	email := reqVerifyCode.Email
 
 	// 存储数据
 
@@ -194,13 +193,19 @@ func (u *UserReqContext) Login(logicMsg requests.LogicReq) error {
 	// 根据邮箱查用户
 	user := repositories.QueryUserByEmail(u.DB, email)
 	if user == nil {
-		return fmt.Errorf("UserReqContext.Login() : 不存在该邮箱用户")
+		return fmt.Errorf("UserReqContext.Login() err: 不存在该邮箱用户")
 	}
 
 	// 比较加密密码
 	encryptedPassword := user.Password
 	if !internal_utils.CheckPasswordHash(password, encryptedPassword) {
-		return fmt.Errorf("UserReqContext.Login() : 密码错误")
+		return fmt.Errorf("UserReqContext.Login() err: 密码错误")
+	}
+
+	// 改变 LastLoginTime
+	now := time.Now() // 获取当前时间
+	if err := repositories.UpdateObjects(u.DB, &models.User{Model: gorm.Model{ID: user.ID}}, map[string]interface{}{"last_login_time": now}); err != nil {
+		return fmt.Errorf("UserReqContext.Login() -> %v", err)
 	}
 
 	return nil

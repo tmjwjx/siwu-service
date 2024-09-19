@@ -117,8 +117,7 @@ func GetRoleName(c *gin.Context) {
 // GetDetail 获取当前角色详情
 func GetDetail(c *gin.Context) {
 	// 查询参数 Query
-	id := c.Query("id")
-	i, err := strconv.Atoi(id)
+	id, err := strconv.Atoi(c.Query("id"))
 	if err != nil {
 		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("GetDetail() err: 数据错误"), nil))
 		return
@@ -126,7 +125,7 @@ func GetDetail(c *gin.Context) {
 
 	// 业务逻辑
 	roleReqContext := logics.NewRoleReqContext(globals.DB, c)
-	roles, err := roleReqContext.GetDetail(uint(i))
+	roles, err := roleReqContext.GetDetail(uint(id))
 	if err != nil {
 		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("GetDetail() -> %v", err), nil))
 		return

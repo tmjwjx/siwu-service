@@ -4,11 +4,20 @@ type ReseatReq struct {
 	Id uint `json:"id"`
 }
 
-// AddAndEditReq 添加、编辑用户请求
-type AddAndEditReq struct {
-	NickName   string `json:"nick_name"`
+// AddReq 添加用户请求
+type AddReq struct {
+	NickName   string `json:"nickname"`
 	Email      string `json:"email"`
-	UserStatus int    `json:"user_status"` // 用户状态 1正常 2封禁 0全部
+	UserStatus int    `json:"user_status"` // 用户状态 0全部 1正常 2封禁
+	RoleIds    []uint `json:"role_ids"`
+}
+
+// EditReq 编辑用户请求
+type EditReq struct {
+	UserId     uint   `json:"user_id"`
+	NickName   string `json:"nickname"`
+	Email      string `json:"email"`
+	UserStatus int    `json:"user_status"` // 用户状态 0全部 1正常 2封禁
 	RoleIds    []uint `json:"role_ids"`
 }
 
