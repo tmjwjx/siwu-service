@@ -47,7 +47,7 @@ type Tags struct {
 //type ArcList struct {
 //	gorm.Model //ID CreatedAt UpdatedAt DeletedAt
 //	//UserID           uint         `json:"user_id" gorm:"index"`                                                // 作者ID，外键
-//	//Title            string       `json:"title" gorm:"not null"`                                               // 文章标题
+//	//Keyword            string       `json:"title" gorm:"not null"`                                               // 文章标题
 //	//CollectionsCount int          `json:"collections_count" gorm:"default:0"`                                  // 收藏数量
 //	//CommentsCount    int          `json:"comments_count" gorm:"default:0"`                                     // 评论数量
 //	//ViewsCount       int          `json:"views_count" gorm:"default:0"`                                        // 浏览量

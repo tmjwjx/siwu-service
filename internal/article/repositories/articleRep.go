@@ -1,23 +1,100 @@
 package repositories
 
 import (
-	"fmt"
 	"forum/internal/article/requests"
 	"forum/internal/models"
 	"forum/pkg/globals"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"strconv"
+	"time"
 )
+
+// InsertArticlesRep 新建文章
+func InsertArticlesRep(db *gorm.DB, req requests.ReqPublish) error {
+
+	newArticle := models.Article{
+		UserID:           req.UserId,
+		Title:            req.Title,
+		LikesCount:       0,
+		CollectionsCount: 0,
+		CommentsCount:    0,
+		ViewsCount:       0,
+		Heat:             0,
+		Status:           req.Status,
+		CategoryID:       req.CategoryID,
+		Summary:          req.Summary,
+		Content:          req.Content,
+	}
+	result := db.Create(&newArticle)
+	if result.Error != nil {
+		globals.Log.Fatal("创建文章失败:", result.Error)
+	}
+
+	return nil
+}
+
+// UpdatePublishRep 设置文章的发布时间
+func UpdatePublishRep(db *gorm.DB, article *models.Article) error {
+
+	*article.PublishedAt = time.Now()
+
+	// 更新数据库中的文章记录
+	if err := db.Save(article).Error; err != nil {
+		return err // 返回错误
+	}
+
+	return nil
+}
+
+// QueryTag 返回全部标签
+func QueryTag(db *gorm.DB) (tags []models.Tag, err error) {
+	// 查询 Tag 表中的所有数据
+	if err = db.Find(&tags).Error; err != nil {
+		globals.Log.Errorf("err = %s", err)
+		return nil, err
+	}
+
+	return tags, nil
+}
+
+// QueryCategory 返回全部类目
+func QueryCategory(db *gorm.DB) (categories []models.Category, err error) {
+
+	// 查询 Category 表中的所有数据
+	if err = db.Find(&categories).Error; err != nil {
+		globals.Log.Errorf("err = %s", err)
+		return nil, err
+	}
+
+	return categories, nil
+
+}
+
+// ArticlesOrder
+// @Description: 选择排序方式 0热度 1时间
+// @param        kind int
+// @return       string
+func ArticlesOrder(kind int) string {
+	var condition string
+	if kind == 0 { // 0 代表按照热度排序
+		condition = "heat DESC"
+	} else if kind == 1 { // 1 代表按照发布时间排序
+		condition = "published_at DESC"
+	}
+	return condition
+}
+
+func emptyJudgment(data interface{}) {
+	if data == nil {
+
+	}
+}
 
 // SearchArticlesRep 搜索文章
 func SearchArticlesRep(db *gorm.DB, req *requests.ReqSearch) (articles []models.Article, err error) {
-	var condition string
-	if req.Kind == 0 { // 0 代表按照热度排序
-		condition = "heat DESC"
-	} else if req.Kind == 1 { // 1 代表按照发布时间排序
-		condition = "published_at DESC"
-	}
+
+	condition := ArticlesOrder(req.Kind) // 选择排序方式  0热度 1时间
 
 	query := db.Model(&models.Article{})
 
@@ -25,18 +102,9 @@ func SearchArticlesRep(db *gorm.DB, req *requests.ReqSearch) (articles []models.
 		query = query.Joins("JOIN user_follows ON articles.user_id = user_follows.followed_id").
 			Where("user_follows.follower_id = ?", req.UserId)
 		condition = "published_at DESC" // 按照 关注 查询只能按照 时间 排序
-	} else if req.Query != "" { // 按关键词搜索
-		query = query.Where("title LIKE ? OR summary LIKE ?", "%"+req.Query+"%", "%"+req.Query+"%")
-	} else if req.Tag != "" { //按标签筛选
-		var tag models.Tag
-		// 根据标签名称查找 tag_id
-		if err = db.Where("name = ?", req.Tag).First(&tag).Error; err != nil {
-			globals.Log.Errorf("err = %s", err)
-			return nil, err // 返回 nil 和错误信息
-		}
-		fmt.Println(tag)
-		query = query.Joins("JOIN article_tags ON articles.id = article_tags.article_id").
-			Where("article_tags.tag_id = ?", tag.ID)
+	}
+	if req.Keyword != "" { // 按关键词搜索
+		query = query.Where("title LIKE ? OR summary LIKE ?", "%"+req.Keyword+"%", "%"+req.Keyword+"%")
 	}
 
 	if req.CategoryId != 0 { // 按类目筛选
@@ -194,4 +262,23 @@ func DeleteArticlesRep(db *gorm.DB, id string) error {
 	//	return err
 	//}
 	return nil
+}
+
+// ArticleDetailRep
+// @Description: 获取文章详情
+// @param        db *gorm.DB
+// @param        id string
+// @return       requests.ArticleDetailRes
+// @return       error
+func ArticleDetailRep(db *gorm.DB, id string) (requests.ArticleDetailRes, error) {
+
+	articleDetail := requests.ArticleDetailRes{}
+	query := db.Model(&models.Article{})
+
+	query = query.Where("id = ?", id)
+	query = query.Joins("User")
+
+	query.Find(&articleDetail)
+
+	return articleDetail, nil
 }
