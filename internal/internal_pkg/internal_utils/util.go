@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"forum/internal/models"
 	"forum/pkg/globals"
+	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 	"math/rand"
 	"os"
@@ -89,4 +90,28 @@ func CreateFolder(path string) error {
 		return fmt.Errorf("CreateFolder -> 创建存储静态文件的目录路径文件夹失败 -> %s", err)
 	}
 	return nil
+}
+
+// emptyFilled
+// @Description: 空接口填充
+// @param        data interface{}
+func emptyFilled(data interface{}) interface{} {
+	if data == nil {
+		data = gin.H{}
+	}
+	return data
+}
+
+// ArticlesOrder
+// @Description: 选择排序方式 0热度 1时间
+// @param        kind int
+// @return       string
+func ArticlesOrder(kind int) string {
+	var condition string
+	if kind == 0 { // 0 代表按照热度排序
+		condition = "heat DESC"
+	} else if kind == 1 { // 1 代表按照发布时间排序
+		condition = "published_at DESC"
+	}
+	return condition
 }

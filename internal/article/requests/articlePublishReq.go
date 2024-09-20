@@ -1,5 +1,7 @@
 package requests
 
+// ReqPublish
+// @Description: 发布文章请求
 type ReqPublish struct {
 	UserId     uint     `json:"user_id" form:"user_id"`
 	Title      string   `json:"title" form:"title"`

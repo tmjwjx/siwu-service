@@ -5,7 +5,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Article 发布文章
+// Article
+// @Description: 文章
+// @param        e *gin.Engine
 func Article(e *gin.Engine) {
 
 	// 搜索
@@ -18,9 +20,9 @@ func Article(e *gin.Engine) {
 		// 发布文章
 		articleGroup.POST("/publish", controllers.ArticlePublishCtrl)
 		// 获取文章列表
-		articleGroup.POST("/get_list", controllers.GetArticleList)
+		articleGroup.POST("/get_list", controllers.ArticleListCtrl)
 		// 封禁文章
-		articleGroup.GET("/ban", controllers.BanArticlesCtrl)
+		articleGroup.GET("/ban", controllers.ArticleBanCtrl)
 		// 删除文章
 		articleGroup.DELETE("/delete", controllers.DeleteArticlesCtrl)
 	}

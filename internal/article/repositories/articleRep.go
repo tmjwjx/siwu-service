@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"forum/internal/article/requests"
+	"forum/internal/internal_pkg/internal_utils"
 	"forum/internal/models"
 	"forum/pkg/globals"
 	"github.com/gin-gonic/gin"
@@ -71,38 +72,44 @@ func QueryCategory(db *gorm.DB) (categories []models.Category, err error) {
 
 }
 
-// ArticlesOrder
-// @Description: 选择排序方式 0热度 1时间
-// @param        kind int
-// @return       string
-func ArticlesOrder(kind int) string {
-	var condition string
-	if kind == 0 { // 0 代表按照热度排序
-		condition = "heat DESC"
-	} else if kind == 1 { // 1 代表按照发布时间排序
-		condition = "published_at DESC"
-	}
-	return condition
-}
-
-func emptyJudgment(data interface{}) {
-	if data == nil {
-
-	}
-}
+//// ArticlesOrder
+//// @Description: 选择排序方式 0热度 1时间
+//// @param        kind int
+//// @return       string
+//func ArticlesOrder(kind int) string {
+//	var condition string
+//	if kind == 0 { // 0 代表按照热度排序
+//		condition = "heat DESC"
+//	} else if kind == 1 { // 1 代表按照发布时间排序
+//		condition = "published_at DESC"
+//	}
+//	return condition
+//}
+//
+//// emptyFilled
+//// @Description: 空接口填充
+//// @param        data interface{}
+//func emptyFilled(data interface{}) interface{} {
+//	if data == nil {
+//		data = gin.H{}
+//	}
+//	return data
+//}
 
 // SearchArticlesRep 搜索文章
 func SearchArticlesRep(db *gorm.DB, req *requests.ReqSearch) (articles []models.Article, err error) {
 
-	condition := ArticlesOrder(req.Kind) // 选择排序方式  0热度 1时间
+	condition := internal_utils.ArticlesOrder(req.Kind) // 选择排序方式  0热度 1时间
 
-	query := db.Model(&models.Article{})
+	query := db.Model(&models.Article{}).Preload("Tags").
+		Select("sw_articles.*, sw_users.nickname").
+		Joins("LEFT JOIN sw_users ON sw_users.id = sw_articles.user_id")
 
-	if req.UserId != 0 { // 按用户ID筛选
-		query = query.Joins("JOIN user_follows ON articles.user_id = user_follows.followed_id").
-			Where("user_follows.follower_id = ?", req.UserId)
-		condition = "published_at DESC" // 按照 关注 查询只能按照 时间 排序
-	}
+	//if req.UserId != 0 { // 按用户ID筛选
+	//	query = query.Joins("JOIN user_follows ON articles.user_id = user_follows.followed_id").
+	//		Where("user_follows.follower_id = ?", req.UserId)
+	//	condition = "published_at DESC" // 按照 关注 查询只能按照 时间 排序
+	//}
 	if req.Keyword != "" { // 按关键词搜索
 		query = query.Where("title LIKE ? OR summary LIKE ?", "%"+req.Keyword+"%", "%"+req.Keyword+"%")
 	}
@@ -181,8 +188,8 @@ func SearchArticlesListRep(db *gorm.DB, req *requests.ArticleListReq) (data inte
 	query = query.Where("status = ?", "public")
 
 	// 关键字
-	if req.Title != "" {
-		query = query.Where("title LIKE ?", "%"+req.Title+"%")
+	if req.Keyword != "" {
+		query = query.Where("title LIKE ?", "%"+req.Keyword+"%")
 	}
 
 	//标签id

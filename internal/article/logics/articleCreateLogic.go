@@ -56,8 +56,8 @@ func ArticleEditLogic(db *gorm.DB) (data interface{}, err error) {
 	return data, nil
 }
 
-// ArticlePublicLogic 发布文章
-func ArticlePublicLogic(db *gorm.DB, req requests.ReqPublish) error {
+// ArticleCreateLogic 发布文章
+func ArticleCreateLogic(db *gorm.DB, req requests.ReqPublish) error {
 	repositories.InsertArticlesRep(db, req)
 	return nil
 }
