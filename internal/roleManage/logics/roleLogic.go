@@ -47,7 +47,7 @@ func (r *RoleReqContext) DeleteRole(ids requests.RoleIdsReq) error {
 }
 
 // SearchRole 检索数据
-func (r *RoleReqContext) SearchRole(searchRole requests.SearchRoleReq) ([]*models.Role, error) {
+func (r *RoleReqContext) SearchRole(searchRole requests.SearchRoleReq) ([]*requests.SearchRoleRes, int, error) {
 	conditions := map[string]interface{}{}
 
 	// 判断是否该添加某些查询条件（如果某些条件为空，那么就不查询这个条件）
@@ -63,12 +63,25 @@ func (r *RoleReqContext) SearchRole(searchRole requests.SearchRoleReq) ([]*model
 	}
 
 	// 查询
-	roleSli, err := repositories.QueryRolesByPage(r.DB, conditions, searchRole.Page, searchRole.Limit)
+	roleSli, total, err := repositories.QueryRolesByPage(r.DB, conditions, searchRole.Page, searchRole.Limit)
 	if err != nil {
-		return nil, fmt.Errorf("RoleReqContext.SearchRoleReq() -> %v", err)
+		return nil, 0, fmt.Errorf("RoleReqContext.SearchRoleReq() -> %v", err)
 	}
 
-	return roleSli, nil
+	// 选择需要的数据
+	var searchRoleRes []*requests.SearchRoleRes
+	for _, v := range roleSli {
+		searchRoleRes = append(searchRoleRes, &requests.SearchRoleRes{
+			Id:        v.ID,
+			CreatedAt: v.CreatedAt.Format("2006-01-02 15:04:05"),
+			Name:      v.Name,
+			Code:      v.Code,
+			Status:    v.Status,
+			Sort:      v.Sort,
+		})
+	}
+
+	return searchRoleRes, total, nil
 }
 
 // UpdateRole 更新角色
@@ -93,24 +106,48 @@ func (r *RoleReqContext) UpdateRole(role requests.RoleReq) error {
 }
 
 // GetRoleName 获取所有已启用的角色名称列表
-func (r *RoleReqContext) GetRoleName(status int) ([]*models.Role, error) {
+func (r *RoleReqContext) GetRoleName(status int) ([]*requests.SearchRoleRes, error) {
 	// 查询
 	roleSli, err := repositories.QueryRoles(r.DB, map[string]interface{}{"status": status})
 	if err != nil {
 		return nil, fmt.Errorf("RoleReqContext.GetRoleName() -> %v", err)
 	}
 
-	return roleSli, nil
+	// 选择需要的数据
+	var searchRoleRes []*requests.SearchRoleRes
+	for _, v := range roleSli {
+		searchRoleRes = append(searchRoleRes, &requests.SearchRoleRes{
+			Id:        v.ID,
+			CreatedAt: v.CreatedAt.Format("2006-01-02 15:04:05"),
+			Name:      v.Name,
+			Code:      v.Code,
+			Status:    v.Status,
+			Sort:      v.Sort,
+		})
+	}
+
+	return searchRoleRes, nil
 }
 
 // GetDetail 获取当前角色详情
-func (r *RoleReqContext) GetDetail(id uint) (*models.Role, error) {
+func (r *RoleReqContext) GetDetail(id uint) (*requests.SearchRoleRes, error) {
 	// 查询
 	role := repositories.QueryRoleById(r.DB, id)
 	if role == nil {
 		return nil, fmt.Errorf("RoleReqContext.GetDetail err = 没有查询到id为 %v 的角色", id)
 	}
-	return role, nil
+
+	// 选择需要的数据
+	searchRoleRes := &requests.SearchRoleRes{
+		Id:        role.ID,
+		CreatedAt: role.CreatedAt.Format("2006-01-02 15:04:05"),
+		Name:      role.Name,
+		Code:      role.Code,
+		Status:    role.Status,
+		Sort:      role.Sort,
+	}
+
+	return searchRoleRes, nil
 }
 
 // DispatchRole 给用户分配角色

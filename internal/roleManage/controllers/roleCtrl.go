@@ -70,13 +70,13 @@ func SearchRole(c *gin.Context) {
 
 	// 业务逻辑
 	roleReqContext := logics.NewRoleReqContext(globals.DB, c)
-	roles, err := roleReqContext.SearchRole(searchRole)
+	roles, total, err := roleReqContext.SearchRole(searchRole)
 	if err != nil {
 		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("SearchRoleReq() -> %v", err), nil))
 		return
 	}
 
-	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", gin.H{"role_list": roles}))
+	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", gin.H{"role_list": roles, "total": total}))
 }
 
 // UpdateRole 更新角色

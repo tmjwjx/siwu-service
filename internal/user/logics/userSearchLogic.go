@@ -7,7 +7,7 @@ import (
 	"forum/internal/models"
 	"forum/internal/user/repositories"
 	"forum/internal/user/requests"
-	"forum/pkg/utils"
+	"github.com/samber/lo"
 	"gorm.io/gorm"
 )
 
@@ -100,14 +100,19 @@ func (u *UserReqContext) UserRank(id uint, msg requests.UserRankReq) ([]*request
 	if err != nil {
 		return nil, fmt.Errorf("UserReqContext.UserRank() -> %v", err)
 	}
-	// 将uint切片转换为map
-	m := utils.UintToMap(ids)
+
+	// 使用 lo.Associate 将 []uint 转换为 map[uint]bool
+	m := lo.Associate(ids, func(item uint) (uint, bool) {
+		return item, true
+	})
 
 	// 查询每个id的详细信息
 	for i, v := range usersRank {
 		// 查询用户的职业描述
 		userDetail := repositories.QueryUserDetailsById(u.DB, v.ID)
-
+		if userDetail == nil {
+			return nil, fmt.Errorf("UserReqContext.UserRank() err: user_id为 %v 的userDetail不存在", v.ID)
+		}
 		userRankReqSli[i] = &requests.UserRankRes{
 			Id:              v.ID,
 			Nickname:        v.Nickname,
@@ -115,7 +120,7 @@ func (u *UserReqContext) UserRank(id uint, msg requests.UserRankReq) ([]*request
 		}
 
 		// 查询用户的头像路径
-		userImgs, err := controllers.GetImagesControllers("user", v.ID)
+		userImgs, err := controllers.GetImagesControllers("用户", v.ID)
 		if err != nil {
 			// 数据库中没有该用户的头像，使用默认的头像
 			userRankReqSli[i].AvatarPath = internal_utils.UserDefaultImage
