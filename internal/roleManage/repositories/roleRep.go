@@ -119,7 +119,8 @@ func QueryRoles(db *gorm.DB, conditions map[string]interface{}) ([]*models.Role,
 // page: 第几页。
 // limit: 每页数据条数。
 // 例子：如果 page = 2，limit = 10，那么会跳过前 10 条记录，返回第 11-20 条记录。
-func QueryRolesByPage(db *gorm.DB, conditions map[string]interface{}, page int, limit int) ([]*models.Role, error) {
+// 返回的int表示一共有多少条符合条件的数据
+func QueryRolesByPage(db *gorm.DB, conditions map[string]interface{}, page int, limit int) ([]*models.Role, int, error) {
 	var roles []*models.Role
 
 	// 使用条件查询
@@ -127,6 +128,10 @@ func QueryRolesByPage(db *gorm.DB, conditions map[string]interface{}, page int, 
 	for key, value := range conditions {
 		query = query.Where(fmt.Sprintf("%s = ?", key), value)
 	}
+
+	// 查看符合条件的数据一共有多少条
+	query.Find(&roles)
+	total := len(roles)
 
 	// 添加分页逻辑
 	if page > 0 && limit > 0 {
@@ -136,10 +141,10 @@ func QueryRolesByPage(db *gorm.DB, conditions map[string]interface{}, page int, 
 
 	// 执行查询
 	if err := query.Find(&roles).Error; err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
-	return roles, nil
+	return roles, total, nil
 }
 
 // QueryRoleById 通过ID查找角色

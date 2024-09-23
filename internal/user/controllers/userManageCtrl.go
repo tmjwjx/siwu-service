@@ -9,6 +9,7 @@ import (
 	"forum/pkg/response"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strconv"
 )
 
 // Reset 重置用户密码
@@ -86,6 +87,13 @@ func Edit(c *gin.Context) {
 		return
 	}
 
+	// 数据校验
+	// 判断邮箱是否合法
+	if !internal_utils.IsValidEmail(editReq.Email) {
+		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("Edit() err: 邮箱不合法"), nil))
+		return
+	}
+
 	// 业务逻辑
 	userReqContext := logics.NewUserReqContext(globals.DB, c, globals.SendEmailCfg)
 	if err = userReqContext.Edit(editReq); err != nil {
@@ -117,31 +125,101 @@ func List(c *gin.Context) {
 
 	// 业务逻辑
 	userReqContext := logics.NewUserReqContext(globals.DB, c, globals.SendEmailCfg)
-	listRes, err := userReqContext.List(listReq)
+	listRes, total, err := userReqContext.List(listReq)
 	if err != nil {
 		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("List() -> %v", err), nil))
 		return
 	}
 
-	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", gin.H{"user_list": listRes}))
+	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", gin.H{"user_list": listRes, "total": total}))
 }
 
 // Import 导入用户表
 func Import(c *gin.Context) {
+	// 获取上传的文件
+	file, err := c.FormFile("file")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to get file"})
+		return
+	}
 
+	// 业务逻辑
+	userReqContext := logics.NewUserReqContext(globals.DB, c, globals.SendEmailCfg)
+	if err = userReqContext.Import(file); err != nil {
+		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("Export() err: %v", err), nil))
+		return
+	}
+	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", nil))
 }
 
 // Export 导出用户表
 func Export(c *gin.Context) {
 
+	// 设置响应头，返回 Excel 文件
+	c.Header("Content-Disposition", "attachment; filename=users.xlsx")
+	c.Header("Content-Type", "application/octet-stream")
+	c.Header("Content-Transfer-Encoding", "binary")
+
+	// 业务逻辑
+	userReqContext := logics.NewUserReqContext(globals.DB, c, globals.SendEmailCfg)
+	if err := userReqContext.Export(); err != nil {
+		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("Export() err: %v", err), nil))
+		return
+	}
+	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", nil))
 }
 
 // ImportTemplate 下载导入用户模版excel
 func ImportTemplate(c *gin.Context) {
+	// 设置响应头，返回 Excel 文件
+	c.Header("Content-Disposition", "attachment; filename=user_template.xlsx")
+	c.Header("Content-Type", "application/octet-stream")
+	c.Header("Content-Transfer-Encoding", "binary")
 
+	// 业务逻辑
+	userReqContext := logics.NewUserReqContext(globals.DB, c, globals.SendEmailCfg)
+	if err := userReqContext.ImportTemplate(); err != nil {
+		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("ImportTemplate() err: %v", err), nil))
+		return
+	}
+	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", nil))
 }
 
 // GetInfo 获取当前用户基本信息
 func GetInfo(c *gin.Context) {
+	// 获取参数
+	id, err := strconv.Atoi(c.Query("id"))
+	if err != nil {
+		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("GetDetail() err: 数据错误"), nil))
+		return
+	}
 
+	// 业务逻辑
+	userReqContext := logics.NewUserReqContext(globals.DB, c, globals.SendEmailCfg)
+	info, err := userReqContext.GetInfo(uint(id))
+	if err != nil {
+		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("GetInfo() -> %v", err), nil))
+		return
+	}
+	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", info))
+}
+
+// UploadHeadshot 上传用户头像
+func UploadHeadshot(c *gin.Context) {
+	// 获取参数
+	id, err := strconv.Atoi(c.Query("id"))
+	if err != nil {
+		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("UploadHeadshot() err: 数据错误"), nil))
+		return
+	}
+
+	// 业务逻辑
+	userReqContext := logics.NewUserReqContext(globals.DB, c, globals.SendEmailCfg)
+	err = userReqContext.UploadHeadshot(uint(id))
+	if err != nil {
+		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("UploadHeadshot() -> %v", err), nil))
+		return
+	}
+
+	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", nil))
 }

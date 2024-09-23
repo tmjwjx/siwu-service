@@ -24,6 +24,16 @@ type SearchRoleReq struct {
 	Limit  int    `json:"limit"`
 }
 
+// SearchRoleRes 检索角色响应
+type SearchRoleRes struct {
+	Id        uint   `json:"id"`
+	CreatedAt string `json:"created_at"`
+	Name      string `json:"name"`
+	Code      string `json:"code"`
+	Status    int    `json:"status"`
+	Sort      int    `json:"sort"`
+}
+
 // DispatchRoleReq 为用户分配角色请求
 type DispatchRoleReq struct {
 	UserId uint   `json:"user_id"`

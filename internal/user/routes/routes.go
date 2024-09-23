@@ -62,9 +62,11 @@ func User(e *gin.Engine) {
 	r.POST("/import", controllers.Import)
 	// 导出用户表
 	r.GET("/export", controllers.Export)
-	// 	下载导入用户模版excel
+	// 下载导入用户模版excel
 	r.GET("/import/template", controllers.ImportTemplate)
 	// 获取当前用户基本信息
 	r.GET("/getInfo", controllers.GetInfo)
+	// 上传用户头像
+	r.POST("/upload/headshot", controllers.UploadHeadshot)
 
 }

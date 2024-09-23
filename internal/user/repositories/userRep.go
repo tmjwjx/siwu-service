@@ -136,6 +136,7 @@ func UpdateObjects(db *gorm.DB, model interface{}, updates map[string]interface{
 func QueryUserById(db *gorm.DB, id uint) *models.User {
 	var user models.User
 	d := db.Model(&models.User{}).Where("id = ?", id).Select("*").Scan(&user)
+	// 没有找到用户
 	if d.RowsAffected == 0 {
 		return nil
 	}
@@ -146,6 +147,20 @@ func QueryUserById(db *gorm.DB, id uint) *models.User {
 func QueryUserByEmail(db *gorm.DB, email string) *models.User {
 	var user models.User
 	d := db.Model(&models.User{}).Where("email = ?", email).Select("*").Scan(&user)
+	// 没有找到用户
+	if d.RowsAffected == 0 {
+		return nil
+	}
+	return &user
+}
+
+// QueryUserByIdIncludeSoftDelete 通过ID查找用户，包括已软删除的用户）
+func QueryUserByIdIncludeSoftDelete(db *gorm.DB, id uint) *models.User {
+	var user models.User
+	// 使用 Unscoped() 包括软删除的记录
+	d := db.Unscoped().Model(&models.User{}).Where("id = ?", id).Select("*").Scan(&user)
+
+	// 没有找到用户
 	if d.RowsAffected == 0 {
 		return nil
 	}
