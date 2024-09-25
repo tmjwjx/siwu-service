@@ -137,7 +137,7 @@ func QueryUserById(db *gorm.DB, id uint) *models.User {
 	var user models.User
 	d := db.Model(&models.User{}).Where("id = ?", id).Select("*").Scan(&user)
 	// 没有找到用户
-	if d.RowsAffected == 0 {
+	if d.RowsAffected <= 0 {
 		return nil
 	}
 	return &user
@@ -148,7 +148,7 @@ func QueryUserByEmail(db *gorm.DB, email string) *models.User {
 	var user models.User
 	d := db.Model(&models.User{}).Where("email = ?", email).Select("*").Scan(&user)
 	// 没有找到用户
-	if d.RowsAffected == 0 {
+	if d.RowsAffected <= 0 {
 		return nil
 	}
 	return &user
@@ -161,7 +161,7 @@ func QueryUserByIdIncludeSoftDelete(db *gorm.DB, id uint) *models.User {
 	d := db.Unscoped().Model(&models.User{}).Where("id = ?", id).Select("*").Scan(&user)
 
 	// 没有找到用户
-	if d.RowsAffected == 0 {
+	if d.RowsAffected <= 0 {
 		return nil
 	}
 	return &user
@@ -171,7 +171,7 @@ func QueryUserByIdIncludeSoftDelete(db *gorm.DB, id uint) *models.User {
 func QueryUserDetailsById(db *gorm.DB, id uint) *models.UserDetail {
 	var userDetail models.UserDetail
 	d := db.Model(&models.UserDetail{}).Where("user_id = ?", id).Select("*").Scan(&userDetail)
-	if d.RowsAffected == 0 {
+	if d.RowsAffected <= 0 {
 		return nil
 	}
 	return &userDetail

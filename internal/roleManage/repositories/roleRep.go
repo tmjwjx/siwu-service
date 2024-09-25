@@ -151,7 +151,7 @@ func QueryRolesByPage(db *gorm.DB, conditions map[string]interface{}, page int, 
 func QueryRoleById(db *gorm.DB, id uint) *models.Role {
 	var role models.Role
 	d := db.Model(&models.Role{}).Where("id = ?", id).Select("*").Scan(&role)
-	if d.RowsAffected == 0 {
+	if d.RowsAffected <= 0 {
 		return nil
 	}
 
@@ -162,7 +162,7 @@ func QueryRoleById(db *gorm.DB, id uint) *models.Role {
 func QueryUserById(db *gorm.DB, id uint) *models.User {
 	var user models.User
 	d := db.Model(&models.User{}).Where("id = ?", id).Select("*").Scan(&user)
-	if d.RowsAffected == 0 {
+	if d.RowsAffected <= 0 {
 		return nil
 	}
 	return &user

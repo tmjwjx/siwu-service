@@ -169,8 +169,8 @@ func Export(c *gin.Context) {
 	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", nil))
 }
 
-// ImportTemplate 下载导入用户模版excel
-func ImportTemplate(c *gin.Context) {
+// DownloadTemplate 下载导入用户模版excel
+func DownloadTemplate(c *gin.Context) {
 	// 设置响应头，返回 Excel 文件
 	c.Header("Content-Disposition", "attachment; filename=user_template.xlsx")
 	c.Header("Content-Type", "application/octet-stream")
@@ -178,8 +178,8 @@ func ImportTemplate(c *gin.Context) {
 
 	// 业务逻辑
 	userReqContext := logics.NewUserReqContext(globals.DB, c, globals.SendEmailCfg)
-	if err := userReqContext.ImportTemplate(); err != nil {
-		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("ImportTemplate() err: %v", err), nil))
+	if err := userReqContext.DownloadTemplate(); err != nil {
+		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("DownloadTemplate() err: %v", err), nil))
 		return
 	}
 	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", nil))
