@@ -9,7 +9,5 @@ package models
 // 	gorm.Model        // ID CreatedAt UpdatedAt DeletedAt
 // 	Email      string `json:"username" gorm:"size:16;not null"`
 // 	Password   string `json:"password" gorm:"size:16;not null"`
-// 	// todo
-// 	// 等待补充管理员个人中心字段
 //
 // }

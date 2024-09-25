@@ -42,8 +42,6 @@ func DBInit() {
 //
 //	@Description: 初始化表
 func TableInit() {
-	// 用户模块
-
 	err := globals.DB.AutoMigrate(
 		// &models.Administrator{},
 		&models.Advertisement{},
@@ -67,9 +65,13 @@ func TableInit() {
 		&models.UserVerifyCode{},
 		&models.UserTag{},
 
-		// 角色模块
+		// 角色管理模块
 		&models.Role{},
 		&models.AdminRole{},
+
+		// 字典管理模块
+		&models.DictType{},
+		&models.DictItem{},
 	)
 
 	if err != nil {

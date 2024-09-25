@@ -10,7 +10,6 @@ import (
 	"github.com/xuri/excelize/v2"
 	"gorm.io/gorm"
 	"mime/multipart"
-	"time"
 )
 
 // Reset 重置用户密码
@@ -189,6 +188,236 @@ func (u *UserReqContext) List(req requests.ListReq) ([]*requests.ListRes, int, e
 	return listRes, total, nil
 }
 
+//
+// // Import 导入用户表
+// func (u *UserReqContext) Import(file *multipart.FileHeader) error {
+// 	// 打开上传的文件
+// 	openFile, err := file.Open()
+// 	if err != nil {
+// 		return fmt.Errorf("UserReqContext.Import() err: Failed to open file")
+// 	}
+// 	defer openFile.Close()
+// 	// 解析 Excel 文件
+// 	f, err := excelize.OpenReader(openFile)
+// 	if err != nil {
+// 		return fmt.Errorf("UserReqContext.Import() err: Failed to read Excel file")
+// 	}
+// 	// 获取第一个工作表的所有行
+// 	rows, err := f.GetRows("User Template")
+// 	if err != nil {
+// 		return fmt.Errorf("UserReqContext.Import() err: Failed to get rows from Excel")
+// 	}
+//
+// 	var l = 0 // 表头长度
+// 	layout := "1/2/06 15:04"
+// 	loc, _ := time.LoadLocation("Asia/Shanghai") // 使用上海时区 (UTC+8)，否则存入到数据库中的数据是世界时区
+// 	// 从第二行开始读取数据
+// 	for i, row := range rows {
+// 		// 跳过表头
+// 		if i == 0 {
+// 			l = len(row)
+// 			continue
+// 		}
+// 		// 表格第i行后面的一些数据是nil，数据不够
+// 		if len(row) < l {
+// 			return fmt.Errorf("UserReqContext.Import() err: 第 %v 行数据，数据量不足", i)
+// 		}
+// 		// 根据列顺序解析每一行数据
+// 		id := 0
+// 		if n, err := fmt.Sscanf(row[0], "%d", &id); n == 0 || err != nil {
+// 			return fmt.Errorf("UserReqContext.Import() err: Id为 %v 不合法", row[0])
+// 		}
+// 		// createAt 可以为空
+// 		var createAt time.Time
+// 		if row[1] != "" {
+// 			createAt, err = time.ParseInLocation(layout, row[1], loc)
+// 			if err != nil {
+// 				return fmt.Errorf("UserReqContext.Import() err: CreateAt为 %v 不合法", row[1])
+// 			}
+// 		} else {
+// 			createAt = time.Now()
+// 		}
+// 		var updateAt time.Time
+// 		if row[2] != "" {
+// 			// updateAt, err = time.Parse("2006-01-02", row[2])
+// 			// updateAt, err = time.Parse("1/2/06 15:04", row[2])
+// 			updateAt, err = time.ParseInLocation(layout, row[2], loc)
+// 			if err != nil {
+// 				return fmt.Errorf("UserReqContext.Import() err: UpdateAt为 %v 不合法", row[2])
+// 			}
+// 		} else {
+// 			updateAt = time.Now()
+// 		}
+// 		nickname := row[3]
+// 		email := row[4]
+// 		password := row[5]
+// 		heat := 0
+// 		if n, err := fmt.Sscanf(row[6], "%d", &heat); n == 0 || err != nil {
+// 			return fmt.Errorf("UserReqContext.Import() err: heat为 %v 不合法", row[6])
+// 		}
+// 		attentionCount := 0
+// 		if n, err := fmt.Sscanf(row[7], "%d", &attentionCount); n == 0 || err != nil {
+// 			return fmt.Errorf("UserReqContext.Import() err: AttentionCount为 %v 不合法", row[7])
+// 		}
+// 		fansCount := 0
+// 		if n, err := fmt.Sscanf(row[8], "%d", &fansCount); n == 0 || err != nil {
+// 			return fmt.Errorf("UserReqContext.Import() err: FansCount为 %v 不合法", row[8])
+// 		}
+// 		status := 0
+// 		if n, err := fmt.Sscanf(row[9], "%d", &status); n == 0 || err != nil {
+// 			return fmt.Errorf("UserReqContext.Import() err: Status为 %v 不合法", row[9])
+// 		}
+// 		// lastLoginTime 可以为空
+// 		var lastLoginTime time.Time
+// 		if row[10] != "" {
+// 			lastLoginTime, err = time.ParseInLocation(layout, row[10], loc)
+// 			if err != nil {
+// 				return fmt.Errorf("UserReqContext.Import() err: LastLoginTime为 %v 不合法", row[10])
+// 			}
+// 		}
+//
+// 		// 判断数据
+// 		// 判断id是否已经存在
+// 		if user := repositories.QueryUserByIdIncludeSoftDelete(u.DB, uint(id)); user != nil {
+// 			return fmt.Errorf("UserReqContext.Import() err: id为 %v 已经被使用", id)
+// 		}
+// 		// 判断邮箱是否合法，是否已经使用
+// 		if !internal_utils.IsValidEmail(email) {
+// 			return fmt.Errorf("UserReqContext.Import() err: email为 %v 不合法", email)
+// 		}
+// 		if user := repositories.QueryUserByEmail(u.DB, email); user != nil {
+// 			return fmt.Errorf("UserReqContext.Import() err: email为 %v 已经被使用", email)
+// 		}
+// 		// 密码是否合法，加密
+// 		if !internal_utils.IsValidPassword(password) {
+// 			return fmt.Errorf("UserReqContext.Import() err: password为 %v 不合法", password)
+// 		}
+// 		password, err = internal_utils.HashPassword(password)
+// 		if err != nil {
+// 			return fmt.Errorf("UserReqContext.Import() err: password为 %v 加密失败", password)
+// 		}
+// 		// 检查Status，Status只能是1或者2
+// 		if status != 1 && status != 2 {
+// 			return fmt.Errorf("UserReqContext.Import() err: status为 %v 不合法", status)
+// 		}
+// 		// 判断 CreateAt <= UpdateAt，CreateAt <= LastLoginTime
+// 		if !createAt.Before(updateAt) && !createAt.Equal(updateAt) {
+// 			return fmt.Errorf("UserReqContext.Import() err: CreateAt %v 应该早于 UpdateAt %v", createAt, updateAt)
+// 		}
+// 		if !createAt.Before(lastLoginTime) && !createAt.Equal(lastLoginTime) {
+// 			return fmt.Errorf("UserReqContext.Import() err: CreateAt %v 应该早于 LastLoginTime %v", createAt, updateAt)
+// 		}
+//
+// 		// 将数据存储到数据库中
+// 		user := &models.User{
+// 			Model: gorm.Model{
+// 				ID:        uint(id),
+// 				CreatedAt: createAt,
+// 				UpdatedAt: updateAt,
+// 			},
+// 			Nickname:       nickname,
+// 			Email:          email,
+// 			Password:       password,
+// 			Heat:           heat,
+// 			AttentionCount: uint(attentionCount),
+// 			FansCount:      fansCount,
+// 			Status:         status,
+// 			LastLoginTime:  lastLoginTime,
+// 		}
+// 		// 保存到数据库
+// 		if err = repositories.InsertObject(u.DB, user); err != nil {
+// 			return fmt.Errorf("UserReqContext.Import() err: Failed to save user to database")
+// 		}
+// 	}
+//
+// 	return nil
+// }
+//
+// // Export 导出用户表
+// func (u *UserReqContext) Export() error {
+// 	// 从数据库获取所有用户
+// 	users, err := repositories.QueryAllUser(u.DB)
+// 	if err != nil {
+// 		return fmt.Errorf("UserReqContext.Export() -> %v", err)
+// 	}
+//
+// 	// 创建一个新的 Excel 文件
+// 	f := excelize.NewFile()
+// 	// 创建一个新的 Sheet，工作表名称为 "Users"
+// 	index, _ := f.NewSheet("Users")
+// 	// 添加列头到第一行
+// 	headers := []string{"Id", "CreateAt", "UpdateAt", "Nickname", "Email", "Password", "Heat", "AttentionCount", "FansCount", "Status", "LastLoginTime"}
+// 	for i, header := range headers {
+// 		cell := fmt.Sprintf("%s1", string(rune('A'+i)))
+// 		f.SetCellValue("Users", cell, header)
+// 	}
+//
+// 	// 写入用户数据
+// 	for i, user := range users {
+// 		row := i + 2 // 从第二行开始写入数据
+// 		f.SetCellValue("Users", fmt.Sprintf("A%d", row), user.ID)
+// 		f.SetCellValue("Users", fmt.Sprintf("B%d", row), user.CreatedAt.Format("2006-01-02 15:04:05"))
+// 		f.SetCellValue("Users", fmt.Sprintf("C%d", row), user.UpdatedAt.Format("2006-01-02 15:04:05"))
+// 		f.SetCellValue("Users", fmt.Sprintf("D%d", row), user.Nickname)
+// 		f.SetCellValue("Users", fmt.Sprintf("E%d", row), user.Email)
+// 		f.SetCellValue("Users", fmt.Sprintf("F%d", row), user.Password)
+// 		f.SetCellValue("Users", fmt.Sprintf("G%d", row), user.Heat)
+// 		f.SetCellValue("Users", fmt.Sprintf("H%d", row), user.AttentionCount)
+// 		f.SetCellValue("Users", fmt.Sprintf("I%d", row), user.FansCount)
+// 		f.SetCellValue("Users", fmt.Sprintf("J%d", row), user.Status)
+// 		f.SetCellValue("Users", fmt.Sprintf("K%d", row), user.LastLoginTime.Format("2006-01-02 15:04:05"))
+// 	}
+//
+// 	// 设置活动工作表
+// 	f.SetActiveSheet(index)
+//
+// 	// // 设置响应头，返回 Excel 文件
+// 	// c.Header("Content-Disposition", "attachment; filename=users.xlsx")
+// 	// c.Header("Content-Type", "application/octet-stream")
+// 	// c.Header("Content-Transfer-Encoding", "binary")
+//
+// 	// 将文件内容写入响应中
+// 	if err := f.Write(u.Ctx.Writer); err != nil {
+// 		return fmt.Errorf("UserReqContext.Export() err: Failed to create Excel file")
+// 	}
+//
+// 	return nil
+// }
+//
+// // DownloadTemplate 下载导入用户模版excel
+// func (u *UserReqContext) DownloadTemplate() error {
+// 	// 创建一个新的 Excel 文件
+// 	f := excelize.NewFile()
+// 	// 创建一个新的 Sheet，工作表名称为 "User Template"
+// 	index, _ := f.NewSheet("User Template")
+//
+// 	// 添加列头到第一行
+// 	// headers := []string{"Id", "Nickname", "Email", "Password", "Heat", "AttentionCount", "FansCount", "PrivateSettings", "Status", "LastLoginTime"}
+// 	headers := []string{"Id", "CreateAt", "UpdateAt", "Nickname", "Email", "Password", "Heat", "AttentionCount", "FansCount", "Status", "LastLoginTime"}
+//
+// 	for i, header := range headers {
+// 		cell := fmt.Sprintf("%s1", string(rune('A'+i))) // 将索引转换为对应的列号 (A, B, C...)
+// 		// 设置单元格值
+// 		if err := f.SetCellValue("User Template", cell, header); err != nil {
+// 			return fmt.Errorf("UserReqContext.DownloadTemplate() err: %v", err)
+// 		}
+// 	}
+//
+// 	// 将 "User Template" 设为活动工作表
+// 	f.SetActiveSheet(index)
+//
+// 	// // 设置响应头，返回 Excel 文件
+// 	// c.Header("Content-Disposition", "attachment; filename=user_template.xlsx")
+// 	// c.Header("Content-Type", "application/octet-stream")
+// 	// c.Header("Content-Transfer-Encoding", "binary")
+//
+// 	// 将文件内容写入响应中
+// 	if err := f.Write(u.Ctx.Writer); err != nil {
+// 		return fmt.Errorf("UserReqContext.DownloadTemplate() err: Failed to create Excel file")
+// 	}
+// 	return nil
+// }
+
 // Import 导入用户表
 func (u *UserReqContext) Import(file *multipart.FileHeader) error {
 	// 打开上传的文件
@@ -209,8 +438,6 @@ func (u *UserReqContext) Import(file *multipart.FileHeader) error {
 	}
 
 	var l = 0 // 表头长度
-	layout := "1/2/06 15:04"
-	loc, _ := time.LoadLocation("Asia/Shanghai") // 使用上海时区 (UTC+8)，否则存入到数据库中的数据是世界时区
 	// 从第二行开始读取数据
 	for i, row := range rows {
 		// 跳过表头
@@ -222,65 +449,16 @@ func (u *UserReqContext) Import(file *multipart.FileHeader) error {
 		if len(row) < l {
 			return fmt.Errorf("UserReqContext.Import() err: 第 %v 行数据，数据量不足", i)
 		}
+
 		// 根据列顺序解析每一行数据
-		id := 0
-		if n, err := fmt.Sscanf(row[0], "%d", &id); n == 0 || err != nil {
-			return fmt.Errorf("UserReqContext.Import() err: Id为 %v 不合法", row[0])
-		}
-		// createAt 可以为空
-		var createAt time.Time
-		if row[1] != "" {
-			createAt, err = time.ParseInLocation(layout, row[1], loc)
-			if err != nil {
-				return fmt.Errorf("UserReqContext.Import() err: CreateAt为 %v 不合法", row[1])
-			}
-		} else {
-			createAt = time.Now()
-		}
-		var updateAt time.Time
-		if row[2] != "" {
-			// updateAt, err = time.Parse("2006-01-02", row[2])
-			// updateAt, err = time.Parse("1/2/06 15:04", row[2])
-			updateAt, err = time.ParseInLocation(layout, row[2], loc)
-			if err != nil {
-				return fmt.Errorf("UserReqContext.Import() err: UpdateAt为 %v 不合法", row[2])
-			}
-		} else {
-			updateAt = time.Now()
-		}
-		nickname := row[3]
-		email := row[4]
-		password := row[5]
-		heat := 0
-		if n, err := fmt.Sscanf(row[6], "%d", &heat); n == 0 || err != nil {
-			return fmt.Errorf("UserReqContext.Import() err: heat为 %v 不合法", row[6])
-		}
-		attentionCount := 0
-		if n, err := fmt.Sscanf(row[7], "%d", &attentionCount); n == 0 || err != nil {
-			return fmt.Errorf("UserReqContext.Import() err: AttentionCount为 %v 不合法", row[7])
-		}
-		fansCount := 0
-		if n, err := fmt.Sscanf(row[8], "%d", &fansCount); n == 0 || err != nil {
-			return fmt.Errorf("UserReqContext.Import() err: FansCount为 %v 不合法", row[8])
-		}
+		nickname := row[0]
+		email := row[1]
+		password := row[2]
 		status := 0
-		if n, err := fmt.Sscanf(row[9], "%d", &status); n == 0 || err != nil {
-			return fmt.Errorf("UserReqContext.Import() err: Status为 %v 不合法", row[9])
-		}
-		// lastLoginTime 可以为空
-		var lastLoginTime time.Time
-		if row[10] != "" {
-			lastLoginTime, err = time.ParseInLocation(layout, row[10], loc)
-			if err != nil {
-				return fmt.Errorf("UserReqContext.Import() err: LastLoginTime为 %v 不合法", row[10])
-			}
+		if n, err := fmt.Sscanf(row[3], "%d", &status); n == 0 || err != nil {
+			return fmt.Errorf("UserReqContext.Import() err: Status为 %v 不合法", row[3])
 		}
 
-		// 判断数据
-		// 判断id是否已经存在
-		if user := repositories.QueryUserByIdIncludeSoftDelete(u.DB, uint(id)); user != nil {
-			return fmt.Errorf("UserReqContext.Import() err: id为 %v 已经被使用", id)
-		}
 		// 判断邮箱是否合法，是否已经使用
 		if !internal_utils.IsValidEmail(email) {
 			return fmt.Errorf("UserReqContext.Import() err: email为 %v 不合法", email)
@@ -300,29 +478,13 @@ func (u *UserReqContext) Import(file *multipart.FileHeader) error {
 		if status != 1 && status != 2 {
 			return fmt.Errorf("UserReqContext.Import() err: status为 %v 不合法", status)
 		}
-		// 判断 CreateAt <= UpdateAt，CreateAt <= LastLoginTime
-		if !createAt.Before(updateAt) && !createAt.Equal(updateAt) {
-			return fmt.Errorf("UserReqContext.Import() err: CreateAt %v 应该早于 UpdateAt %v", createAt, updateAt)
-		}
-		if !createAt.Before(lastLoginTime) && !createAt.Equal(lastLoginTime) {
-			return fmt.Errorf("UserReqContext.Import() err: CreateAt %v 应该早于 LastLoginTime %v", createAt, updateAt)
-		}
 
 		// 将数据存储到数据库中
 		user := &models.User{
-			Model: gorm.Model{
-				ID:        uint(id),
-				CreatedAt: createAt,
-				UpdatedAt: updateAt,
-			},
-			Nickname:       nickname,
-			Email:          email,
-			Password:       password,
-			Heat:           heat,
-			AttentionCount: uint(attentionCount),
-			FansCount:      fansCount,
-			Status:         status,
-			LastLoginTime:  lastLoginTime,
+			Nickname: nickname,
+			Email:    email,
+			Password: password,
+			Status:   status,
 		}
 		// 保存到数据库
 		if err = repositories.InsertObject(u.DB, user); err != nil {
@@ -346,7 +508,7 @@ func (u *UserReqContext) Export() error {
 	// 创建一个新的 Sheet，工作表名称为 "Users"
 	index, _ := f.NewSheet("Users")
 	// 添加列头到第一行
-	headers := []string{"Id", "CreateAt", "UpdateAt", "Nickname", "Email", "Password", "Heat", "AttentionCount", "FansCount", "Status", "LastLoginTime"}
+	headers := []string{"Id", "创造时间", "更新时间", "昵称", "邮箱", "密码", "热度", "关注数量", "粉丝数量", "状态", "最后登录时间"}
 	for i, header := range headers {
 		cell := fmt.Sprintf("%s1", string(rune('A'+i)))
 		f.SetCellValue("Users", cell, header)
@@ -371,11 +533,6 @@ func (u *UserReqContext) Export() error {
 	// 设置活动工作表
 	f.SetActiveSheet(index)
 
-	// // 设置响应头，返回 Excel 文件
-	// c.Header("Content-Disposition", "attachment; filename=users.xlsx")
-	// c.Header("Content-Type", "application/octet-stream")
-	// c.Header("Content-Transfer-Encoding", "binary")
-
 	// 将文件内容写入响应中
 	if err := f.Write(u.Ctx.Writer); err != nil {
 		return fmt.Errorf("UserReqContext.Export() err: Failed to create Excel file")
@@ -384,36 +541,28 @@ func (u *UserReqContext) Export() error {
 	return nil
 }
 
-// ImportTemplate 下载导入用户模版excel
-func (u *UserReqContext) ImportTemplate() error {
+// DownloadTemplate 下载导入用户模版excel
+func (u *UserReqContext) DownloadTemplate() error {
 	// 创建一个新的 Excel 文件
 	f := excelize.NewFile()
 	// 创建一个新的 Sheet，工作表名称为 "User Template"
 	index, _ := f.NewSheet("User Template")
 
 	// 添加列头到第一行
-	// headers := []string{"Id", "Nickname", "Email", "Password", "Heat", "AttentionCount", "FansCount", "PrivateSettings", "Status", "LastLoginTime"}
-	headers := []string{"Id", "CreateAt", "UpdateAt", "Nickname", "Email", "Password", "Heat", "AttentionCount", "FansCount", "Status", "LastLoginTime"}
-
+	headers := []string{"昵称", "邮箱", "密码", "状态"}
 	for i, header := range headers {
 		cell := fmt.Sprintf("%s1", string(rune('A'+i))) // 将索引转换为对应的列号 (A, B, C...)
 		// 设置单元格值
 		if err := f.SetCellValue("User Template", cell, header); err != nil {
-			return fmt.Errorf("UserReqContext.ImportTemplate() err: %v", err)
+			return fmt.Errorf("UserReqContext.DownloadTemplate() err: %v", err)
 		}
 	}
-
 	// 将 "User Template" 设为活动工作表
 	f.SetActiveSheet(index)
 
-	// // 设置响应头，返回 Excel 文件
-	// c.Header("Content-Disposition", "attachment; filename=user_template.xlsx")
-	// c.Header("Content-Type", "application/octet-stream")
-	// c.Header("Content-Transfer-Encoding", "binary")
-
 	// 将文件内容写入响应中
 	if err := f.Write(u.Ctx.Writer); err != nil {
-		return fmt.Errorf("UserReqContext.ImportTemplate() err: Failed to create Excel file")
+		return fmt.Errorf("UserReqContext.DownloadTemplate() err: Failed to create Excel file")
 	}
 	return nil
 }

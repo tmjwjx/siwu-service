@@ -21,6 +21,14 @@ func Follow(c *gin.Context) {
 		return
 	}
 
+	follerId, exists := c.Get("id")
+	if !exists {
+		response.Failed(c, http.StatusUnauthorized, response.NewAppErr(globals.StatusUnauthorized, fmt.Errorf("Follow() err = 无法获取 id"), nil))
+		return
+	}
+	// 类型断言
+	followMsg.FollowerId = follerId.(uint)
+
 	// 简单检验数据
 	if followMsg.FollowerId == followMsg.FollowedId {
 		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("Follow() : id%d不能关注%d", followMsg.FollowerId, followMsg.FollowedId), nil))
@@ -42,7 +50,7 @@ func UserRank(c *gin.Context) {
 	// 从上下文中获取 id
 	str, exists := c.Get("id")
 	if !exists {
-		response.Failed(c, http.StatusUnauthorized, response.NewAppErr(globals.StatusUnauthorized, fmt.Errorf("UserRank() err = 无法获取 email"), nil))
+		response.Failed(c, http.StatusUnauthorized, response.NewAppErr(globals.StatusUnauthorized, fmt.Errorf("UserRank() err = 无法获取 id"), nil))
 		return
 	}
 	// 类型断言

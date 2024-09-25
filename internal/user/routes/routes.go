@@ -63,7 +63,7 @@ func User(e *gin.Engine) {
 	// 导出用户表
 	r.GET("/export", controllers.Export)
 	// 下载导入用户模版excel
-	r.GET("/import/template", controllers.ImportTemplate)
+	r.GET("/download_template", controllers.DownloadTemplate)
 	// 获取当前用户基本信息
 	r.GET("/getInfo", controllers.GetInfo)
 	// 上传用户头像
