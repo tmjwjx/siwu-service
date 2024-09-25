@@ -10,6 +10,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"gopkg.in/gomail.v2"
 	"gorm.io/gorm"
+	"io/ioutil"
+	"os"
 	"strings"
 	"time"
 )
@@ -124,9 +126,20 @@ func (u *UserReqContext) ReqVerifyCode(email string) error {
 				return fmt.Errorf("UserReqContext.VerifyCodeReq() -> %v", err)
 			}
 			// 给用户发送验证码
-			body := fmt.Sprintf("你的验证码为 %s，有效时间为 %d 分钟\n", verifyCode, int(internal_utils.VerifyCodeEffectiveDuration.Minutes()))
-			err := u.SendEmail(email, internal_utils.VerifyCodeSubject, body)
+			// body := fmt.Sprintf("你的验证码为 %s，有效时间为 %d 分钟\n", verifyCode, int(internal_utils.VerifyCodeEffectiveDuration.Minutes()))
+			// 读取邮件模板
+			templateFile, err := os.Open("internal/internal_pkg/internal_utils/email_template.html")
 			if err != nil {
+				return fmt.Errorf("UserReqContext.VerifyCodeReq() err: 无法打开模板文件: %v", err)
+			}
+			defer templateFile.Close()
+			templateContent, err := ioutil.ReadAll(templateFile)
+			if err != nil {
+				return fmt.Errorf("UserReqContext.VerifyCodeReq() err: 无法读取模板内容: %v", err)
+			}
+			// 格式化邮件内容
+			body := fmt.Sprintf(string(templateContent), verifyCode, int(internal_utils.VerifyCodeEffectiveDuration.Minutes()))
+			if err = u.SendEmail(email, internal_utils.VerifyCodeSubject, body); err != nil {
 				return fmt.Errorf("UserReqContext.VerifyCodeReq() -> %v", err)
 			}
 			return nil
@@ -149,9 +162,21 @@ func (u *UserReqContext) ReqVerifyCode(email string) error {
 	}
 
 	// 给用户发送验证码
-	body := fmt.Sprintf("你的验证码为 %s，不区分大小写，有效时间为 %d 分钟\n", verifyCode, int(internal_utils.VerifyCodeEffectiveDuration.Minutes()))
-	err := u.SendEmail(email, internal_utils.VerifyCodeSubject, body)
+	// body := fmt.Sprintf("你的验证码为 %s，不区分大小写，有效时间为 %d 分钟\n", verifyCode, int(internal_utils.VerifyCodeEffectiveDuration.Minutes()))
+	// 读取邮件模板
+	templateFile, err := os.Open("internal/internal_pkg/internal_utils/email_template.html")
 	if err != nil {
+		return fmt.Errorf("UserReqContext.VerifyCodeReq() err: 无法打开模板文件: %v", err)
+	}
+	defer templateFile.Close()
+
+	templateContent, err := ioutil.ReadAll(templateFile)
+	if err != nil {
+		return fmt.Errorf("UserReqContext.VerifyCodeReq() err: 无法读取模板内容: %v", err)
+	}
+	// 格式化邮件内容
+	body := fmt.Sprintf(string(templateContent), verifyCode, int(internal_utils.VerifyCodeEffectiveDuration.Minutes()))
+	if err = u.SendEmail(email, internal_utils.VerifyCodeSubject, body); err != nil {
 		return fmt.Errorf("UserReqContext.VerifyCodeReq() -> %v", err)
 	}
 
@@ -173,7 +198,7 @@ func (u *UserReqContext) SendEmail(to string, subject string, body string) error
 	m.SetHeader("From", u.SendEmailCfg.From) // 发送人
 	m.SetHeader("To", to)                    // 接收人
 	m.SetHeader("Subject", subject)          // 主题
-	m.SetBody("text/plain", body)            // 正文内容
+	m.SetBody("text/html", body)             // 正文内容
 	// 创建一个新的邮件拨号器对象，用于通过指定的 SMTP 服务器发送邮件
 	d := gomail.NewDialer(u.SendEmailCfg.Host, u.SendEmailCfg.Port, u.SendEmailCfg.Username, u.SendEmailCfg.AuthorizeCode)
 	// 通过拨号器对象发送指定的邮件消息
