@@ -2,14 +2,19 @@ package routes
 
 import (
 	"forum/internal/article/controllers"
+	"forum/pkg/token"
 	"github.com/gin-gonic/gin"
 )
 
-// Article 发布文章
+// Article
+// @Description: 文章
+// @param        e *gin.Engine
 func Article(e *gin.Engine) {
 
 	// 搜索
 	articleGroup := e.Group("/article")
+	// token 校验
+	articleGroup.Use(token.AuthMiddleware())
 	{
 		// 文章搜索框
 		articleGroup.GET("/search_box", controllers.ArticleSearchCtrl)
@@ -18,11 +23,13 @@ func Article(e *gin.Engine) {
 		// 发布文章
 		articleGroup.POST("/publish", controllers.ArticlePublishCtrl)
 		// 获取文章列表
-		articleGroup.POST("/get_list", controllers.GetArticleList)
+		articleGroup.POST("/get_list", controllers.ArticleListCtrl)
 		// 封禁文章
-		articleGroup.GET("/ban", controllers.BanArticlesCtrl)
+		articleGroup.GET("/ban", controllers.ArticleBanCtrl)
 		// 删除文章
 		articleGroup.DELETE("/delete", controllers.DeleteArticlesCtrl)
+		// 获取文章详情
+		articleGroup.GET("/detail", controllers.ArticleDetailCtrl)
 	}
 
 }
