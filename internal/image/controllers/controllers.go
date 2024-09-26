@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// UploadHandlerControllers 将前端传过来的图片文件存到文件系统中
+// UploadHandlerControllers 将前端传过来的图片文件存到文件系统中,目前该方法只用来存取用户的头像，参数home，直接传 "用户".
 
 func UploadImagesControllers(c *gin.Context, home string, homeID uint) (error, int) { // (error, int): error表示错误,int表示响应的状态码
 

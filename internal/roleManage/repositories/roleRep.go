@@ -76,28 +76,6 @@ func DeleteObjectsByModel(db *gorm.DB, modelType interface{}, condition map[stri
 	return result.RowsAffected, nil
 }
 
-// DeleteObjectsByTable 按照表名，根据一个或多个条件删除一个或多个对象。
-// db: GORM 的数据库实例。
-// tableName: 要删除的表名。
-// condition: 删除条件的键值对。
-// int64: 返回删除的记录数。
-func DeleteObjectsByTable(db *gorm.DB, tableName string, condition map[string]interface{}) (int64, error) {
-	// 构建查询条件
-	query := db.Table(tableName)
-	for key, value := range condition {
-		query = query.Where(fmt.Sprintf("%s = ?", key), value)
-	}
-
-	// 执行删除操作。query.Delete(nil)：删除符合条件的记录，不需要指定具体的模型类型。
-	result := query.Delete(nil)
-	if result.Error != nil {
-		return 0, fmt.Errorf("DeleteObjectsByModel() err: %v\t执行的查询语句为: %v", result.Error, result.Statement.SQL.String())
-	}
-
-	// 返回删除的记录数
-	return result.RowsAffected, nil
-}
-
 // UpdateObjects 根据一个或多个参数更新一个或多个对象。
 // db: GORM 的数据库实例。
 // model: 要更新的模型类型的指针，模型中要包含查询的参数。
@@ -141,7 +119,8 @@ func QueryRoles(db *gorm.DB, conditions map[string]interface{}) ([]*models.Role,
 // page: 第几页。
 // limit: 每页数据条数。
 // 例子：如果 page = 2，limit = 10，那么会跳过前 10 条记录，返回第 11-20 条记录。
-func QueryRolesByPage(db *gorm.DB, conditions map[string]interface{}, page int, limit int) ([]*models.Role, error) {
+// 返回的int表示一共有多少条符合条件的数据
+func QueryRolesByPage(db *gorm.DB, conditions map[string]interface{}, page int, limit int) ([]*models.Role, int, error) {
 	var roles []*models.Role
 
 	// 使用条件查询
@@ -149,6 +128,10 @@ func QueryRolesByPage(db *gorm.DB, conditions map[string]interface{}, page int, 
 	for key, value := range conditions {
 		query = query.Where(fmt.Sprintf("%s = ?", key), value)
 	}
+
+	// 查看符合条件的数据一共有多少条
+	query.Find(&roles)
+	total := len(roles)
 
 	// 添加分页逻辑
 	if page > 0 && limit > 0 {
@@ -158,17 +141,17 @@ func QueryRolesByPage(db *gorm.DB, conditions map[string]interface{}, page int, 
 
 	// 执行查询
 	if err := query.Find(&roles).Error; err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
-	return roles, nil
+	return roles, total, nil
 }
 
 // QueryRoleById 通过ID查找角色
 func QueryRoleById(db *gorm.DB, id uint) *models.Role {
 	var role models.Role
 	d := db.Model(&models.Role{}).Where("id = ?", id).Select("*").Scan(&role)
-	if d.RowsAffected == 0 {
+	if d.RowsAffected <= 0 {
 		return nil
 	}
 
@@ -179,7 +162,7 @@ func QueryRoleById(db *gorm.DB, id uint) *models.Role {
 func QueryUserById(db *gorm.DB, id uint) *models.User {
 	var user models.User
 	d := db.Model(&models.User{}).Where("id = ?", id).Select("*").Scan(&user)
-	if d.RowsAffected == 0 {
+	if d.RowsAffected <= 0 {
 		return nil
 	}
 	return &user

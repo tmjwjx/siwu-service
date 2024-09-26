@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"path/filepath"
+	"strconv"
 )
 
 // UploadHandlerLogic 图片文件的逻辑处理
@@ -19,7 +20,7 @@ func UploadHandlerLogic(c *gin.Context, home string, homeID uint) error {
 	// 使用 MultipartForm 提取所有字段
 	form, _ := c.MultipartForm()
 	// 提取文件
-	files := form.File["upload[]"]
+	files := form.File["uploads"]
 	for _, file := range files {
 
 		// 如果文件中没有图片，直接返回nil。
@@ -36,8 +37,6 @@ func UploadHandlerLogic(c *gin.Context, home string, homeID uint) error {
 			return err
 		}
 
-		// 删除 attachments 表中的图片路径
-
 		// 将文件内容写入目标文件
 		err = c.SaveUploadedFile(file, globals.SConfig.Path+"/"+uniqueFilename)
 		if err != nil {
@@ -51,7 +50,7 @@ func UploadHandlerLogic(c *gin.Context, home string, homeID uint) error {
 			Name:   file.Filename,
 			Type:   "images/" + filepath.Ext(file.Filename), // filepath.Ext(filename) 获得文件的扩展名
 			Size:   file.Size,
-			Path:   globals.SConfig.Prefix + "/" + uniqueFilename,
+			Path:   "http://" + globals.AppConfig.App.Host + ":" + strconv.Itoa(globals.AppConfig.App.Port) + globals.SConfig.Prefix + "/" + uniqueFilename,
 		}
 
 		// 将文件插入数据库中

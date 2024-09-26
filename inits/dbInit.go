@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"forum/internal/models"
 	"forum/pkg/globals"
+	gormadapter "github.com/casbin/gorm-adapter/v3"
 	"github.com/spf13/viper"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -42,10 +43,8 @@ func DBInit() {
 //
 //	@Description: 初始化表
 func TableInit() {
-	// 用户模块
-
 	err := globals.DB.AutoMigrate(
-		&models.Administrator{},
+		// &models.Administrator{},
 		&models.Advertisement{},
 		&models.Attachment{},
 		&models.Resource{},
@@ -67,9 +66,17 @@ func TableInit() {
 		&models.UserVerifyCode{},
 		&models.UserTag{},
 
-		// 角色模块
+		&gormadapter.CasbinRule{},
+		&models.UserCasbinRules{},
+		&models.Menu{},
+
+		// 角色管理模块
 		&models.Role{},
-		&models.UserRole{},
+		&models.AdminRole{},
+
+		// 字典管理模块
+		&models.DictType{},
+		&models.DictItem{},
 	)
 
 	if err != nil {

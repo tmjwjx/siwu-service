@@ -1,13 +1,36 @@
 package requests
 
+// BatchReviewReq 批量审核请求
+type BatchReviewReq struct {
+	IDs []uint // 审核通过的评论id
+}
+
+// BatchReviewRes 批量审核响应
+type BatchReviewRes struct {
+	ComList2 ComList2
+}
+
+type ComList2 struct {
+}
+
 // CommentsListReq 评论列表加载请求
 type CommentsListReq struct {
-	Offset int `json:"offset"` // 分页查询的起始位置
-	Limit  int `json:"limit"`  // 分页查询要返回记录的数量
+	Offset      int    `json:"offset"`       // 分页查询的起始位置
+	Limit       int    `json:"limit"`        // 分页查询要返回记录的数量
+	Type        int    `json:"type"`         // 1:全部 ,2:待审 3:已批准
+	Email       string `json:"email"`        // 用户邮箱
+	Nickname    string `json:"nickname"`     // 用户昵称
+	Title       string `json:"title"`        // 文章标题
+	ParentEmail string `json:"parent_email"` // 用户回复对象的昵称
 }
 
 // CommentsListRes 评论列表加载响应
 type CommentsListRes struct {
+	Comlist *[]*ComList `json:"comlist"`
+	Total   int         `json:"total"`
+}
+
+type ComList struct {
 	ID uint `json:"id"` // 评论ID
 
 	Nickname string `json:"nickname"` // 用户昵称
@@ -21,6 +44,8 @@ type CommentsListRes struct {
 	ArticleID uint   `json:"article_id"` // 文章ID
 	Title     string `json:"title"`      // 文章标题
 	Summary   string `json:"summary"`    // 文章摘要
+
+	Examine int `json:"examine"` // 是否审核:1审核2:未审核
 }
 
 // AddCommentReq 添加评论请求
