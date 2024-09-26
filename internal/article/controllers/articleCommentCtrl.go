@@ -21,16 +21,24 @@ func InsertCommentCtrl(c *gin.Context) {
 	}
 
 	// 逻辑处理
-	err = logics.InsertCommentLogic(&articleCommentReq, globals.DB)
+	err, status := logics.InsertCommentLogic(c, &articleCommentReq, globals.DB)
 
-	//返回响应
+	// 返回响应
 	if err != nil {
-		e := response.NewAppErr(globals.StatusInternalServerError, err, nil)
-		response.Failed(c, 500, e)
-		return
+		var state globals.AppCode
+		if status == 400 {
+			state = globals.StatusBadRequest
+		} else if status == 500 {
+			state = globals.StatusInternalServerError
+		}
+		// 返回错误响应
+		e := response.NewAppErr(state, err, nil)
+		response.Failed(c, status, e)
+	} else {
+		d := response.NewAppData(globals.StatusOK, "评论存入数据库成功", nil)
+		response.Success(c, 200, d)
 	}
-	d := response.NewAppData(globals.StatusOK, "评论存入数据库成功", nil)
-	response.Success(c, 200, d)
+
 }
 
 /*// GetCommentByArticleCtrl 普通的返回评论
@@ -63,7 +71,7 @@ func GetTopLevelCommentsCtrl(c *gin.Context) {
 	}
 
 	// 逻辑处理
-	topCommentsRes, err := logics.GetTopLevelCommentsLogic(&req)
+	topCommentsRes, err := logics.GetTopLevelCommentsLogic(globals.DB, &req)
 
 	// 返回响应
 	if err != nil {
@@ -73,6 +81,7 @@ func GetTopLevelCommentsCtrl(c *gin.Context) {
 	}
 	d := response.NewAppData(globals.StatusOK, "顶级评论响应成功", topCommentsRes)
 	response.Success(c, 200, d)
+
 }
 
 // GetRepliesRep2Ctrl 返回评论回复
@@ -87,7 +96,7 @@ func GetRepliesRep2Ctrl(c *gin.Context) {
 	}
 
 	// 逻辑处理
-	repliesRes, err := logics.GetRepliesRep2Logic(&req)
+	repliesRes, err := logics.GetRepliesRep2Logic(globals.DB, &req)
 
 	// 返回响应
 	if err != nil {

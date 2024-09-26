@@ -36,6 +36,7 @@ type TopCommentsReq struct {
 	ArticleID uint `json:"article_id"`
 	Offset    int  `json:"offset"`
 	Limit     int  `json:"limit"`
+	UserID    uint `json:"user_id"`
 }
 
 type TopCommentsRes struct {
@@ -52,12 +53,14 @@ type TopCommentsRes struct {
 	RepliesCount int64     `json:"replies_count"`  // 回复数量
 	Path         string    `json:"path"`           // 用户头像
 	CommentPath  string    `json:"comment_path"`   // 用户发的评论中的图片
+	Status       int       `json:"status"`         // 判断用户对评论的点赞情况
 }
 
 type RepliesReq2 struct {
 	HighestID *uint `json:"highest_id"` // 顶级评论ID
 	Offset    int   `json:"offset"`     // 分页查询的起始位置
 	Limit     int   `json:"limit"`      // 分页查询要返回记录的数量
+	UserID    uint  `json:"user_id"`
 }
 
 type RepliesRes struct {
@@ -75,6 +78,7 @@ type RepliesRes struct {
 	Path           string    `json:"path"`            // 用户头像
 	ParentPath     string    `json:"parent_path"`     // 用户回复对象的头像
 	CommentPath    string    `json:"comment_path"`    // 用户发的评论中的图片
+	Status         int       `json:"status"`          // 判断用户对评论的点赞情况
 }
 
 type DelComment struct {

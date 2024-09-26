@@ -9,7 +9,33 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// ShowCommentsListCtrl 展示评论列表
+// BatchReviewCtrl 批量审核
+func BatchReviewCtrl(c *gin.Context) {
+
+	//获取参数
+	var req requests.BatchReviewReq
+	err := c.ShouldBindJSON(&req)
+	if err != nil {
+		e := response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("BatchReviewCtrl -> 绑定请求结构失败"), nil)
+		response.Failed(c, 400, e)
+		return
+	}
+
+	// 逻辑处理
+	res, err := logics.BatchReviewLogic(globals.DB, &req)
+
+	//返回响应
+	if err != nil {
+		e := response.NewAppErr(globals.StatusInternalServerError, err, nil)
+		response.Failed(c, 500, e)
+		return
+	}
+	d := response.NewAppData(globals.StatusOK, "评论批量审核成功", res)
+	response.Success(c, 200, d)
+
+}
+
+// ShowCommentsListCtrl 展示评论列表(获取评论列表)
 func ShowCommentsListCtrl(c *gin.Context) {
 
 	//获取参数

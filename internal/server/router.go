@@ -2,6 +2,7 @@ package server
 
 import (
 	articleRouter "forum/internal/article/routes"
+	"forum/internal/image/routes"
 	tagRouter "forum/internal/tag/routes"
 	userRouter "forum/internal/user/routes"
 	"forum/pkg/globals"
@@ -25,4 +26,6 @@ func SetupRouter() {
 	// 评论分路由
 	articleRouter.Comment(globals.Router)
 
+	// 图片url分路由
+	routes.ProduceImageUrl(globals.Router)
 }
