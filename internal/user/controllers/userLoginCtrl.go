@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"forum/internal/internal_pkg/internal_utils"
 	"forum/internal/user/logics"
+	"forum/internal/user/repositories"
 	"forum/internal/user/requests"
 	"forum/pkg/globals"
 	"forum/pkg/response"
+	"forum/pkg/token"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -15,9 +17,8 @@ import (
 
 // Register 用户注册
 func Register(c *gin.Context) {
-	userLogic := logics.NewUserLogic(globals.DB, c, globals.SendEmailCfg)
 	// 绑定数据
-	var registerMsg requests.RegisterMsg
+	var registerMsg requests.RegisterReq
 	if err := c.ShouldBind(&registerMsg); err != nil {
 		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("Register() err: %v", err), nil))
 		return
@@ -44,7 +45,8 @@ func Register(c *gin.Context) {
 	}
 
 	// 业务逻辑
-	err := userLogic.Register(registerMsg)
+	userReqContext := logics.NewUserReqContext(globals.DB, c, globals.SendEmailCfg)
+	err := userReqContext.Register(registerMsg)
 	if err != nil {
 		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("Register() -> %v", err), nil))
 		return
@@ -56,22 +58,20 @@ func Register(c *gin.Context) {
 
 // ReqVerifyCode 用户请求验证码
 func ReqVerifyCode(c *gin.Context) {
-	userLogic := logics.NewUserLogic(globals.DB, c, globals.SendEmailCfg)
 	// 绑定数据
-	var verifyCodeMsg requests.VerifyCodeMsg
-	if err := c.ShouldBind(&verifyCodeMsg); err != nil {
-		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("ReqVerifyCode() -> %v", err), nil))
-		return
-	}
+	email := c.Query("email")
+
+	// 数据检验
 
 	// 检验邮箱是否合法
-	if !internal_utils.IsValidEmail(verifyCodeMsg.Email) {
+	if !internal_utils.IsValidEmail(email) {
 		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("ReqVerifyCode() err: 邮箱不合法"), nil))
 		return
 	}
 
 	// 业务逻辑
-	if err := userLogic.ReqVerifyCode(verifyCodeMsg); err != nil {
+	userReqContext := logics.NewUserReqContext(globals.DB, c, globals.SendEmailCfg)
+	if err := userReqContext.ReqVerifyCode(email); err != nil {
 		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("ReqVerifyCode() -> %v", err), nil))
 		return
 	}
@@ -82,16 +82,12 @@ func ReqVerifyCode(c *gin.Context) {
 
 // Login 登录
 func Login(c *gin.Context) {
-	userLogic := logics.NewUserLogic(globals.DB, c, globals.SendEmailCfg)
 	// 绑定数据
-	var logicMsg requests.LogicMsg
+	var logicMsg requests.LogicReq
 	if err := c.ShouldBind(&logicMsg); err != nil {
 		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("Login() -> %v", err), nil))
 		return
 	}
-
-	email := logicMsg.Email
-	password := logicMsg.Password
 
 	// 判断数据是否合法
 
@@ -107,46 +103,23 @@ func Login(c *gin.Context) {
 	}
 
 	// 业务逻辑
-	if err := userLogic.Login(logicMsg); err != nil {
+	userReqContext := logics.NewUserReqContext(globals.DB, c, globals.SendEmailCfg)
+	if err := userReqContext.Login(logicMsg); err != nil {
 		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("Login() -> %v", err), nil))
 		return
 	}
 
-	// 成功
-	// response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", nil))
-
+	// 通过email查询id
+	user := repositories.QueryUserByEmail(userReqContext.DB, logicMsg.Email)
+	if user == nil {
+		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("Login() err: 不存在email为 %v 的用户", logicMsg.Email), nil))
+		return
+	}
 	// 生成token
-	token, err := internal_utils.GenerateToken(email, password)
-	fmt.Println("生成的token为：", token)
+	tok, err := token.GenerateToken(user.ID)
 	if err != nil {
 		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("Login() -> %v", err), nil))
 		return
 	}
-	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", token))
-}
-
-// Follow 关注
-func Follow(c *gin.Context) {
-	userLogic := logics.NewUserLogic(globals.DB, c, globals.SendEmailCfg)
-	// 绑定数据
-	var followMsg requests.FollowMsg
-	if err := c.ShouldBind(&followMsg); err != nil {
-		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("Follow() -> %v", err), nil))
-		return
-	}
-
-	// 简单检验数据
-	if followMsg.FollowerId == followMsg.FollowedId {
-		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("Follow() : id%d不能关注%d", followMsg.FollowerId, followMsg.FollowedId), nil))
-		return
-	}
-
-	// 业务逻辑
-	if err := userLogic.Follow(followMsg); err != nil {
-		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("Follow() -> %v", err), nil))
-		return
-	}
-
-	// 成功
-	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", nil))
+	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", gin.H{"token": tok}))
 }

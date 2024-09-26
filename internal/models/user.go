@@ -1,8 +1,8 @@
 package models
 
 import (
-	"github.com/dgrijalva/jwt-go"
 	"gorm.io/gorm"
+	"time"
 )
 
 // User 用户简略信息
@@ -13,8 +13,10 @@ type User struct {
 	Password           string           `json:"password" gorm:"size:100;not null"` // 密码
 	Heat               int              `json:"heat" gorm:"default:0"`             // 个人热度
 	AttentionCount     uint             `json:"attention_count" gorm:"default:0"`  // 关注了多少人数
-	FansCount          uint             `json:"fans_count" gorm:"default:0"`       // 粉丝数
-	PrivateSettings    string           `json:"private_settings"`                  // 用户私信设置
+	FansCount          int              `json:"fans_count" gorm:"default:0"`       // 粉丝数
+	PrivateSettings    string           `json:"private_settings"`                  // 私信设置
+	Status             int              `json:"status" gorm:"default:1"`           // 用户状态：0全部 1正常 2封禁
+	LastLoginTime      time.Time        `json:"last_login_time"`                   // 最后登录时间
 	UserDetail         UserDetail       // 用户详情
 	UserMessage        UserMessage      // 通知用户信息
 	Tags               []Tag            `gorm:"many2many:user_tags"`
@@ -23,5 +25,4 @@ type User struct {
 	ArticleCollections []Article        `gorm:"many2many:article_collections"`                                              // 收藏的文章
 	ArticleComments    []ArticleComment `gorm:"many2many:article_comments"`                                                 // 文章的评论                                  // 用户对评论的点赞
 	Users              []User           `gorm:"many2many:user_follows;joinForeignKey:FollowedID;JoinReferences:FollowerID"` // 关注的用户列表
-	jwt.StandardClaims                  // StandardClaims 是jwt-go提供的标准声明结构体，包含了 exp（过期时间）、iss（发行者）等常见字段。
 }

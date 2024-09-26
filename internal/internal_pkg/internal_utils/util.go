@@ -14,7 +14,7 @@ import (
 // RandomGenerateStrings 随机生成长度为 l 的数字字母混合的字符串
 func RandomGenerateStrings(l int) string {
 	rand.Seed(time.Now().UnixNano())
-	const letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	const letters = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	b := make([]byte, l)
 	for i := range b {
 		b[i] = letters[rand.Intn(len(letters))]
@@ -53,7 +53,7 @@ func DeleteFile(home string, homeID uint) error {
 	// 查询要删除的图片文件路径
 	err := tx.Where("home = ? and home_id = ?", home, homeID).First(&attachment).Error
 	if err != nil {
-		//return fmt.Errorf("deleteFile -> %s", err)
+		// return fmt.Errorf("deleteFile -> %s", err)
 		// 没有查到说明文件系统中没有该图片，直接添加进入文件系统即可
 		return nil
 	}

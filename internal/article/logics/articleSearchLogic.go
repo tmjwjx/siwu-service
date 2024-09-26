@@ -8,9 +8,9 @@ import (
 )
 
 // ArticleSearchLogic 搜索文章
-func ArticleSearchLogic(db *gorm.DB, req requests.ReqSearch) ([]models.Article, error) {
+func ArticleSearchLogic(db *gorm.DB, req *requests.ReqSearch) ([]models.Article, error) {
 
-	articles, err := repositories.QueryArticlesRep(db, req)
+	articles, err := repositories.SearchArticlesRep(db, req)
 	if err != nil {
 		return nil, err
 	}

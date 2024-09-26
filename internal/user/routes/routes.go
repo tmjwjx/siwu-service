@@ -7,28 +7,24 @@ import (
 
 // User 用户路由
 func User(e *gin.Engine) {
+	// 注册
+	e.POST("/user/register", controllers.Register)
+	// 忘记密码
+	e.POST("/user/forgot_password", controllers.Register)
+	// 用户请求验证码
+	e.GET("/user/req_verify_code", controllers.ReqVerifyCode)
+	// 登录
+	e.POST("/user/login", controllers.Login)
+
 	// 分组
 	r := e.Group("/user")
-	// 注册
-	r.POST("/register", controllers.Register)
-	// 用户请求验证码
-	r.GET("req_verify_code", controllers.ReqVerifyCode)
-	// 登录
-	r.POST("/login", controllers.Login)
+	// token 校验
+	// r.Use(token.AuthMiddleware(), middlewares.CorsMiddleware())
+
 	// 关注
 	r.POST("/follow", controllers.Follow)
 	// 用户排行
 	r.GET("/rank", controllers.UserRank)
-
-	// // 受保护的路由，需要 JWT 验证
-	// protected := r.Group("/api")
-	// protected.Use(middlewares.JWTAuth())
-	// protected.GET("/protected", func(c *gin.Context) {
-	// 	claims := c.MustGet("claims").(*models.User)
-	// 	c.JSON(http.StatusOK, gin.H{
-	// 		"email": claims.Email,
-	// 	})
-	// })
 
 	// 上传用户个人资料
 	r.POST("/form_personal_data", controllers.UserDataRequestCtrl)
@@ -50,4 +46,27 @@ func User(e *gin.Engine) {
 
 	// 铃铛消息
 	// e.GET("/event", controllers.MessagePushCtrl)
+
+	// 用户管理
+	// 重置用户密码
+	r.POST("/reset", controllers.Reset)
+	// 添加用户
+	r.POST("/add", controllers.Add)
+	// 删除用户
+	r.DELETE("/delete", controllers.Delete)
+	// 编辑用户
+	r.POST("/edit", controllers.Edit)
+	// 获取所有用户列表
+	r.POST("/list", controllers.List)
+	// 导入用户表
+	r.POST("/import", controllers.Import)
+	// 导出用户表
+	r.GET("/export", controllers.Export)
+	// 下载导入用户模版excel
+	r.GET("/download_template", controllers.DownloadTemplate)
+	// 获取当前用户基本信息
+	r.GET("/getInfo", controllers.GetInfo)
+	// 上传用户头像
+	r.POST("/upload/headshot", controllers.UploadHeadshot)
+
 }

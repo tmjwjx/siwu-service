@@ -20,7 +20,7 @@ func UploadHandlerLogic(c *gin.Context, home string, homeID uint) error {
 	// 使用 MultipartForm 提取所有字段
 	form, _ := c.MultipartForm()
 	// 提取文件
-	files := form.File["upload[]"]
+	files := form.File["uploads"]
 	for _, file := range files {
 
 		// 如果文件中没有图片，直接返回nil。
