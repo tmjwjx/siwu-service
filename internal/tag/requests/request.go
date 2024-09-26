@@ -1,5 +1,14 @@
 package requests
 
+// TagFansCountRes 更新人数响应
+type TagFansCountRes struct {
+	TagFansCount *TagFansCount `json:"tag_fans_count"`
+}
+
+type TagFansCount struct {
+	FansCount string `json:"fans_count"`
+}
+
 // TagReq 请求标签结构体
 type TagReq struct {
 	ID uint `json:"id" form:"id"`
@@ -7,6 +16,10 @@ type TagReq struct {
 
 // TagRes 响应标签结构体
 type TagRes struct {
+	TagList []*Tag `json:"tag_list"`
+}
+
+type Tag struct {
 	ID           uint   `json:"id" form:"id"`                       // 标签ID
 	Name         string `json:"name" form:"name"`                   // 标签名称
 	Description  string `json:"description" form:"description"`     // 标签描述

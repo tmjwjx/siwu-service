@@ -10,19 +10,82 @@ import (
 	"gorm.io/gorm"
 )
 
-// ShowCommentsListRep 展示评论列表
-func ShowCommentsListRep(db *gorm.DB, req *requests.CommentsListReq) (*[]*requests.CommentsListRes, error) {
+// BatchReviewRep 批量审核
+func BatchReviewRep(db *gorm.DB, req *requests.BatchReviewReq) (*requests.BatchReviewRes, error) {
 
-	var commentsListRes []*requests.CommentsListRes
 	var comments []models.ArticleComment
+
+	// 通过id查找对应的评论
+	err := db.Where("id IN ?", req.IDs).Find(&comments).Error
+	if err != nil {
+		return nil, fmt.Errorf("BatchReviewRep -> 批量审核查询对应评论失败 -> %s", err)
+	}
+
+	// 改变查到的评论的审核状态
+	for _, comment := range comments {
+		err = db.Model(&comment).Update("Examine", 1).Error
+		if err != nil {
+			return nil, fmt.Errorf("BatchReviewRep -> 变查到的评论的审核状态失败 -> %s", err)
+		}
+	}
+
+	res := &requests.BatchReviewRes{
+		ComList2: struct{}{},
+	}
+
+	return res, nil
+
+}
+
+// ShowCommentsListRep 展示评论列表(获取评论列表)
+func ShowCommentsListRep(db *gorm.DB, req *requests.CommentsListReq) (*requests.CommentsListRes, error) {
+
+	var commentsListRes *requests.CommentsListRes
+	var comments []models.ArticleComment
+	var comList []*requests.ComList
 	var user models.User
 	var article models.Article
+	var examine int
 
-	// 查询评论信息
-	err := db.Limit(req.Limit).Offset(req.Offset).Find(&comments).Error
-	if err != nil {
-		return nil, fmt.Errorf("ShowCommentsListRep -> 查询评论信息失败 -> %s", err)
+	query := db.Model(&models.ArticleComment{}).Joins("join sw_user on sw_user.id = sw_article_comment.user_id").
+		Joins("join sw_article on sw_article.id = sw_article_comment.article_id")
+
+	if req.Type == 1 {
+		// 不做任何处理
+	} else if req.Type == 2 {
+		examine = 2
+	} else if req.Type == 3 {
+		examine = 1
+	} else {
+		return nil, fmt.Errorf("ShowCommentsListRep -> type的值不是规定值 1, 2, 3")
 	}
+
+	// 添加查询条件
+	if req.Email != "" {
+		query = query.Where("sw_user.email = ?", req.Email)
+	} else if req.Nickname != "" {
+		query = query.Where("sw_user.nickname", req.Nickname)
+	} else if req.Title != "" {
+		query = query.Where("sw_article.title", req.Title)
+	} else if req.ParentEmail != "" {
+		query = query.Where("sw_article_comment.parent_email = ?", req.ParentEmail)
+	} else {
+		// 查询评论信息
+		err := db.Where("examine = ?", examine).Limit(req.Limit).Offset(req.Offset).Find(&comments).Error
+		if err != nil {
+			return nil, fmt.Errorf("ShowCommentsListRep -> 查询评论信息失败 -> %s", err)
+		}
+	}
+
+	if req.Email != "" || req.Nickname != "" || req.Title != "" || req.ParentEmail != "" {
+		err := query.Where("examine = ?", examine).Limit(req.Limit).Offset(req.Offset).Find(&comments).Error
+		if err != nil {
+			return nil, fmt.Errorf("ShowCommentsListRep -> 查询评论信息失败 -> %s", err)
+		}
+	}
+
+	// 获取返回评论的总数目
+	total := len(comments)
 
 	for _, comment := range comments {
 
@@ -44,7 +107,7 @@ func ShowCommentsListRep(db *gorm.DB, req *requests.CommentsListReq) (*[]*reques
 			return nil, fmt.Errorf("ShowCommentsListRep -> 查询文章信息失败 -> %s", err)
 		}
 
-		commentRes := &requests.CommentsListRes{
+		commentRes := &requests.ComList{
 			ID:        comment.ID,
 			Nickname:  user.Nickname,
 			Email:     user.Email,
@@ -85,11 +148,16 @@ func ShowCommentsListRep(db *gorm.DB, req *requests.CommentsListReq) (*[]*reques
 			}
 		}
 
-		commentsListRes = append(commentsListRes, commentRes)
+		comList = append(comList, commentRes)
 
 	}
 
-	return &commentsListRes, nil
+	commentsListRes = &requests.CommentsListRes{
+		Comlist: &comList,
+		Total:   total,
+	}
+
+	return commentsListRes, nil
 }
 
 // AddCommentRep 添加评论

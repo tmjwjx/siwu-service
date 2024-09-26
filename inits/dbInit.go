@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"forum/internal/models"
 	"forum/pkg/globals"
+	gormadapter "github.com/casbin/gorm-adapter/v3"
 	"github.com/spf13/viper"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -64,6 +65,10 @@ func TableInit() {
 		&models.UserMessage{},
 		&models.UserVerifyCode{},
 		&models.UserTag{},
+
+		&gormadapter.CasbinRule{},
+		&models.UserCasbinRules{},
+		&models.Menu{},
 
 		// 角色管理模块
 		&models.Role{},

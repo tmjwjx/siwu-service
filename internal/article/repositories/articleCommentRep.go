@@ -6,17 +6,17 @@ import (
 	"forum/internal/image/controllers"
 	"forum/internal/internal_pkg/internal_utils"
 	"forum/internal/models"
-	"forum/pkg/globals"
+	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
 // InsertCommentRep 将评论存入数据库中
-func InsertCommentRep(articleCommentReq *requests.ArticleCommentReq, db *gorm.DB) error {
+func InsertCommentRep(c *gin.Context, articleCommentReq *requests.ArticleCommentReq, db *gorm.DB) (error, int) {
 
 	// 开启事务
 	tx := db.Begin()
 	if tx.Error != nil {
-		return fmt.Errorf("InsertCommentRep -> 开启事务失败 -> %s", tx.Error)
+		return fmt.Errorf("InsertCommentRep -> 开启事务失败 -> %s", tx.Error), 500
 	}
 
 	// 构建要插入的结构体
@@ -32,15 +32,29 @@ func InsertCommentRep(articleCommentReq *requests.ArticleCommentReq, db *gorm.DB
 	err := tx.Create(&articleComment).Error
 	if err != nil {
 		tx.Rollback() // 回滚事务
-		return fmt.Errorf("InsertCommentRep -> 插入评论失败 ->  %s", err)
+		return fmt.Errorf("InsertCommentRep -> 插入评论失败 ->  %s", err), 500
+	}
+
+	// 获取新插入的评论的ID
+	err = tx.First(articleComment).Error
+	if err != nil {
+		tx.Rollback() // 回滚事务
+		return fmt.Errorf("InsertCommentRep -> 获取新插入的评论的ID失败 -> %s", err), 500
+	}
+
+	// 将评论的图片存到文件系统中
+	err, status := controllers.UploadImagesControllers(c, "评论", articleComment.ID)
+	if err != nil {
+		return err, status
 	}
 
 	// 提交事务
 	err = tx.Commit().Error
 	if err != nil {
-		return fmt.Errorf("InsertCommentRep -> 提交事务失败 -> %s", err)
+		return fmt.Errorf("InsertCommentRep -> 提交事务失败 -> %s", err), 500
 	}
-	return nil
+	return nil, 200
+
 }
 
 /*func GetCommentByArticleRep(articleID string) (*[]requests.ArticleCommentRes, error) {
@@ -86,17 +100,26 @@ func buildCommentTree(comment *requests.ArticleCommentRes, commentMap map[uint][
 }*/
 
 // GetTopLevelCommentsRep 返回顶级评论
-func GetTopLevelCommentsRep(req *requests.TopCommentsReq) (*[]*requests.TopCommentsRes, error) {
+func GetTopLevelCommentsRep(db *gorm.DB, req *requests.TopCommentsReq) (*[]*requests.TopCommentsRes, error) {
 	var topCommentsRes []*requests.TopCommentsRes
 	var count int64
 	var articleComments []models.ArticleComment
+	var commentId []uint
 
 	// 查询顶级评论
-	err := globals.DB.Where("article_id = ? AND parent_id IS NULL", req.ArticleID).
+	err := db.Where("article_id = ? AND parent_id IS NULL", req.ArticleID).
 		Order("created_at asc").Limit(req.Limit).Offset(req.Offset).Find(&articleComments).Error
 	if err != nil {
 		return nil, fmt.Errorf("GetTopLevelCommentsRep -> %s", err)
 	}
+
+	// 查询用户对该篇文章中的评论的点赞情况
+	err = db.Model(models.ArticleComment{}).Joins("join sw_comment_likes on sw_comment_likes.comment_id = sw_article_comments.id").
+		Where("sw_article_comments.article_id = ? and sw_comment_likes.user_id = ?", req.ArticleID, req.UserID).Find(&commentId).Error
+	if err != nil {
+		return nil, fmt.Errorf("GetTopLevelCommentsRep -> 查询用户对该篇文章中的评论的点赞情况失败 -> %s", err)
+	}
+
 	for _, comment := range articleComments {
 		topComment := &requests.TopCommentsRes{
 			ID:           comment.ID,
@@ -109,20 +132,31 @@ func GetTopLevelCommentsRep(req *requests.TopCommentsReq) (*[]*requests.TopComme
 			Content:      comment.Content,
 			LikesCount:   comment.LikesCount,
 		}
+		// 判断用户对评论是否已经点过赞了
+		for _, id := range commentId {
+			if comment.ID == id {
+				// 1 表示对该评论该用户已经点过赞了
+				topComment.Status = 1
+				break
+			}
+		}
+		// 2 表示对该评论该用户从没有点过赞
+		topComment.Status = 2
+
 		topCommentsRes = append(topCommentsRes, topComment)
 	}
 
 	for _, comment := range topCommentsRes {
 
 		// 统计每个顶级评论的回复数量
-		err := globals.DB.Model(&models.ArticleComment{}).Where("highest_id = ?", comment.ID).Count(&count).Error
+		err := db.Model(&models.ArticleComment{}).Where("highest_id = ?", comment.ID).Count(&count).Error
 		if err != nil {
 			return nil, fmt.Errorf("GetTopLevelCommentsRep -> %s", err)
 		}
 		comment.RepliesCount = count
 
 		// 查询用户名字
-		err = globals.DB.Model(&models.User{}).Select("Nickname").Where("id = ?", comment.UserID).First(&comment.Nickname).Error
+		err = db.Model(&models.User{}).Select("Nickname").Where("id = ?", comment.UserID).First(&comment.Nickname).Error
 		if err != nil {
 			return nil, fmt.Errorf("GetTopLevelCommentsRep -> %s", err)
 		}
@@ -183,13 +217,21 @@ func GetRepliesRep(req *requests.RepliesReq) (*[]models.ArticleComment, error) {
 }*/
 
 // GetRepliesRep2Rep 返回评论回复
-func GetRepliesRep2Rep(req *requests.RepliesReq2) (*[]*requests.RepliesRes, error) {
+func GetRepliesRep2Rep(db *gorm.DB, req *requests.RepliesReq2) (*[]*requests.RepliesRes, error) {
 	var repliesRes []*requests.RepliesRes
 	var articleComments []models.ArticleComment
+	var commentId []uint
 
-	err := globals.DB.Where("highest_id = ?", req.HighestID).Order("created_at asc").Limit(req.Limit).Offset(req.Offset).Find(&articleComments).Error
+	err := db.Where("highest_id = ?", req.HighestID).Order("created_at asc").Limit(req.Limit).Offset(req.Offset).Find(&articleComments).Error
 	if err != nil {
 		return nil, fmt.Errorf("GetRepliesRep2Rep -> %s", err)
+	}
+
+	// 查询用户对该篇文章中的评论的点赞情况
+	err = db.Model(models.ArticleComment{}).Joins("join sw_comment_likes on sw_comment_likes.comment_id = sw_article_comments.id").
+		Where("sw_article_comments.highest_id = ? and sw_comment_likes.user_id = ?", req.HighestID, req.UserID).Find(&commentId).Error
+	if err != nil {
+		return nil, fmt.Errorf("GetTopLevelCommentsRep -> 查询用户对该篇文章中的评论的点赞情况失败 -> %s", err)
 	}
 
 	for _, comment := range articleComments {
@@ -204,13 +246,25 @@ func GetRepliesRep2Rep(req *requests.RepliesReq2) (*[]*requests.RepliesRes, erro
 			Content:      comment.Content,
 			LikesCount:   comment.LikesCount,
 		}
+
+		// 判断用户对评论是否已经点过赞了
+		for _, id := range commentId {
+			if comment.ID == id {
+				// 1 表示对该评论该用户已经点过赞了
+				replies.Status = 1
+				break
+			}
+		}
+		// 2 表示对该评论该用户从没有点过赞
+		replies.Status = 2
+
 		repliesRes = append(repliesRes, replies)
 	}
 
 	for _, comment := range repliesRes {
 
 		// 查询用户名字
-		err := globals.DB.Model(&models.User{}).Select("Nickname").Where("id = ?", comment.UserID).First(&comment.Nickname).Error
+		err := db.Model(&models.User{}).Select("Nickname").Where("id = ?", comment.UserID).First(&comment.Nickname).Error
 		if err != nil {
 			return nil, fmt.Errorf("GetRepliesRep2Rep -> %s", err)
 		}
@@ -227,7 +281,7 @@ func GetRepliesRep2Rep(req *requests.RepliesReq2) (*[]*requests.RepliesRes, erro
 		}
 
 		// 查询用户回复对象的名字
-		err = globals.DB.Model(&models.User{}).Select("Nickname").Where("id = ?", comment.ParentID).First(&comment.ParentNickname).Error
+		err = db.Model(&models.User{}).Select("Nickname").Where("id = ?", comment.ParentID).First(&comment.ParentNickname).Error
 		if err != nil {
 			return nil, fmt.Errorf("GetRepliesRep2Rep -> %s", err)
 		}

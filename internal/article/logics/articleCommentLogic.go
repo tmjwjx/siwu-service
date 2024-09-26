@@ -3,13 +3,14 @@ package logics
 import (
 	"forum/internal/article/repositories"
 	"forum/internal/article/requests"
+	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
 // InsertCommentLogic 将评论存入数据库中
-func InsertCommentLogic(articleCommentReq *requests.ArticleCommentReq, db *gorm.DB) error {
-	err := repositories.InsertCommentRep(articleCommentReq, db)
-	return err
+func InsertCommentLogic(c *gin.Context, articleCommentReq *requests.ArticleCommentReq, db *gorm.DB) (error, int) {
+	err, status := repositories.InsertCommentRep(c, articleCommentReq, db)
+	return err, status
 }
 
 /*func GetCommentByArticleLogic(articleID string) (*[]requests.ArticleCommentRes, error) {
@@ -28,14 +29,14 @@ func GetRepliesLogic(req *requests.RepliesReq) (*[]models.ArticleComment, error)
 }*/
 
 // GetTopLevelCommentsLogic 返回顶级评论
-func GetTopLevelCommentsLogic(req *requests.TopCommentsReq) (*[]*requests.TopCommentsRes, error) {
-	topCommentsRes, err := repositories.GetTopLevelCommentsRep(req)
+func GetTopLevelCommentsLogic(db *gorm.DB, req *requests.TopCommentsReq) (*[]*requests.TopCommentsRes, error) {
+	topCommentsRes, err := repositories.GetTopLevelCommentsRep(db, req)
 	return topCommentsRes, err
 }
 
 // GetRepliesRep2Logic 返回评论回复
-func GetRepliesRep2Logic(req *requests.RepliesReq2) (*[]*requests.RepliesRes, error) {
-	repliesRes, err := repositories.GetRepliesRep2Rep(req)
+func GetRepliesRep2Logic(db *gorm.DB, req *requests.RepliesReq2) (*[]*requests.RepliesRes, error) {
+	repliesRes, err := repositories.GetRepliesRep2Rep(db, req)
 	return repliesRes, err
 }
 

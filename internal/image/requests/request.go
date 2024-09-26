@@ -12,3 +12,19 @@ type Attachment struct {
 	Size       int64  `json:"size"`    // 文件大小（以字节为单位）
 	Path       string `json:"path"`    // 文件路径
 }
+
+//// ImageUrl 图片的Url路径
+//type ImageUrl struct {
+//	ImageUrl string `json:"image_url"`
+//}
+
+// ImageUrl 响应结构体
+type ImageUrl struct {
+	Errno int      `json:"errno"`
+	Data  *UrlPath `json:"data"`
+}
+
+// UrlPath 图片的Url路径
+type UrlPath struct {
+	Url string `json:"url"`
+}

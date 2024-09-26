@@ -7,8 +7,14 @@ import (
 	"gorm.io/gorm"
 )
 
-// ShowCommentsListLogic 展示评论列表
-func ShowCommentsListLogic(db *gorm.DB, req *requests.CommentsListReq) (*[]*requests.CommentsListRes, error) {
+// BatchReviewLogic 批量审核
+func BatchReviewLogic(db *gorm.DB, req *requests.BatchReviewReq) (*requests.BatchReviewRes, error) {
+	res, err := repositories.BatchReviewRep(db, req)
+	return res, err
+}
+
+// ShowCommentsListLogic 展示评论列表(获取评论列表)
+func ShowCommentsListLogic(db *gorm.DB, req *requests.CommentsListReq) (*requests.CommentsListRes, error) {
 	commentsListRes, err := repositories.ShowCommentsListRep(db, req)
 	return commentsListRes, err
 }

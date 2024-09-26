@@ -12,6 +12,8 @@ type ArticleComment struct {
 	HighestID    *uint  `json:"highest_id" gorm:"index"`      // 最上层一级评论
 	ParentID     *uint  `json:"parent_id" gorm:"index"`       // 上一条评论ID , 允许为 null，表示顶级评论
 	ParentUserID *uint  `json:"parent_user_id"`               // 上一条评论的发布用户ID
+	ParentEmail  string `json:"parent_email"`                 // 被回复者的Email
 	Content      string `json:"content" gorm:"not null"`      // 评论内容
 	LikesCount   int    `json:"likes_count" gorm:"default:0"` // 点赞数量
+	Examine      int    `json:"examine"`                      // 是否审核 1:审核 2:未审核
 }
