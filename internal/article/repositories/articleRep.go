@@ -326,8 +326,7 @@ func ArticleDetailRep(db *gorm.DB, id string) (requests.ArticleDetailRes, error)
 
 	query = query.Where("sw_articles.id = ?", id)
 
-	// todo 为什么非得有这一行
-	query = query.Joins("LEFT JOIN sw_users ON sw_users.id = sw_articles.user_id")
+	//query = query.Joins("LEFT JOIN sw_users ON sw_users.id = sw_articles.user_id")
 
 	query.Find(&articleDetail)
 
