@@ -25,9 +25,9 @@ func GenerateToken(id uint) (string, error) {
 	claims := Claims{
 		ID: id,
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 2)), // 过期时间
-			IssuedAt:  jwt.NewNumericDate(time.Now()),                    // 签发时间
-			Issuer:    "siwu-web-service",                                // 签发者
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 84)), // 过期时间
+			IssuedAt:  jwt.NewNumericDate(time.Now()),                     // 签发时间
+			Issuer:    "siwu-web-service",                                 // 签发者
 		},
 	}
 

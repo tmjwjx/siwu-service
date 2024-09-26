@@ -1,8 +1,8 @@
 package requests
 
-// ReqSearch
+// ArticleSearchReq
 // @Description: 搜索请求
-type ReqSearch struct {
+type ArticleSearchReq struct {
 	UserId     int    `json:"user_id" form:"user_id"`         // 用户id
 	Keyword    string `json:"keyword" form:"keyword"`         // 搜索词
 	CategoryId int    `json:"category_id" form:"category_id"` // 类目

@@ -35,6 +35,8 @@ type SearchArticleListRes struct {
 	CommentsCount    int    `json:"comments_count"`    // 评论数
 	Heat             int    `json:"heat"`              // 热度
 	Nickname         string `json:"nickname"`          // 发布人用户名
+	Summary          string `json:"summary"`           // 文章摘要
+	ImageUrl         string `json:"image_url"`         // 文章封面url
 	PublishedAt      string `json:"published_at"`      // 发布时间
 	UpdatedAt        string `json:"updated_at"`        // 更新时间
 	//Tags             []Tags `json:"tags" gorm:"many2many:article_tags;joinForeignKey:article_id;table:sw_tags"`

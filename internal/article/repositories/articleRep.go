@@ -11,28 +11,70 @@ import (
 	"time"
 )
 
-// InsertArticlesRep 新建文章
-func InsertArticlesRep(db *gorm.DB, req requests.ReqPublish) error {
+// InsertArticlesRep
+// @Description: 新建文章
+// @param        db *gorm.DB
+// @param        req requests.ReqPublish
+// @return       int
+// @return       error
+func InsertArticlesRep(db *gorm.DB, req requests.ReqPublish, userId uint) (int, error) {
 
 	newArticle := models.Article{
-		UserID:           req.UserId,
-		Title:            req.Title,
-		LikesCount:       0,
-		CollectionsCount: 0,
-		CommentsCount:    0,
-		ViewsCount:       0,
-		Heat:             0,
-		Status:           req.Status,
-		CategoryID:       req.CategoryID,
-		Summary:          req.Summary,
-		Content:          req.Content,
-	}
-	result := db.Create(&newArticle)
-	if result.Error != nil {
-		globals.Log.Fatal("创建文章失败:", result.Error)
+		//UserID:     req.UserId,
+		//Title:      req.Title,
+		//Status:     req.Status,
+		//CategoryID: req.CategoryID,
+		//Summary:    req.Summary,
+		//Content:    req.Content,
+		//ImageUrl:   req.ImageUrl,
 	}
 
-	return nil
+	// 设置文章ID
+	if req.ArticleId != 0 {
+		if userId != req.UserId {
+			return 0, nil // 如果当前用户不是文章作者
+		}
+		newArticle.ID = uint(req.ArticleId)
+
+		// 获取数据库文章记录
+		db.Find(&newArticle)
+	}
+	{
+		newArticle.UserID = req.UserId
+		newArticle.Title = req.Title
+		newArticle.Status = req.Status
+		newArticle.CategoryID = req.CategoryID
+		newArticle.Summary = req.Summary
+		newArticle.Content = req.Content
+		newArticle.ImageUrl = req.ImageUrl
+	}
+
+	// 设置标签
+	// 查找传递过来的所有标签
+	var tags []models.Tag
+	if err := db.Where("id IN ?", req.Tags).Find(&tags).Error; err != nil {
+		return 0, err // 如果标签不存在，返回错误
+	}
+	// 更新文章的标签关联
+	// 手动清空当前文章的标签关联，确保旧数据被清除
+	if err := db.Model(&newArticle).Association("Tags").Clear(); err != nil {
+		return 0, err // 如果清除失败，返回错误
+	}
+	newArticle.Tags = tags
+
+	// 设置发布时间
+	if req.Status == "public" {
+		now := time.Now()
+		newArticle.PublishedAt = &now
+	}
+	result := db.Save(&newArticle)
+	if result.Error != nil {
+		globals.Log.Fatal("创建文章失败:", result.Error)
+		return 0, result.Error
+	}
+	id := int(newArticle.ID)
+
+	return id, nil
 }
 
 // UpdatePublishRep 设置文章的发布时间
@@ -97,7 +139,7 @@ func QueryCategory(db *gorm.DB) (categories []models.Category, err error) {
 //}
 
 // SearchArticlesRep 搜索文章
-func SearchArticlesRep(db *gorm.DB, req *requests.ReqSearch) (articles []models.Article, err error) {
+func SearchArticlesRep(db *gorm.DB, req *requests.ArticleSearchReq) (articles []requests.SearchArticleListRes, err error) {
 
 	condition := internal_utils.ArticlesOrder(req.Kind) // 选择排序方式  0热度 1时间
 
@@ -280,12 +322,42 @@ func DeleteArticlesRep(db *gorm.DB, id string) error {
 func ArticleDetailRep(db *gorm.DB, id string) (requests.ArticleDetailRes, error) {
 
 	articleDetail := requests.ArticleDetailRes{}
-	query := db.Model(&models.Article{})
+	query := db.Model(&models.Article{}).Preload("Tags")
 
-	query = query.Where("id = ?", id)
-	query = query.Joins("User")
+	query = query.Where("sw_articles.id = ?", id)
+
+	// todo 为什么非得有这一行
+	query = query.Joins("LEFT JOIN sw_users ON sw_users.id = sw_articles.user_id")
 
 	query.Find(&articleDetail)
 
 	return articleDetail, nil
+}
+
+// ArticleLikeQueryReq
+// @Description: 查询文章点赞
+func ArticleLikeQueryReq(db *gorm.DB, articleId int, userId int) (bool, error) {
+	//var like models.Like
+	//if err := db.Where("article_id = ? AND user_id = ?", articleId, userId).First(&like).Error; err != nil {
+	//	return false, err
+	//}
+	return true, nil
+}
+
+// AboutArticleRep
+// @Description: 获取相关推荐
+// @param        db *gorm.DB
+// @param        articleId string
+// @param        userId uint
+// @return       about
+// @return       err
+func AboutArticleRep(db *gorm.DB, articleId string, userId uint) (about []requests.AboutArticleRes, err error) {
+
+	// articleId 和 userId 暂时搁置 未使用
+	// 查询相关推荐
+	query := db.Model(&models.Article{})
+	query = query.Order("RAND()")
+	query.Limit(4).Find(&about)
+
+	return about, nil
 }

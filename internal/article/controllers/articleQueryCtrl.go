@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"forum/internal/article/logics"
 	"forum/internal/article/requests"
 	"forum/pkg/globals"
@@ -49,7 +50,7 @@ func ArticleListCtrl(c *gin.Context) {
 func ArticleSearchCtrl(c *gin.Context) {
 	// 初始化需要的变量
 	db := globals.DB
-	var req *requests.ReqSearch // 创建一个 SearchRequest 类型的变量，用于存储请求参数
+	var req *requests.ArticleSearchReq // 创建一个 SearchRequest 类型的变量，用于存储请求参数
 
 	// 绑定查询参数到 req 变量，如果绑定失败，返回错误信息
 	if err := c.ShouldBindQuery(&req); err != nil {
@@ -83,10 +84,13 @@ func ArticleDetailCtrl(c *gin.Context) {
 
 	// 初始化需要的变量
 	db := globals.DB
-	id := c.Param("id")
+	articleId := c.Query("id")
+
+	userId, _ := c.Get("id")
+	fmt.Println(userId)
 
 	// 进入业务层
-	articleDetail, err := logics.ArticleDetailLogic(db, id)
+	articleDetail, err := logics.ArticleDetailLogic(db, articleId, userId.(uint))
 	if err != nil {
 		globals.Log.Errorf("加载文章详情失败 err = %s", err)
 		data := response.NewAppErr(globals.StatusInternalServerError, err, nil)
