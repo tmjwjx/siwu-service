@@ -26,12 +26,18 @@ func ArticleSearchLogic(db *gorm.DB, req *requests.ArticleSearchReq) ([]requests
 // @return       err
 func ArticleDetailLogic(db *gorm.DB, articleId string, userId uint) (data interface{}, err error) {
 
+	// 查询文章详情
 	article, err := repositories.ArticleDetailRep(db, articleId)
 	if err != nil {
 		globals.Log.Errorf("err = %s", err)
 		return nil, err
 	}
+	// 查询用户是否点赞
+	article.LikeStatus, err = repositories.LikeStatusRep(db, articleId, userId)
+	// 查询用户是否收藏
+	article.CollectionStatus, err = repositories.CollectionStatusRep(db, articleId, userId)
 
+	// 查询相关文章
 	about, err := repositories.AboutArticleRep(db, articleId, userId)
 	if err != nil {
 		globals.Log.Errorf("err = %s", err)

@@ -1,11 +1,13 @@
 package repositories
 
 import (
+	"fmt"
 	"forum/internal/article/requests"
 	"forum/internal/internal_pkg/internal_utils"
 	"forum/internal/models"
 	"forum/pkg/globals"
 	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
 	"gorm.io/gorm"
 	"strconv"
 	"time"
@@ -211,8 +213,10 @@ func SearchArticlesListRep(db *gorm.DB, req *requests.ArticleListReq) (data inte
 	//Joins("LEFT JOIN sw_article_tags ON sw_article_tags.article_id = sw_articles.id").
 	//Joins("LEFT JOIN sw_tags ON sw_tags.id = sw_article_tags.tag_id")
 
-	//状态
-	query = query.Where("article_condition = ?", req.ArticleCondition)
+	//状态 0全部1公开2封禁
+	if req.ArticleCondition != 0 {
+		query = query.Where("article_condition = ?", req.ArticleCondition)
+	}
 
 	//时间
 	if !req.StartTime.IsZero() && !req.EndTime.IsZero() {
@@ -322,7 +326,9 @@ func DeleteArticlesRep(db *gorm.DB, id string) error {
 func ArticleDetailRep(db *gorm.DB, id string) (requests.ArticleDetailRes, error) {
 
 	articleDetail := requests.ArticleDetailRes{}
-	query := db.Model(&models.Article{}).Preload("Tags")
+	query := db.Model(&models.Article{}).
+		Preload("Tags").
+		Omit("like_status", "collection_status")
 
 	query = query.Where("sw_articles.id = ?", id)
 
@@ -359,4 +365,117 @@ func AboutArticleRep(db *gorm.DB, articleId string, userId uint) (about []reques
 	query.Limit(4).Find(&about)
 
 	return about, nil
+}
+
+// LikeStatusRep
+// @Description: 查询用户是否点赞
+// @param        db *gorm.DB
+// @param        articleId string
+// @param        userId uint
+// @return       bool
+// @return       error
+func LikeStatusRep(db *gorm.DB, articleId string, userId uint) (bool, error) {
+	var like models.ArticleLike
+	// 查询用户是否点赞
+	if err := db.Where("article_id = ? AND user_id = ?", articleId, userId).First(&like).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			// 处理没有找到点赞记录的情况
+			fmt.Println("没有找到点赞记录")
+			return false, nil
+		}
+		return false, err
+	}
+	return true, nil
+}
+
+// CollectionStatusRep
+// @Description: 查询用户是否收藏
+// @param        db *gorm.DB
+// @param        articleId string
+// @param        userId uint
+// @return       bool
+// @return       error
+func CollectionStatusRep(db *gorm.DB, articleId string, userId uint) (bool, error) {
+	var collection models.ArticleCollection
+	// 查询用户是否收藏
+	if err := db.Where("article_id = ? AND user_id = ?", articleId, userId).First(&collection).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			// 处理没有找到收藏记录的情况
+			fmt.Println("没有找到收藏记录")
+			return false, nil
+		}
+		return false, err
+	}
+	return true, nil
+}
+
+// UpdateLikeRep
+// @Description: 更新点赞
+// @param        db *gorm.DB
+// @param        articleId string
+// @param        userId uint
+// @return       error
+func UpdateLikeRep(db *gorm.DB, req requests.ArticleLikeReq, userId uint) (err error) {
+
+	var like models.ArticleLike
+
+	if req.LikeStatus == true {
+		if err = db.Where("article_id = ? AND user_id = ?", req.ArticleId, userId).First(&like).Error; err != nil {
+			// 如果没有找到点赞记录，创建点赞记录
+			like = models.ArticleLike{
+				ArticleID: req.ArticleId,
+				UserID:    userId,
+			}
+			if err = db.Create(&like).Error; err != nil {
+				return err
+			}
+		}
+	} else if req.LikeStatus == false {
+		// 查询用户是否点赞 如果点赞了 删除点赞记录
+		if err = db.Where("article_id = ? AND user_id = ?", req.ArticleId, userId).First(&like).Error; err != nil {
+			return err
+		}
+		// 删除点赞记录
+		if err = db.Delete(&like).Error; err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// UpdateCollectionRep
+// @Description: 更新收藏
+// @param        db *gorm.DB
+// @param        req requests.ArticleCollectionReq
+// @param        userId uint
+// @return       error
+func UpdateCollectionRep(db *gorm.DB, req requests.ArticleCollectionReq, userId uint) (err error) {
+
+	var collection models.ArticleCollection
+
+	if req.CollectionStatus == true {
+		if err = db.Where("article_id = ? AND user_id = ?", req.ArticleId, userId).First(&collection).Error; err != nil {
+			// 如果没有找到收藏记录，创建收藏记录
+			collection = models.ArticleCollection{
+				ArticleID: req.ArticleId,
+				UserID:    userId,
+			}
+			if err = db.Create(&collection).Error; err != nil {
+				return err
+			}
+		}
+	} else if req.CollectionStatus == false {
+		// 查询用户是否收藏 如果收藏了 删除收藏记录
+		if err = db.Where("article_id = ? AND user_id = ?", req.ArticleId, userId).First(&collection).Error; err != nil {
+			return err
+		}
+		// 删除收藏记录
+		if err = db.Delete(&collection).Error; err != nil {
+			return err
+		}
+
+	}
+
+	return nil
 }

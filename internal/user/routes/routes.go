@@ -2,6 +2,8 @@ package routes
 
 import (
 	"forum/internal/user/controllers"
+	"forum/internal/user/middlewares"
+	"forum/pkg/token"
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,8 +20,8 @@ func User(e *gin.Engine) {
 
 	// 分组
 	r := e.Group("/user")
-	// token 校验
-	// r.Use(token.AuthMiddleware(), middlewares.CorsMiddleware())
+	//token 校验
+	r.Use(token.AuthMiddleware(), middlewares.CorsMiddleware())
 
 	// 关注
 	r.POST("/follow", controllers.Follow)
@@ -68,5 +70,10 @@ func User(e *gin.Engine) {
 	r.GET("/getInfo", controllers.GetInfo)
 	// 上传用户头像
 	r.POST("/upload/headshot", controllers.UploadHeadshot)
+
+	message := e.Group("/message")
+	{
+		message.POST("/like", controllers.LikeMessageCtrl)
+	}
 
 }

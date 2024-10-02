@@ -30,6 +30,10 @@ func Article(e *gin.Engine) {
 		articleGroup.DELETE("/delete", controllers.DeleteArticlesCtrl)
 		// 获取文章详情
 		articleGroup.GET("/detail", controllers.ArticleDetailCtrl)
+		// 点赞
+		articleGroup.POST("/like", controllers.LikeArticleCtrl)
+		// 收藏
+		articleGroup.POST("/collection", controllers.CollectionCtrl)
 	}
 
 }
