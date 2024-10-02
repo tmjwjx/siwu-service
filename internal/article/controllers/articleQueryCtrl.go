@@ -87,7 +87,7 @@ func ArticleDetailCtrl(c *gin.Context) {
 	articleId := c.Query("id")
 
 	userId, _ := c.Get("id")
-	fmt.Println(userId)
+	fmt.Println("当前用户id", userId)
 
 	// 进入业务层
 	articleDetail, err := logics.ArticleDetailLogic(db, articleId, userId.(uint))
