@@ -10,6 +10,8 @@ import (
 
 // UpdateTagUserCount 更新标签的关注人数
 func UpdateTagUserCount(c *gin.Context) {
+
+	// 获取参数
 	var tag requests.TagReq
 	if err := c.ShouldBind(&tag); err != nil {
 		e := response.NewAppErr(globals.StatusBadRequest, err, nil)

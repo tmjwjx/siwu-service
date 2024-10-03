@@ -1,7 +1,5 @@
 package requests
 
-import "time"
-
 type ArticleCommentReq struct {
 	ArticleID    uint   `json:"article_id"`
 	UserID       uint   `json:"user_id"`
@@ -40,20 +38,20 @@ type TopCommentsReq struct {
 }
 
 type TopCommentsRes struct {
-	ID           uint      `json:"id"`             // 评论ID
-	Nickname     string    `json:"nickname"`       // 用户昵称
-	CreateAT     time.Time `json:"create_at"`      // 评论创建时间
-	ArticleID    uint      `json:"article_id"`     // 文章ID
-	UserID       uint      `json:"user_id"`        // 用户ID
-	HighestID    *uint     `json:"highest_id"`     // 顶级评论ID
-	ParentID     *uint     `json:"parent_id"`      // 上一级评论ID
-	ParentUserID *uint     `json:"parent_user_id"` // 上一条评论的发布用户ID
-	Content      string    `json:"content"`        // 评论内容
-	LikesCount   int       `json:"likes_count"`    // 点赞数量
-	RepliesCount int64     `json:"replies_count"`  // 回复数量
-	Path         string    `json:"path"`           // 用户头像
-	CommentPath  string    `json:"comment_path"`   // 用户发的评论中的图片
-	Status       int       `json:"status"`         // 判断用户对评论的点赞情况
+	ID           uint   `json:"id"`             // 评论ID
+	Nickname     string `json:"nickname"`       // 用户昵称
+	CreateAT     string `json:"create_at"`      // 评论创建时间
+	ArticleID    uint   `json:"article_id"`     // 文章ID
+	UserID       uint   `json:"user_id"`        // 用户ID
+	HighestID    *uint  `json:"highest_id"`     // 顶级评论ID
+	ParentID     *uint  `json:"parent_id"`      // 上一级评论ID
+	ParentUserID *uint  `json:"parent_user_id"` // 上一条评论的发布用户ID
+	Content      string `json:"content"`        // 评论内容
+	LikesCount   int    `json:"likes_count"`    // 点赞数量
+	RepliesCount int64  `json:"replies_count"`  // 回复数量
+	Path         string `json:"path"`           // 用户头像
+	CommentPath  string `json:"comment_path"`   // 用户发的评论中的图片
+	Status       int    `json:"status"`         // 判断用户对评论的点赞情况
 }
 
 type RepliesReq2 struct {
@@ -64,21 +62,21 @@ type RepliesReq2 struct {
 }
 
 type RepliesRes struct {
-	ID             uint      `json:"id"`              // 评论ID
-	Nickname       string    `json:"nickname"`        // 用户昵称
-	ParentNickname string    `json:"parent_nickname"` // 用户回复对象的昵称
-	CreateAT       time.Time `json:"create_at"`       // 评论创建时间
-	ArticleID      uint      `json:"article_id"`      // 文章ID
-	UserID         uint      `json:"user_id"`         // 用户ID
-	HighestID      *uint     `json:"highest_id"`      // 顶级评论ID
-	ParentID       *uint     `json:"parent_id"`       // 上一级评论ID
-	ParentUserID   *uint     `json:"parent_user_id"`  // 上一条评论的发布用户ID
-	Content        string    `json:"content"`         // 评论内容
-	LikesCount     int       `json:"likes_count"`     // 点赞数量
-	Path           string    `json:"path"`            // 用户头像
-	ParentPath     string    `json:"parent_path"`     // 用户回复对象的头像
-	CommentPath    string    `json:"comment_path"`    // 用户发的评论中的图片
-	Status         int       `json:"status"`          // 判断用户对评论的点赞情况
+	ID             uint   `json:"id"`              // 评论ID
+	Nickname       string `json:"nickname"`        // 用户昵称
+	ParentNickname string `json:"parent_nickname"` // 用户回复对象的昵称
+	CreateAT       string `json:"create_at"`       // 评论创建时间
+	ArticleID      uint   `json:"article_id"`      // 文章ID
+	UserID         uint   `json:"user_id"`         // 用户ID
+	HighestID      *uint  `json:"highest_id"`      // 顶级评论ID
+	ParentID       *uint  `json:"parent_id"`       // 上一级评论ID
+	ParentUserID   *uint  `json:"parent_user_id"`  // 上一条评论的发布用户ID
+	Content        string `json:"content"`         // 评论内容
+	LikesCount     int    `json:"likes_count"`     // 点赞数量
+	Path           string `json:"path"`            // 用户头像
+	ParentPath     string `json:"parent_path"`     // 用户回复对象的头像
+	CommentPath    string `json:"comment_path"`    // 用户发的评论中的图片
+	Status         int    `json:"status"`          // 判断用户对评论的点赞情况
 }
 
 type DelComment struct {

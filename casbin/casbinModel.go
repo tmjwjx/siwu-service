@@ -11,8 +11,9 @@ type CasbinService struct {
 	Adapter  *gormadapter.Adapter
 }
 
-// RolePolicy 对应于 'CasbinRule' 表中的(v0, v1)
-type RolePolicy struct {
-	RoleName string `gorm:"column:v0"`
-	MenuId   string `gorm:"column:v1"`
-}
+//// RolePolicy 对应于 'CasbinRule' 表中的(v0, v1)
+//type RolePolicy struct {
+//	RoleId   uint   // 角色id
+//	SingleId uint   // 菜单id或者api的id
+//	Kind     string // 用于判断是菜单还是api
+//}

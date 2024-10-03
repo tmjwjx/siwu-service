@@ -46,62 +46,74 @@ m = r.sub == p.sub && r.obj == p.obj`)
 	}, nil
 }
 
-// GetRoles 获取所有角色组
-func (c *CasbinService) GetRoles() ([]string, error) {
-	return c.Enforcer.GetAllRoles()
-}
-
-// GetRolePolicy 获取所有角色组权限
-func (c *CasbinService) GetRolePolicy() (roles []RolePolicy, err error) {
-	err = c.Adapter.GetDb().Model(&gormadapter.CasbinRule{}).Where("ptype = 'p'").Find(&roles).Error
-	if err != nil {
-		return nil, fmt.Errorf("CreateRolePolicy -> 获取所有角色组权限失败 -> %s", err)
-	}
-	return
-}
-
-// CreateRolePolicy 创建角色组权限， 已有的会忽略
-func (c *CasbinService) CreateRolePolicy(r RolePolicy) error {
-	// 不直接操作数据库，利用enforcer简化操作
-	err := c.Enforcer.LoadPolicy()
-	if err != nil {
-		return fmt.Errorf("CreateRolePolicy -> 创建角色组权限， 已有的会忽略 -> %s", err)
-	}
-	// 添加策略
-	_, err = c.Enforcer.AddPolicy(r.RoleName, r.MenuId)
-	if err != nil {
-		return fmt.Errorf("CreateRolePolicy -> 添加策略失败 -> %s", err)
-	}
-	// 保存策略
-	return c.Enforcer.SavePolicy()
-}
-
-// DeleteRolePolicy 删除角色组权限
-func (c *CasbinService) DeleteRolePolicy(r RolePolicy) error {
-	_, err := c.Enforcer.RemovePolicy(r.RoleName, r.MenuId)
-	if err != nil {
-		return fmt.Errorf("DeleteRolePolicy -> 删除角色组权限失败 -> %s", err)
-	}
-	return c.Enforcer.SavePolicy()
-}
-
-// CanAccess 验证用户权限
-func (c *CasbinService) CanAccess(username, menuId string) (ok bool, err error) {
-	return c.Enforcer.Enforce(username, menuId)
-}
-
-// ModifyRolePolicy 修改角色策略
-func (c *CasbinService) ModifyRolePolicy(RoleName string, OldMenuId string, NewMenuId string) error {
-	_, err := c.Enforcer.RemovePolicy(RoleName, OldMenuId)
-	if err != nil {
-		return fmt.Errorf("DeleteRolePolicy -> 删除角色组权限失败 -> %s", err)
-	}
-
-	_, err = c.Enforcer.AddPolicy(RoleName, NewMenuId)
-	if err != nil {
-		return fmt.Errorf("DeleteRolePolicy -> 修改角色组权限成功 -> %s", err)
-	}
-
-	return c.Enforcer.SavePolicy()
-
-}
+//// GetRoles 获取所有角色组
+//func (c *models.CasbinService) GetRoles() ([]string, error) {
+//	return c.Enforcer.GetAllRoles()
+//}
+//
+//// GetRolePolicy 获取所有角色组权限
+//func (c *models.CasbinService) GetRolePolicy() (roles []models.RolePolicy, err error) {
+//	err = c.Adapter.GetDb().Model(&gormadapter.CasbinRule{}).Where("ptype = 'p'").Find(&roles).Error
+//	if err != nil {
+//		return nil, fmt.Errorf("CreateRolePolicy -> 获取所有角色组权限失败 -> %s", err)
+//	}
+//	return
+//}
+//
+//// CreateRolePolicy 创建角色组权限， 已有的会忽略
+//func (c *models.CasbinService) CreateRolePolicy(r models.RolePolicy) error {
+//	// 不直接操作数据库，利用enforcer简化操作
+//	err := c.Enforcer.LoadPolicy()
+//	if err != nil {
+//		return fmt.Errorf("CreateRolePolicy -> 创建角色组权限， 已有的会忽略 -> %s", err)
+//	}
+//	// 添加策略
+//	_, err = c.Enforcer.AddPolicy(r.RoleId, r.SingleId, r.Kind)
+//	if err != nil {
+//		return fmt.Errorf("CreateRolePolicy -> 添加策略失败 -> %s", err)
+//	}
+//	// 保存策略
+//	return c.Enforcer.SavePolicy()
+//}
+//
+//// DeleteRolePolicy 删除角色组权限
+//func (c *models.CasbinService) DeleteRolePolicy(r models.RolePolicy) error {
+//	// 不直接操作数据库，利用enforcer简化操作
+//	err := c.Enforcer.LoadPolicy()
+//	if err != nil {
+//		return fmt.Errorf("DeleteRolePolicy -> 创建角色组权限， 已有的会忽略 -> %s", err)
+//	}
+//	_, err = c.Enforcer.RemovePolicy(r.RoleName, r.MenuId)
+//	if err != nil {
+//		return fmt.Errorf("DeleteRolePolicy -> 删除角色组权限失败 -> %s", err)
+//	}
+//	return c.Enforcer.SavePolicy()
+//}
+//
+//// CanAccess 验证用户权限
+//func (c *models.CasbinService) CanAccess(username, menuId string) (ok bool, err error) {
+//	return c.Enforcer.Enforce(username, menuId)
+//}
+//
+//// ModifyRolePolicy 修改角色策略
+//func (c *models.CasbinService) ModifyRolePolicy(RoleName string, OldMenuId string, NewMenuId string) error {
+//
+//	// 不直接操作数据库，利用enforcer简化操作
+//	err := c.Enforcer.LoadPolicy()
+//	if err != nil {
+//		return fmt.Errorf("ModifyRolePolicy -> 创建角色组权限， 已有的会忽略 -> %s", err)
+//	}
+//
+//	_, err = c.Enforcer.RemovePolicy(RoleName, OldMenuId)
+//	if err != nil {
+//		return fmt.Errorf("ModifyRolePolicy -> 删除角色组权限失败 -> %s", err)
+//	}
+//
+//	_, err = c.Enforcer.AddPolicy(RoleName, NewMenuId)
+//	if err != nil {
+//		return fmt.Errorf("ModifyRolePolicy -> 修改角色组权限成功 -> %s", err)
+//	}
+//
+//	return c.Enforcer.SavePolicy()
+//
+//}
