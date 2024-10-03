@@ -67,7 +67,7 @@ func TableInit() {
 		&models.UserTag{},
 
 		&gormadapter.CasbinRule{},
-		&models.UserCasbinRules{},
+		//&models.UserCasbinRules{},
 		&models.Menu{},
 
 		// 角色管理模块

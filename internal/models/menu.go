@@ -20,7 +20,7 @@ type Menu struct {
 	Desc    string `json:"desc"`      // 描述
 
 	//Redirect      string `json:"redirect"`      // 跳转路径
-	Roles string `json:"roles"` // 角色
+	//Roles string `json:"roles"` // 角色
 	//RequestUrl    string `json:"requestUrl "`   // 请求接口
 	//RequestMethod string `json:"requestMethod"` // 请求方法
 }

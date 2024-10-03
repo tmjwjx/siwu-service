@@ -130,3 +130,35 @@ func ChangeType(str string) (uint, error) {
 
 	return uintNum, nil
 }
+
+// TimeAgo 函数根据传入的 time.Time 和当前时间计算差值并返回相应的时间描述
+func TimeAgo(t time.Time) string {
+	duration := time.Since(t) // 计算传入时间和当前时间的差值
+
+	seconds := int(duration.Seconds())
+	minutes := int(duration.Minutes())
+	hours := int(duration.Hours())
+	days := hours / 24
+	months := days / 30
+	years := days / 365
+
+	if seconds < 60 {
+		return fmt.Sprintf("%d秒前", seconds)
+	} else if minutes < 60 {
+		return fmt.Sprintf("%d分钟前", seconds)
+	} else if hours < 24 {
+		return fmt.Sprintf("%d小时前", hours)
+	} else if days < 30 {
+		return fmt.Sprintf("%d天前", days)
+	} else if months < 12 {
+		return fmt.Sprintf("%d个月前", months)
+	} else {
+		return fmt.Sprintf("%d年前", years)
+	}
+}
+
+// TimeFormat 格式化 CreatedAt 为 年-月-日 时:分:秒
+func TimeFormat(t time.Time) string {
+	formattedTime := t.Format("2006-01-02 15:04:05")
+	return formattedTime
+}
