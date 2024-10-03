@@ -20,3 +20,9 @@ func MessagePushCtrl(c *gin.Context) {
 	// 监听通道中的新评论消息
 	// 在外面实现
 }
+
+// LikeMessageCtrl
+// @Description: 点赞消息
+// @param        c *gin.Context
+func LikeMessageCtrl(c *gin.Context) {
+}

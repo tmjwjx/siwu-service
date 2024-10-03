@@ -23,8 +23,8 @@ type Article struct {
 	Content          string     `json:"content" gorm:"type:text;not null"`                                   // 文章内容
 	ArticleCondition int        `json:"article_condition"`                                                   // 是否封禁 1：正常 2：封禁
 	ImageUrl         string     `json:"image_url"`                                                           // 文章封面url
-	Tags             []Tag      `gorm:"many2many:article_tags"`
-	UserLikes        []User     `gorm:"many2many:article_likes"`       //点赞的人
-	UserCollections  []User     `gorm:"many2many:article_collections"` // 收藏的文章
-	ArticleComments  []User     `gorm:"many2many:article_comments"`    // 文章的评论
+	Tags             []Tag      `gorm:"many2many:article_tags"`                                              // 文章的标签
+	UserLikes        []User     `gorm:"many2many:article_likes"`                                             //点赞的人
+	UserCollections  []User     `gorm:"many2many:article_collections"`                                       // 收藏的文章
+	ArticleComments  []User     `gorm:"many2many:article_comments"`                                          // 文章的评论
 }
