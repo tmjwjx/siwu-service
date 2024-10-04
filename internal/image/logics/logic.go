@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"forum/internal/image/repositories"
 	"forum/internal/image/requests"
-	"forum/internal/internal_pkg/internal_utils"
+	"forum/internal/internalPkg/internalUtils"
 	"forum/internal/models"
 	"forum/pkg/globals"
 	"github.com/gin-gonic/gin"
@@ -32,7 +32,7 @@ func UploadHandlerLogic(c *gin.Context, home string, homeID uint) error {
 		uniqueFilename := generateUniqueFilename(file.Filename)
 
 		// 删除文件系统中的图片
-		err := internal_utils.DeleteFile(home, homeID)
+		err := internalUtils.DeleteFile(home, homeID)
 		if err != nil {
 			return err
 		}

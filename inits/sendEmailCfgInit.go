@@ -1,7 +1,7 @@
 package inits
 
 import (
-	"forum/internal/internal_pkg/internal_utils"
+	"forum/internal/internalPkg/internalUtils"
 	"forum/pkg/globals"
 	"github.com/spf13/viper"
 	"log"
@@ -14,7 +14,7 @@ func SendEmailCfgInit() {
 	}
 
 	globals.SendEmailCfg = &globals.AppConfig.SendEmailCfg
-	if !internal_utils.IsValidEmail(globals.SendEmailCfg.From) {
+	if !internalUtils.IsValidEmail(globals.SendEmailCfg.From) {
 		log.Fatalln("SendEmailCfgInit() err: 发送者邮箱错误")
 	}
 	// fmt.Println(globals.SendEmailCfg) // &{3174285493@qq.com 验证码 6 100 1 smtp.qq.com 587 3174285493@qq.com mmureuzrdnmndfef}

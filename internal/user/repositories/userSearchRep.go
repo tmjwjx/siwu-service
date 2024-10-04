@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"fmt"
+	"forum/internal/internalPkg/sqlUtils"
 	"forum/internal/models"
 	"gorm.io/gorm"
 )
@@ -22,14 +23,9 @@ func QueryLastUserVerifyCodeByUserID(db *gorm.DB, userID uint) (*models.UserVeri
 // 作者榜单：1篇文章=2个热度，作者热度 = 文章数量 + 文章热度
 func QueryUserRank(db *gorm.DB, page int, limit int) ([]*models.User, error) {
 	var users []*models.User
-	// 查询语句：根据用户的热度分数查询
-	query := db.Model(&models.User{}).Order("heat DESC")
+	// 查询语句：根据用户的热度分数查询。Paginate：可复用的查询逻辑，对查询结果进行分页。
+	query := db.Model(&models.User{}).Order("heat DESC").Scopes(sqlUtils.Paginate(page, limit))
 
-	if page > 0 && limit > 0 {
-		// 计算偏移量 (从第几条记录开始查询)
-		offset := (page - 1) * limit
-		query = query.Offset(offset).Limit(limit)
-	}
 	if err := query.Find(&users).Error; err != nil {
 		return nil, fmt.Errorf("QueryUserRank() err: %v", err)
 	}

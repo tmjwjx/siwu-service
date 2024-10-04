@@ -1,4 +1,4 @@
-package internal_utils
+package internalUtils
 
 import (
 	"regexp"

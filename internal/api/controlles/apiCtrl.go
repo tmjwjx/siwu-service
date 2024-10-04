@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"forum/internal/api/logics"
 	"forum/internal/api/requests"
-	"forum/internal/internal_pkg/internal_utils"
+	"forum/internal/internalPkg/internalUtils"
 	"forum/pkg/globals"
 	"forum/pkg/response"
 	"github.com/gin-gonic/gin"
@@ -31,7 +31,7 @@ func ApiInitCtrl(c *gin.Context) {
 func GetApiDetailsCtrl(c *gin.Context) {
 	// 获取参数
 	idStr := c.Param("id")
-	id, err := internal_utils.ChangeType(idStr)
+	id, err := internalUtils.ChangeType(idStr)
 	if err != nil {
 		e := response.NewAppErr(globals.StatusInternalServerError, err, nil)
 		response.Failed(c, 500, e)

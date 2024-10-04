@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"fmt"
+	"forum/internal/internalPkg/sqlUtils"
 	"forum/internal/models"
 	"github.com/samber/lo"
 	"gorm.io/gorm"
@@ -35,14 +36,14 @@ func UpdateAdminRoles(db *gorm.DB, userId uint, newRoleIds []uint) error {
 
 	// 删除
 	for _, v := range deleteRoleIds {
-		_, err := DeleteObjectsByModel(db, &models.AdminRole{}, map[string]interface{}{"admin_id": userId, "role_id": v})
+		_, err := sqlUtils.DeleteObjectsByModel(db, &models.AdminRole{}, map[string]interface{}{"admin_id": userId, "role_id": v})
 		if err != nil {
 			return fmt.Errorf("UpdateAdminRoles() err: %v", err)
 		}
 	}
 	// 插入
 	for _, v := range addRoleIds {
-		err = InsertObject(db, &models.AdminRole{AdminId: userId, RoleId: v})
+		err = sqlUtils.InsertObject(db, &models.AdminRole{AdminId: userId, RoleId: v})
 		if err != nil {
 			return fmt.Errorf("UpdateAdminRoles() err: %v", err)
 		}

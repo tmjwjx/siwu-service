@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"fmt"
-	"forum/internal/internal_pkg/internal_utils"
+	"forum/internal/internalPkg/internalUtils"
 	"forum/internal/user/logics"
 	"forum/internal/user/repositories"
 	"forum/internal/user/requests"
@@ -27,7 +27,7 @@ func Register(c *gin.Context) {
 	// 判断数据是否合法
 
 	// 检验邮箱是否合法
-	if !internal_utils.IsValidEmail(registerMsg.Email) {
+	if !internalUtils.IsValidEmail(registerMsg.Email) {
 		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("Register() : 邮箱不合法"), nil))
 		return
 	}
@@ -39,7 +39,7 @@ func Register(c *gin.Context) {
 	}
 
 	// 检验密码是否合法
-	if !internal_utils.IsValidPassword(registerMsg.Password) {
+	if !internalUtils.IsValidPassword(registerMsg.Password) {
 		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("Register() : 密码过于简单"), nil))
 		return
 	}
@@ -64,7 +64,7 @@ func ReqVerifyCode(c *gin.Context) {
 	// 数据检验
 
 	// 检验邮箱是否合法
-	if !internal_utils.IsValidEmail(email) {
+	if !internalUtils.IsValidEmail(email) {
 		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("ReqVerifyCode() err: 邮箱不合法"), nil))
 		return
 	}
@@ -92,12 +92,12 @@ func Login(c *gin.Context) {
 	// 判断数据是否合法
 
 	// 检验邮箱是否合法
-	if !internal_utils.IsValidEmail(logicMsg.Email) {
+	if !internalUtils.IsValidEmail(logicMsg.Email) {
 		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("Login() : 邮箱不合法"), nil))
 		return
 	}
 	// 检验密码是否合法
-	if !internal_utils.IsValidPassword(logicMsg.Password) {
+	if !internalUtils.IsValidPassword(logicMsg.Password) {
 		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("Login() : 密码不合法"), nil))
 		return
 	}
