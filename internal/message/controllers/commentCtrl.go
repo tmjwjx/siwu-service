@@ -2,8 +2,8 @@ package coctrollers
 
 import (
 	"fmt"
-	"forum/internal/message/comment/logics"
-	"forum/internal/message/comment/requests"
+	"forum/internal/message/logics"
+	"forum/internal/message/requests"
 	"forum/pkg/globals"
 	"forum/pkg/response"
 	"github.com/gin-gonic/gin"

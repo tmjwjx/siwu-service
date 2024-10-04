@@ -1,8 +1,8 @@
 package logics
 
 import (
-	"forum/internal/message/comment/repositories"
-	"forum/internal/message/comment/requests"
+	"forum/internal/message/repositories"
+	"forum/internal/message/requests"
 	"gorm.io/gorm"
 )
 
