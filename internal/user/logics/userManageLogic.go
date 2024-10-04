@@ -141,7 +141,7 @@ func (u *UserReqContext) List(req requests.ListReq) ([]*requests.ListRes, int, e
 	}
 
 	// 查询符合条件的角色（除了符合 req.RoleIds）
-	users, total, err := repositories.QueryUserListByPage(u.DB, conditions, req.Page, req.Limit, req.RoleIds, req.Heat, req.FansCount, req.CreateTime, req.LastLoginTime)
+	users, total, err := repositories.QueryUserListByPage(u.DB, conditions, req.Page, req.Limit, req.RoleIds, req.Heat, req.FansCount, req.CreateTimeBegin, req.CreateTimeEnd, req.LastLoginTimeBegin, req.LastLoginTimeEnd)
 	if err != nil {
 		return nil, 0, fmt.Errorf("UserReqContext.List() %v", err)
 	}
@@ -159,16 +159,7 @@ func (u *UserReqContext) List(req requests.ListReq) ([]*requests.ListRes, int, e
 		}
 
 		// 查询这个用户的全部角色id
-		nowRoleIds := repositories.QueryAdminRoleByUserId(u.DB, v.ID)
-		// 查询用户拥有的 role name
-		roles := make([]requests.Role, 0)
-		for _, roleId := range nowRoleIds {
-			role := repositories.QueryRoleById(u.DB, roleId)
-			if role == nil {
-				return nil, 0, fmt.Errorf("UserReqContext.List() err: 不存在id为 %v 的角色", roleId)
-			}
-			roles = append(roles, requests.Role{Id: roleId, Name: role.Name})
-		}
+		roleIds := repositories.QueryAdminRoleByUserId(u.DB, v.ID)
 
 		listRes = append(listRes, &requests.ListRes{
 			Id:         v.ID,
@@ -177,7 +168,7 @@ func (u *UserReqContext) List(req requests.ListReq) ([]*requests.ListRes, int, e
 			Email:      v.Email,
 			Heat:       v.Heat,
 			FansCount:  v.FansCount,
-			Roles:      roles,
+			RoleIds:    roleIds,
 			UserStatus: v.Status,
 			// 将 time.Time 格式化为字符串
 			LastLoginTime: v.LastLoginTime.Format("2006-01-02 15:04:05"),
@@ -586,14 +577,6 @@ func (u *UserReqContext) GetInfo(id uint) (*requests.GetInfoRes, error) {
 
 	// 查询这个用户的全部角色
 	roleIds := repositories.QueryAdminRoleByUserId(u.DB, user.ID)
-	roles := make([]requests.Role, 0)
-	for _, roleId := range roleIds {
-		role := repositories.QueryRoleById(u.DB, roleId)
-		if role == nil {
-			return nil, fmt.Errorf("UserReqContext.GetInfo() err: 不存在id为 %v 的角色", roleId)
-		}
-		roles = append(roles, requests.Role{Id: roleId, Name: role.Name})
-	}
 
 	var getInfoRes = &requests.GetInfoRes{
 		Id:         user.ID,
@@ -601,7 +584,7 @@ func (u *UserReqContext) GetInfo(id uint) (*requests.GetInfoRes, error) {
 		NickName:   user.Nickname,
 		Email:      user.Email,
 		UserStatus: user.Status,
-		Roles:      roles,
+		RoleIds:    roleIds,
 	}
 
 	return getInfoRes, nil
