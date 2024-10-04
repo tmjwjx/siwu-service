@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"forum/internal/message/logics"
+	"forum/internal/user/logics"
 	"github.com/gin-gonic/gin"
 )
 
