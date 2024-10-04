@@ -5,7 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// CorsMiddleware 设置 CORS 中间件
+// CorsMiddleware 设置 CORS 中间件。跨域问题。
 func CorsMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		cors.New(cors.Config{
