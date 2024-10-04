@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"forum/internal/image/controllers"
 	"forum/internal/internal_pkg/internal_utils"
-	"forum/internal/message/comment/requests"
+	"forum/internal/message/requests"
 	"forum/internal/models"
 	"gorm.io/gorm"
 )
