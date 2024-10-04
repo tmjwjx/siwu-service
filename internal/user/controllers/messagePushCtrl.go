@@ -1,4 +1,4 @@
-package coctrollers
+package controllers
 
 import (
 	"forum/internal/message/logics"
