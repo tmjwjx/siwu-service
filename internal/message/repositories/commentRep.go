@@ -3,7 +3,7 @@ package repositories
 import (
 	"fmt"
 	"forum/internal/image/controllers"
-	"forum/internal/internal_pkg/internal_utils"
+	"forum/internal/internalPkg/internalUtils"
 	"forum/internal/message/requests"
 	"forum/internal/models"
 	"gorm.io/gorm"
@@ -25,7 +25,7 @@ func CommentMesRep(db *gorm.DB, req *requests.CommentMesReq, id any) (*requests.
 	for _, res1 := range result1 {
 
 		// 转换一下时间格式
-		pastTime := internal_utils.TimeAgo(res1.CreatedAt)
+		pastTime := internalUtils.TimeAgo(res1.CreatedAt)
 
 		res := &requests.CommentObj{
 			Nickname:   res1.Nickname,
@@ -56,7 +56,7 @@ func CommentMesRep(db *gorm.DB, req *requests.CommentMesReq, id any) (*requests.
 		images, err := controllers.GetImagesControllers("用户", res1.UserID)
 		if err != nil {
 			// 使用默认用户头像
-			res.Path = internal_utils.UserDefaultImage
+			res.Path = internalUtils.UserDefaultImage
 		} else {
 			for _, image := range *images {
 				res.Path = image.Path

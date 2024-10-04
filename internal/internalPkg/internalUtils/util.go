@@ -1,4 +1,4 @@
-package internal_utils
+package internalUtils
 
 import (
 	"fmt"
@@ -116,6 +116,7 @@ func ArticlesOrder(kind int) string {
 	}
 	return condition
 }
+
 // ChangeType 将string类型的值转换成uint类型
 func ChangeType(str string) (uint, error) {
 

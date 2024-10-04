@@ -3,7 +3,8 @@ package logics
 import (
 	"fmt"
 	"forum/internal/image/controllers"
-	"forum/internal/internal_pkg/internal_utils"
+	"forum/internal/internalPkg/internalUtils"
+	"forum/internal/internalPkg/sqlUtils"
 	"forum/internal/models"
 	"forum/internal/user/repositories"
 	"forum/internal/user/requests"
@@ -16,13 +17,13 @@ import (
 func (u *UserReqContext) Reset(msg requests.ReseatReq) error {
 	// 将默认密码加密
 	defaultPassword := "abc123"
-	encryptedPassword, err := internal_utils.HashPassword(defaultPassword)
+	encryptedPassword, err := internalUtils.HashPassword(defaultPassword)
 	if err != nil {
 		return fmt.Errorf("UserReqContext.Reset() : 密码%s加密失败", defaultPassword)
 	}
 
 	// 更新密码
-	if err := repositories.UpdateObjects(u.DB, &models.User{Model: gorm.Model{ID: msg.Id}}, map[string]interface{}{"password": encryptedPassword}); err != nil {
+	if err = sqlUtils.UpdateObjects(u.DB, &models.User{Model: gorm.Model{ID: msg.Id}}, map[string]interface{}{"password": encryptedPassword}); err != nil {
 		return fmt.Errorf("UserReqContext.Reset() err: %v", err)
 	}
 
@@ -33,7 +34,7 @@ func (u *UserReqContext) Reset(msg requests.ReseatReq) error {
 func (u *UserReqContext) Add(req requests.AddReq) (uint, error) {
 	// 将默认密码加密
 	defaultPassword := "abc123"
-	encryptedPassword, err := internal_utils.HashPassword(defaultPassword)
+	encryptedPassword, err := internalUtils.HashPassword(defaultPassword)
 	if err != nil {
 		return 0, fmt.Errorf("UserReqContext.Add() : 密码%s加密失败", defaultPassword)
 	}
@@ -53,7 +54,7 @@ func (u *UserReqContext) Add(req requests.AddReq) (uint, error) {
 	}
 
 	// 插入User表
-	if err = repositories.InsertObject(u.DB, &models.User{Nickname: req.NickName, Email: req.Email, Password: encryptedPassword, Status: req.UserStatus}); err != nil {
+	if err = sqlUtils.InsertObject(u.DB, &models.User{Nickname: req.NickName, Email: req.Email, Password: encryptedPassword, Status: req.UserStatus}); err != nil {
 		return 0, fmt.Errorf("UserReqContext.Add() err: %v", err)
 	}
 
@@ -61,13 +62,13 @@ func (u *UserReqContext) Add(req requests.AddReq) (uint, error) {
 	user = repositories.QueryUserByEmail(u.DB, req.Email)
 
 	// 插入UserDetail表
-	if err = repositories.InsertObject(u.DB, &models.UserDetail{UserID: user.ID}); err != nil {
+	if err = sqlUtils.InsertObject(u.DB, &models.UserDetail{UserID: user.ID}); err != nil {
 		return 0, fmt.Errorf("UserReqContext.Add() err: %v", err)
 	}
 
 	// 插入 AdminRole 表（插入用户对应的角色）
 	for _, v := range req.RoleIds {
-		if err = repositories.InsertObject(u.DB, &models.AdminRole{AdminId: user.ID, RoleId: v}); err != nil {
+		if err = sqlUtils.InsertObject(u.DB, &models.AdminRole{AdminId: user.ID, RoleId: v}); err != nil {
 			return 0, fmt.Errorf("UserReqContext.Add() err: %v", err)
 		}
 	}
@@ -80,14 +81,14 @@ func (u *UserReqContext) Delete(req requests.DeleteReq) error {
 	num := 0
 	for _, v := range req.Ids {
 		// 删除用户
-		n, err := repositories.DeleteObjectsByModel(u.DB, &models.User{}, map[string]interface{}{"id": v})
+		n, err := sqlUtils.DeleteObjectsByModel(u.DB, &models.User{}, map[string]interface{}{"id": v})
 		if err != nil {
 			return fmt.Errorf("UserReqContext.Delete() err: %v", err)
 		}
 		num += int(n)
 
 		// 删除用户对应的角色id
-		if _, err = repositories.DeleteObjectsByModel(u.DB, &models.AdminRole{}, map[string]interface{}{"admin_id": v}); err != nil {
+		if _, err = sqlUtils.DeleteObjectsByModel(u.DB, &models.AdminRole{}, map[string]interface{}{"admin_id": v}); err != nil {
 			return fmt.Errorf("UserReqContext.Delete() err: %v", err)
 		}
 	}
@@ -114,7 +115,7 @@ func (u *UserReqContext) Edit(req requests.EditReq) error {
 	}
 
 	// 更改 nickname、email、status
-	if err := repositories.UpdateObjects(u.DB, &models.User{Model: gorm.Model{ID: req.UserId}}, map[string]interface{}{"nickname": req.NickName, "email": req.Email, "status": req.UserStatus}); err != nil {
+	if err := sqlUtils.UpdateObjects(u.DB, &models.User{Model: gorm.Model{ID: req.UserId}}, map[string]interface{}{"nickname": req.NickName, "email": req.Email, "status": req.UserStatus}); err != nil {
 		return fmt.Errorf("UserReqContext.Edit() -> %v", err)
 	}
 	// 更改用户对应的 role_id
@@ -153,7 +154,7 @@ func (u *UserReqContext) List(req requests.ListReq) ([]*requests.ListRes, int, e
 		avatarPath := ""
 		userImgs, err := controllers.GetImagesControllers("用户", v.ID)
 		if err != nil { // 数据库中没有该用户的头像，使用默认的头像
-			avatarPath = internal_utils.UserDefaultImage
+			avatarPath = internalUtils.UserDefaultImage
 		} else {
 			avatarPath = (*userImgs)[0].Path
 		}
@@ -273,17 +274,17 @@ func (u *UserReqContext) List(req requests.ListReq) ([]*requests.ListRes, int, e
 // 			return fmt.Errorf("UserReqContext.Import() err: id为 %v 已经被使用", id)
 // 		}
 // 		// 判断邮箱是否合法，是否已经使用
-// 		if !internal_utils.IsValidEmail(email) {
+// 		if !internalUtils.IsValidEmail(email) {
 // 			return fmt.Errorf("UserReqContext.Import() err: email为 %v 不合法", email)
 // 		}
 // 		if user := repositories.QueryUserByEmail(u.DB, email); user != nil {
 // 			return fmt.Errorf("UserReqContext.Import() err: email为 %v 已经被使用", email)
 // 		}
 // 		// 密码是否合法，加密
-// 		if !internal_utils.IsValidPassword(password) {
+// 		if !internalUtils.IsValidPassword(password) {
 // 			return fmt.Errorf("UserReqContext.Import() err: password为 %v 不合法", password)
 // 		}
-// 		password, err = internal_utils.HashPassword(password)
+// 		password, err = internalUtils.HashPassword(password)
 // 		if err != nil {
 // 			return fmt.Errorf("UserReqContext.Import() err: password为 %v 加密失败", password)
 // 		}
@@ -451,17 +452,17 @@ func (u *UserReqContext) Import(file *multipart.FileHeader) error {
 		}
 
 		// 判断邮箱是否合法，是否已经使用
-		if !internal_utils.IsValidEmail(email) {
+		if !internalUtils.IsValidEmail(email) {
 			return fmt.Errorf("UserReqContext.Import() err: email为 %v 不合法", email)
 		}
 		if user := repositories.QueryUserByEmail(u.DB, email); user != nil {
 			return fmt.Errorf("UserReqContext.Import() err: email为 %v 已经被使用", email)
 		}
 		// 密码是否合法，加密
-		if !internal_utils.IsValidPassword(password) {
+		if !internalUtils.IsValidPassword(password) {
 			return fmt.Errorf("UserReqContext.Import() err: password为 %v 不合法", password)
 		}
-		password, err = internal_utils.HashPassword(password)
+		password, err = internalUtils.HashPassword(password)
 		if err != nil {
 			return fmt.Errorf("UserReqContext.Import() err: password为 %v 加密失败", password)
 		}
@@ -478,7 +479,7 @@ func (u *UserReqContext) Import(file *multipart.FileHeader) error {
 			Status:   status,
 		}
 		// 保存到数据库
-		if err = repositories.InsertObject(u.DB, user); err != nil {
+		if err = sqlUtils.InsertObject(u.DB, user); err != nil {
 			return fmt.Errorf("UserReqContext.Import() err: Failed to save user to database")
 		}
 	}
@@ -570,7 +571,7 @@ func (u *UserReqContext) GetInfo(id uint) (*requests.GetInfoRes, error) {
 	avatarPath := ""
 	userImgs, err := controllers.GetImagesControllers("用户", user.ID)
 	if err != nil { // 数据库中没有该用户的头像，使用默认的头像
-		avatarPath = internal_utils.UserDefaultImage
+		avatarPath = internalUtils.UserDefaultImage
 	} else {
 		avatarPath = (*userImgs)[0].Path
 	}

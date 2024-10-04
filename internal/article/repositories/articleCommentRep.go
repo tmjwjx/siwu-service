@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"forum/internal/article/requests"
 	"forum/internal/image/controllers"
-	"forum/internal/internal_pkg/internal_utils"
+	"forum/internal/internalPkg/internalUtils"
 	"forum/internal/models"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -123,7 +123,7 @@ func GetTopLevelCommentsRep(db *gorm.DB, req *requests.TopCommentsReq) (*[]*requ
 	for _, comment := range articleComments {
 
 		// 转换一下时间格式
-		pastTime := internal_utils.TimeAgo(comment.CreatedAt)
+		pastTime := internalUtils.TimeAgo(comment.CreatedAt)
 
 		topComment := &requests.TopCommentsRes{
 			ID:           comment.ID,
@@ -169,7 +169,7 @@ func GetTopLevelCommentsRep(db *gorm.DB, req *requests.TopCommentsReq) (*[]*requ
 		images, err := controllers.GetImagesControllers("用户", comment.ID)
 		if err != nil {
 			// 数据库中没有该用户的头像图片，直接使用默认的头像图片
-			comment.Path = internal_utils.UserDefaultImage
+			comment.Path = internalUtils.UserDefaultImage
 		} else {
 			for _, image := range *images {
 				comment.Path = image.Path
@@ -241,7 +241,7 @@ func GetRepliesRep2Rep(db *gorm.DB, req *requests.RepliesReq2) (*[]*requests.Rep
 	for _, comment := range articleComments {
 
 		// 转换一下时间格式
-		pastTime := internal_utils.TimeAgo(comment.CreatedAt)
+		pastTime := internalUtils.TimeAgo(comment.CreatedAt)
 
 		replies := &requests.RepliesRes{
 			ID:           comment.ID,
@@ -281,7 +281,7 @@ func GetRepliesRep2Rep(db *gorm.DB, req *requests.RepliesReq2) (*[]*requests.Rep
 		images, err := controllers.GetImagesControllers("用户", comment.ID)
 		if err != nil {
 			// 数据库中没有该用户的头像图片，直接使用默认的头像图片
-			comment.Path = internal_utils.UserDefaultImage
+			comment.Path = internalUtils.UserDefaultImage
 		} else {
 			for _, image := range *images {
 				comment.Path = image.Path
@@ -298,7 +298,7 @@ func GetRepliesRep2Rep(db *gorm.DB, req *requests.RepliesReq2) (*[]*requests.Rep
 		images2, err := controllers.GetImagesControllers("用户", *comment.ParentUserID)
 		if err != nil {
 			// 数据库中没有该用户回复对象的头像图片，直接使用默认的头像图片
-			comment.ParentPath = internal_utils.UserDefaultImage
+			comment.ParentPath = internalUtils.UserDefaultImage
 		} else {
 			for _, image := range *images2 {
 				comment.ParentPath = image.Path
@@ -338,7 +338,7 @@ func DeleteCommentRep(req *requests.DelComment, db *gorm.DB) error {
 		return fmt.Errorf("没有找到匹配的记录或记录已经被删除")
 	}
 
-	//提交事务
+	// 提交事务
 	err := tx.Commit().Error
 	if err != nil {
 		return fmt.Errorf("DeleteCommentRep -> 提交事务失败 -> %s", err)
@@ -408,7 +408,7 @@ func UpdatePraiseCountRep(req *requests.PraiseCount, db *gorm.DB) error {
 		return fmt.Errorf("UpdatePraiseCountRep -> 更新点赞的数量失败 -> status 的值只能是 1 或 2, 1:代表增加点赞, 2:代表取消点赞")
 	}
 
-	//提交事务
+	// 提交事务
 	err := tx.Commit().Error
 	if err != nil {
 		return fmt.Errorf("DeleteCommentRep -> 提交事务失败 -> %s", err)

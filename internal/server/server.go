@@ -2,7 +2,7 @@ package server
 
 import (
 	"fmt"
-	"forum/internal/internal_pkg/internal_utils"
+	"forum/internal/internalPkg/internalUtils"
 	"forum/pkg/globals"
 	"github.com/spf13/viper"
 	"log"
@@ -11,7 +11,7 @@ import (
 // Run 启动路由
 func Run() {
 
-	//globals.Router.Static("/images", "./static/images")
+	// globals.Router.Static("/images", "./static/images")
 
 	// 启动处理函数
 	SetupRouter()
@@ -25,7 +25,7 @@ func Run() {
 	globals.Router.Static(globals.SConfig.Prefix, globals.SConfig.Path)
 
 	// 创建存储静态文件的目录路径文件夹
-	err := internal_utils.CreateFolder(globals.SConfig.Path)
+	err := internalUtils.CreateFolder(globals.SConfig.Path)
 	if err != nil {
 		globals.Log.Errorf("创建存储静态文件的目录路径文件夹")
 	}
