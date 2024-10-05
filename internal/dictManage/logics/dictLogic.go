@@ -103,7 +103,7 @@ func (d *DictReqContext) GetType(req requests.GetTypeReq) ([]*requests.GetTypeRe
 	}
 
 	// 查询
-	dictTypes, total, err := repositories.QueryDictTypeByPage(d.DB, conditions, req.Page, req.Limit, req.CreateAt)
+	dictTypes, total, err := repositories.QueryDictTypeByPage(d.DB, conditions, req.Page, req.Limit, req.CreateAtBegin, req.CreateAtEnd)
 	if err != nil {
 		return nil, 0, fmt.Errorf("DictReqContext.GetType() err: %v", err)
 	}
@@ -211,7 +211,7 @@ func (d *DictReqContext) GetItem(req requests.GetItemReq) ([]*requests.GetItemRe
 	}
 
 	// 查询
-	dictItems, total, err := repositories.QueryDictItemByPage(d.DB, conditions, req.Page, req.Limit, req.CreateAt)
+	dictItems, total, err := repositories.QueryDictItemByPage(d.DB, conditions, req.Page, req.Limit, req.CreateAtBegin, req.CreateAtEnd)
 	if err != nil {
 		return nil, 0, fmt.Errorf("DictReqContext.GetItem() err: %v", err)
 	}

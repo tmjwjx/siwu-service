@@ -147,7 +147,7 @@ func QueryDictItemById(db *gorm.DB, id uint) *models.DictItem {
 // limit: 每页数据条数。
 // 例子：如果 page = 2，limit = 10，那么会跳过前 10 条记录，返回第 11-20 条记录。
 // 返回的int表示一共有多少条符合条件的数据
-func QueryDictTypeByPage(db *gorm.DB, conditions map[string]interface{}, page int, limit int, createAt string) ([]*models.DictType, int, error) {
+func QueryDictTypeByPage(db *gorm.DB, conditions map[string]interface{}, page int, limit int, createAtBegin, createAtEnd string) ([]*models.DictType, int, error) {
 	var dictTypes []*models.DictType
 
 	// 使用条件查询
@@ -155,13 +155,20 @@ func QueryDictTypeByPage(db *gorm.DB, conditions map[string]interface{}, page in
 	for key, value := range conditions {
 		query = query.Where(fmt.Sprintf("%s = ?", key), value)
 	}
-	// 解析 createTime 字符串为 time.Time 类型
-	if createAt != "" {
-		parsedCreateAt, err := time.Parse("2006-01-02", createAt)
+	// 解析 createAtBegin 和 createAtEnd 字符串为 time.Time 类型
+	if createAtBegin != "" {
+		parsedCreateAtBegin, err := time.Parse("2006-01-02", createAtBegin)
 		if err != nil {
-			return nil, 0, fmt.Errorf("QueryDictTypeByPage() err: createAt 解析错误: %v", err)
+			return nil, 0, fmt.Errorf("QueryDictTypeByPage() err: createAtBegin 解析错误: %v", err)
 		}
-		query = query.Where("created_at >= ?", parsedCreateAt)
+		query = query.Where("created_at >= ?", parsedCreateAtBegin)
+	}
+	if createAtEnd != "" {
+		parsedCreateAtEnd, err := time.Parse("2006-01-02", createAtEnd)
+		if err != nil {
+			return nil, 0, fmt.Errorf("QueryDictTypeByPage() err: createAtEnd 解析错误: %v", err)
+		}
+		query = query.Where("created_at <= ?", parsedCreateAtEnd)
 	}
 
 	// 查看符合条件的数据一共有多少条
@@ -199,7 +206,7 @@ func QueryDictItemByCodeAndLabel(db *gorm.DB, code, label string) *models.DictIt
 // limit: 每页数据条数。
 // 例子：如果 page = 2，limit = 10，那么会跳过前 10 条记录，返回第 11-20 条记录。
 // 返回的int表示一共有多少条符合条件的数据
-func QueryDictItemByPage(db *gorm.DB, conditions map[string]interface{}, page int, limit int, createAt string) ([]*models.DictItem, int, error) {
+func QueryDictItemByPage(db *gorm.DB, conditions map[string]interface{}, page int, limit int, createAtBegin, createAtEnd string) ([]*models.DictItem, int, error) {
 	var dictItems []*models.DictItem
 
 	// 使用条件查询
@@ -207,14 +214,20 @@ func QueryDictItemByPage(db *gorm.DB, conditions map[string]interface{}, page in
 	for key, value := range conditions {
 		query = query.Where(fmt.Sprintf("%s = ?", key), value)
 	}
-
-	// 解析 createTime 字符串为 time.Time 类型
-	if createAt != "" {
-		parsedCreateAt, err := time.Parse("2006-01-02", createAt)
+	// 解析 createAtBegin 和 createAtEnd 字符串为 time.Time 类型
+	if createAtBegin != "" {
+		parsedCreateAtBegin, err := time.Parse("2006-01-02", createAtBegin)
 		if err != nil {
-			return nil, 0, fmt.Errorf("QueryDictItemByPage() err: createAt 解析错误: %v", err)
+			return nil, 0, fmt.Errorf("QueryDictTypeByPage() err: createAtBegin 解析错误: %v", err)
 		}
-		query = query.Where("created_at >= ?", parsedCreateAt)
+		query = query.Where("created_at >= ?", parsedCreateAtBegin)
+	}
+	if createAtEnd != "" {
+		parsedCreateAtEnd, err := time.Parse("2006-01-02", createAtEnd)
+		if err != nil {
+			return nil, 0, fmt.Errorf("QueryDictTypeByPage() err: createAtEnd 解析错误: %v", err)
+		}
+		query = query.Where("created_at <= ?", parsedCreateAtEnd)
 	}
 
 	// 查看符合条件的数据一共有多少条

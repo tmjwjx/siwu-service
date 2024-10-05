@@ -3,7 +3,7 @@ package repositories
 import (
 	"fmt"
 	"forum/internal/image/controllers"
-	"forum/internal/internal_pkg/internal_utils"
+	"forum/internal/internalPkg/internalUtils"
 	"forum/internal/models"
 	"forum/internal/user/requests"
 	"gorm.io/gorm"
@@ -65,7 +65,7 @@ func UserDataRequest(userDataReq *requests.UserDataReq, db *gorm.DB) error {
 		userDetail.CareerDirection = userDataReq.CareerDirection
 		userDetail.HomePage = userDataReq.HomePage
 		userDetail.Signature = userDataReq.Signature
-		//return fmt.Errorf("UserDataRequest -> 用户详情表中用户不存在 -> %s", err)
+		// return fmt.Errorf("UserDataRequest -> 用户详情表中用户不存在 -> %s", err)
 		err = tx.Create(&userDetail).Error
 		if err != nil {
 			tx.Rollback() // 回滚事务
@@ -159,7 +159,7 @@ func UserAccountRequest(userAccountReq *requests.UserAccountReq, db *gorm.DB) er
 	err = tx.Where("user_id = ?", userAccountReq.ID).First(&userDetail).Error
 
 	if err != nil {
-		//return fmt.Errorf("UserAccountRequest -> 用户详情表中用户不存在 -> %s", err)
+		// return fmt.Errorf("UserAccountRequest -> 用户详情表中用户不存在 -> %s", err)
 		userDetail.UserID = userAccountReq.ID
 		userDetail.BlogLink = userAccountReq.BlogLink
 		userDetail.WeiboLink = userAccountReq.WeiboLink
@@ -207,7 +207,7 @@ func UserPrivateSetRequest(userPrivateSetReq *requests.UserPrivateSettingsReq, d
 	// 查询该用户是否存在
 	err := tx.Model(&models.User{}).Where("id = ?", userPrivateSetReq.ID).First(&user).Error
 	if err != nil {
-		//return fmt.Errorf("UserPrivateSetRequest -> %s", err)
+		// return fmt.Errorf("UserPrivateSetRequest -> %s", err)
 		// 数据库表中还没有该用户的数据，直接插入即可
 		user.ID = userPrivateSetReq.ID
 		user.PrivateSettings = userPrivateSetReq.PrivateSettings
@@ -283,7 +283,7 @@ func UserDataResponse(userID uint, db *gorm.DB) (*requests.UserDataRes, error) {
 			userDataRes.Path = image.Path
 		}
 	} else {
-		userDataRes.Path = internal_utils.UserDefaultImage
+		userDataRes.Path = internalUtils.UserDefaultImage
 	}
 
 	return userDataRes, nil

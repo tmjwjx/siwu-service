@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"forum/internal/article/requests"
 	"forum/internal/image/controllers"
-	"forum/internal/internal_pkg/internal_utils"
+	"forum/internal/internalPkg/internalUtils"
 	"forum/internal/models"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -99,7 +99,7 @@ func ShowCommentsListRep(db *gorm.DB, req *requests.CommentsListReq) (*requests.
 		}
 
 		// 查询文章信息
-		//这里要把 article 结构体中存储的上次的查询结果，清空一下，否则会影响下次的查询
+		// 这里要把 article 结构体中存储的上次的查询结果，清空一下，否则会影响下次的查询
 		article = models.Article{}
 
 		err = db.Where("id = ?", comment.ArticleID).First(&article).Error
@@ -131,7 +131,7 @@ func ShowCommentsListRep(db *gorm.DB, req *requests.CommentsListReq) (*requests.
 		// 查询用户头像
 		images, err := controllers.GetImagesControllers("用户", comment.UserID)
 		if err != nil {
-			commentRes.Path = internal_utils.UserDefaultImage
+			commentRes.Path = internalUtils.UserDefaultImage
 		} else {
 			for _, image := range *images {
 				commentRes.Path = image.Path
@@ -200,7 +200,7 @@ func AddCommentRep(c *gin.Context, db *gorm.DB, req *requests.AddCommentReq) (er
 		return err, status
 	}
 
-	//提交事务
+	// 提交事务
 	err = tx.Commit().Error
 	if err != nil {
 		return fmt.Errorf("AddCommentRep -> 提交事务失败 -> %s", err), 500
@@ -229,7 +229,7 @@ func BsDeleteCommentRep(db *gorm.DB, req *requests.DelCommentReq) error {
 		return fmt.Errorf("没有找到匹配的记录或记录已经被删除")
 	}
 
-	//提交事务
+	// 提交事务
 	err := tx.Commit().Error
 	if err != nil {
 		return fmt.Errorf("BsDeleteCommentRep -> 提交事务失败 -> %s", err)
@@ -264,7 +264,7 @@ func BatchDelCommentRep(db *gorm.DB, req *requests.BsBatchDelCommentReq) error {
 		}
 
 		// 删除文件系统中的图片
-		err := internal_utils.DeleteFile("评论", id)
+		err := internalUtils.DeleteFile("评论", id)
 		if err != nil {
 			return fmt.Errorf("BatchDelCommentRep4 -> 删除文件系统中的图片失败 -> %s", err)
 		}
@@ -330,7 +330,7 @@ func QueryCommentRep(db *gorm.DB, req *requests.QueryCommentReq) (*[]*requests.Q
 	for _, comment := range comments {
 
 		// 查询用户信息
-		//这里要把 user 结构体中存储的上次的查询结果，清空一下，否则会影响下次的查询
+		// 这里要把 user 结构体中存储的上次的查询结果，清空一下，否则会影响下次的查询
 		user = models.User{}
 
 		err := db.Where("id = ?", comment.UserID).First(&user).Error
@@ -339,7 +339,7 @@ func QueryCommentRep(db *gorm.DB, req *requests.QueryCommentReq) (*[]*requests.Q
 		}
 
 		// 查询文章信息
-		//这里要把 article 结构体中存储的上次的查询结果，清空一下，否则会影响下次的查询
+		// 这里要把 article 结构体中存储的上次的查询结果，清空一下，否则会影响下次的查询
 		article = models.Article{}
 
 		err = db.Where("id = ?", comment.ArticleID).First(&article).Error
@@ -371,7 +371,7 @@ func QueryCommentRep(db *gorm.DB, req *requests.QueryCommentReq) (*[]*requests.Q
 		// 查询用户头像
 		images, err := controllers.GetImagesControllers("用户", comment.UserID)
 		if err != nil {
-			commentRes.Path = internal_utils.UserDefaultImage
+			commentRes.Path = internalUtils.UserDefaultImage
 		} else {
 			for _, image := range *images {
 				commentRes.Path = image.Path

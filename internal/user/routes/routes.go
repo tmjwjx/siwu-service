@@ -20,7 +20,7 @@ func User(e *gin.Engine) {
 
 	// 分组
 	r := e.Group("/user")
-	//token 校验
+	// token 校验
 	r.Use(token.AuthMiddleware(), middlewares.CorsMiddleware())
 
 	// 关注

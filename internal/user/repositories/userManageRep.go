@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"fmt"
+	"forum/internal/internalPkg/sqlUtils"
 	"forum/internal/models"
 	"github.com/samber/lo"
 	"gorm.io/gorm"
@@ -35,14 +36,14 @@ func UpdateAdminRoles(db *gorm.DB, userId uint, newRoleIds []uint) error {
 
 	// 删除
 	for _, v := range deleteRoleIds {
-		_, err := DeleteObjectsByModel(db, &models.AdminRole{}, map[string]interface{}{"admin_id": userId, "role_id": v})
+		_, err := sqlUtils.DeleteObjectsByModel(db, &models.AdminRole{}, map[string]interface{}{"admin_id": userId, "role_id": v})
 		if err != nil {
 			return fmt.Errorf("UpdateAdminRoles() err: %v", err)
 		}
 	}
 	// 插入
 	for _, v := range addRoleIds {
-		err = InsertObject(db, &models.AdminRole{AdminId: userId, RoleId: v})
+		err = sqlUtils.InsertObject(db, &models.AdminRole{AdminId: userId, RoleId: v})
 		if err != nil {
 			return fmt.Errorf("UpdateAdminRoles() err: %v", err)
 		}
@@ -69,7 +70,7 @@ func QueryRoleById(db *gorm.DB, id uint) *models.Role {
 // fans_count: 粉丝数的下限。
 // 例子：如果 page = 2，limit = 10，那么会跳过前 10 条记录，返回第 11-20 条记录。
 // 返回的int表示一共有多少条符合条件的数据
-func QueryUserListByPage(db *gorm.DB, conditions map[string]interface{}, page int, limit int, roleIds []uint, heat, fansCount int, createTime, lastLoginTime string) ([]*models.User, int, error) {
+func QueryUserListByPage(db *gorm.DB, conditions map[string]interface{}, page int, limit int, roleIds []uint, heat, fansCount int, createTimeBegin, createTimeEnd, lastLoginTimeBegin, lastLoginTimeEnd string) ([]*models.User, int, error) {
 	var users []*models.User
 
 	// 使用条件查询
@@ -77,23 +78,39 @@ func QueryUserListByPage(db *gorm.DB, conditions map[string]interface{}, page in
 	for key, value := range conditions {
 		query = query.Where(fmt.Sprintf("%s = ?", key), value)
 	}
-
 	// 添加 heat 和 fans_count 的条件
 	query = query.Where("heat >= ? AND fans_count >= ?", heat, fansCount)
-	// 解析 createTime 和 lastLoginTime 字符串为 time.Time 类型
-	if createTime != "" {
-		parsedCreateTime, err := time.Parse("2006-01-02", createTime)
+	// 解析 lastLoginTimeBegin 和 lastLoginTimeEnd 字符串为 time.Time 类型
+	if lastLoginTimeBegin != "" {
+		parsedLastLoginTimeBegin, err := time.Parse("2006-01-02", lastLoginTimeBegin)
 		if err != nil {
-			return nil, 0, fmt.Errorf("QueryUserListByPage() err: createTime 解析错误: %v", err)
+			return nil, 0, fmt.Errorf("QueryUserListByPage() err: lastLoginTimeBegin 解析错误: %v", err)
 		}
-		query = query.Where("created_at >= ?", parsedCreateTime)
+		query = query.Where("last_login_time >= ?", parsedLastLoginTimeBegin)
 	}
-	if lastLoginTime != "" {
-		parsedLastLoginTime, err := time.Parse("2006-01-02", lastLoginTime)
+
+	if lastLoginTimeEnd != "" {
+		parsedLastLoginTimeEnd, err := time.Parse("2006-01-02", lastLoginTimeEnd)
 		if err != nil {
-			return nil, 0, fmt.Errorf("QueryUserListByPage() err: lastLoginTime 解析错误: %v", err)
+			return nil, 0, fmt.Errorf("QueryUserListByPage() err: lastLoginTimeEnd 解析错误: %v", err)
 		}
-		query = query.Where("last_login_time >= ?", parsedLastLoginTime)
+		query = query.Where("last_login_time <= ?", parsedLastLoginTimeEnd)
+	}
+
+	// 解析 createTimeBegin 和 createTimeEnd 字符串为 time.Time 类型
+	if createTimeBegin != "" {
+		parsedCreateTimeBegin, err := time.Parse("2006-01-02", createTimeBegin)
+		if err != nil {
+			return nil, 0, fmt.Errorf("QueryUserListByPage() err: createTimeBegin 解析错误: %v", err)
+		}
+		query = query.Where("created_at >= ?", parsedCreateTimeBegin)
+	}
+	if createTimeEnd != "" {
+		parsedCreateTimeEnd, err := time.Parse("2006-01-02", createTimeEnd)
+		if err != nil {
+			return nil, 0, fmt.Errorf("QueryUserListByPage() err: createTimeEnd 解析错误: %v", err)
+		}
+		query = query.Where("created_at <= ?", parsedCreateTimeEnd)
 	}
 
 	// 执行查询，获取用户列表

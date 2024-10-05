@@ -2,7 +2,7 @@ package casbin
 
 import (
 	"fmt"
-	"forum/internal/internal_pkg/internal_utils"
+	"forum/internal/internalPkg/internalUtils"
 	"forum/internal/models"
 	"forum/pkg/globals"
 	"strconv"
@@ -17,7 +17,7 @@ func (c *CasbinService) GetApiPerm(id string) ([]uint, error) {
 	}
 	for _, p := range permissions {
 		obj := p[1] // p[1] 是资源字段
-		apiId, err := internal_utils.ChangeType(obj)
+		apiId, err := internalUtils.ChangeType(obj)
 		if err != nil {
 			return nil, fmt.Errorf("GetApiPerm -> 获取当前角色的api权限失败 -> %s", err)
 		}
@@ -61,22 +61,22 @@ func SelApiId(requestUrl string) (uint, error) {
 	return apiId, nil
 }
 
-//// GetRoles 获取所有角色组
-//func (c *CasbinService) GetRoles() ([]string, error) {
+// // GetRoles 获取所有角色组
+// func (c *CasbinService) GetRoles() ([]string, error) {
 //	return c.Enforcer.GetAllRoles()
-//}
+// }
 //
-//// GetRolePolicy 获取所有角色组权限
-//func (c *CasbinService) GetRolePolicy() (roles []RolePolicy, err error) {
+// // GetRolePolicy 获取所有角色组权限
+// func (c *CasbinService) GetRolePolicy() (roles []RolePolicy, err error) {
 //	err = c.Adapter.GetDb().Model(&gormadapter.CasbinRule{}).Where("ptype = 'p'").Find(&roles).Error
 //	if err != nil {
 //		return nil, fmt.Errorf("CreateRolePolicy -> 获取所有角色组权限失败 -> %s", err)
 //	}
 //	return
-//}
+// }
 
-//// CreateRolePolicy 创建角色组权限， 已有的会忽略
-//func (c *CasbinService) CreateRolePolicy(roleId, apiId uint) error {
+// // CreateRolePolicy 创建角色组权限， 已有的会忽略
+// func (c *CasbinService) CreateRolePolicy(roleId, apiId uint) error {
 //	// 不直接操作数据库，利用enforcer简化操作
 //	err := c.Enforcer.LoadPolicy()
 //	if err != nil {
@@ -89,10 +89,10 @@ func SelApiId(requestUrl string) (uint, error) {
 //	}
 //	// 保存策略
 //	return c.Enforcer.SavePolicy()
-//}
+// }
 //
-//// DeleteRolePolicy 删除角色组权限
-//func (c *CasbinService) DeleteRolePolicy(r RolePolicy) error {
+// // DeleteRolePolicy 删除角色组权限
+// func (c *CasbinService) DeleteRolePolicy(r RolePolicy) error {
 //	// 不直接操作数据库，利用enforcer简化操作
 //	err := c.Enforcer.LoadPolicy()
 //	if err != nil {
@@ -103,15 +103,15 @@ func SelApiId(requestUrl string) (uint, error) {
 //		return fmt.Errorf("DeleteRolePolicy -> 删除角色组权限失败 -> %s", err)
 //	}
 //	return c.Enforcer.SavePolicy()
-//}
+// }
 
-//// CanAccess 验证用户权限
-//func (c *CasbinService) CanAccess(username, menuId string) (ok bool, err error) {
+// // CanAccess 验证用户权限
+// func (c *CasbinService) CanAccess(username, menuId string) (ok bool, err error) {
 //	return c.Enforcer.Enforce(username, menuId)
-//}
+// }
 
-//// SelMenId 根据请求路径，获取菜单ID
-//func SelMenId(requestUrl, requestMethod string) (string, error) {
+// // SelMenId 根据请求路径，获取菜单ID
+// func SelMenId(requestUrl, requestMethod string) (string, error) {
 //	var menuId string
 //	// 获取最后一个/后面的信息
 //	re := regexp.MustCompile("/([^/]+)$")
@@ -126,10 +126,10 @@ func SelApiId(requestUrl string) (uint, error) {
 //	// 根据请求中的路由接口,查询menuId
 //	err = globals.DB.Model(models.Menu{}).Select("id").Where("request_url = ? and request_method", requestUrl, requestMethod).Scan(&menuId).Error
 //	return menuId, fmt.Errorf("SelMenId -> 根据请求路径，获取菜单ID -> %s", err)
-//}
+// }
 //
-//// SelMRole 模糊查询角色字段
-//func SelMRole(role string) error {
+// // SelMRole 模糊查询角色字段
+// func SelMRole(role string) error {
 //
 //	var count int64
 //
@@ -146,4 +146,4 @@ func SelApiId(requestUrl string) (uint, error) {
 //	// 如果没有找到记录，返回false
 //	return fmt.Errorf("SelMRole -> 该角色不存在")
 //
-//}
+// }
