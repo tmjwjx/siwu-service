@@ -13,11 +13,12 @@ import (
 // @param        id uint
 // @return       rep
 // @return       err
-func LikeRep(db *gorm.DB, req requests.MessageReq, id uint) (res []requests.LikeMessageRes, err error) {
+func LikeRep(db *gorm.DB, req requests.MessageReq, id uint) (res []requests.LikeAndCollectionMessageRes, err error) {
 
 	query := db.Model(&models.Article{}).
 		Select("sw_users.id as user_id, sw_users.nickname, sw_articles.id as article_id, sw_articles.title, sw_article_likes.created_at, sw_attachments.path").
-		Joins("left join sw_article_likes on sw_article_likes.article_id = sw_articles.id").
+		// 这里是 right join 不是 left join
+		Joins("right join sw_article_likes on sw_article_likes.article_id = sw_articles.id").
 		Joins("left join sw_users on sw_users.id = sw_article_likes.user_id").
 		Where("sw_articles.user_id = ?", id).
 		Limit(req.Limit).

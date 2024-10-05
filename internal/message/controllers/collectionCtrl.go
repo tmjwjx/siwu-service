@@ -36,15 +36,15 @@ func CollectionMessageCtrl(c *gin.Context) {
 	fmt.Printf("%v", req)
 
 	//进入业务层
-	likeList, err := logics.LikeMessageLogic(db, req, userId.(uint))
+	collectionList, err := logics.CollectionMessageLogic(db, req, userId.(uint))
 	if err != nil {
-		globals.Log.Errorf("点赞消息加载失败 err = %s", err)
+		globals.Log.Errorf("收藏消息加载失败 err = %s", err)
 		data := response.NewAppErr(globals.StatusInternalServerError, err, nil)
 		response.Failed(c, http.StatusInternalServerError, data)
 		return
 	}
 
 	// 返回响应
-	data := response.NewAppData(globals.StatusOK, "点赞消息加载成功", likeList)
+	data := response.NewAppData(globals.StatusOK, "收藏消息加载成功", collectionList)
 	response.Success(c, http.StatusOK, data)
 }
