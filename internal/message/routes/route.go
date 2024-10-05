@@ -1,1 +1,17 @@
 package routes
+
+import (
+	"forum/internal/message/controllers"
+	"forum/pkg/token"
+	"github.com/gin-gonic/gin"
+)
+
+func Message(e *gin.Engine) {
+
+	messageGroup := e.Group("/message")
+	{
+		messageGroup.Use(token.AuthMiddleware())
+		messageGroup.GET("/like", controllers.LikeMessageCtrl)
+	}
+
+}
