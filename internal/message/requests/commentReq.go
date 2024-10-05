@@ -4,12 +4,6 @@ import (
 	"time"
 )
 
-// CommentMesReq 评论消息(前台)
-type CommentMesReq struct {
-	Page  int `json:"page"`  // 分页查询的起始位置
-	Limit int `json:"limit"` // 分页查询要返回记录的数量
-}
-
 // CommentMesRes 评论消息(前台)
 type CommentMesRes struct {
 	CommentList *[]*CommentObj

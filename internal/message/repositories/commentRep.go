@@ -10,7 +10,7 @@ import (
 )
 
 // CommentMesRep 评论消息(前台)
-func CommentMesRep(db *gorm.DB, req *requests.CommentMesReq, id any) (*requests.CommentMesRes, error) {
+func CommentMesRep(db *gorm.DB, req *requests.MessageReq, id any) (*requests.CommentMesRes, error) {
 
 	var commentList []*requests.CommentObj
 	var result1 []requests.Result1

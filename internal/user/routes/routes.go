@@ -71,9 +71,9 @@ func User(e *gin.Engine) {
 	// 上传用户头像
 	r.POST("/upload/headshot", controllers.UploadHeadshot)
 
-	message := e.Group("/message")
-	{
-		message.POST("/like", controllers.LikeMessageCtrl)
-	}
+	//message := e.Group("/message")
+	//{
+	//	message.POST("/like", controllers.LikeMessageCtrl)
+	//}
 
 }
