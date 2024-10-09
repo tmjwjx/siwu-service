@@ -93,10 +93,10 @@ func CreateFolder(path string) error {
 	return nil
 }
 
-// emptyFilled
+// EmptyFilled
 // @Description: 空接口填充
 // @param        data interface{}
-func emptyFilled(data interface{}) interface{} {
+func EmptyFilled(data interface{}) interface{} {
 	if data == nil {
 		data = gin.H{}
 	}

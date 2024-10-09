@@ -19,7 +19,10 @@ func NewMessageChan(c *gin.Context) {
 	for {
 		select {
 		case message := <-notifyChan:
-			fmt.Fprintf(c.Writer, "data: %s\n\n", message)
+			_, err := fmt.Fprintf(c.Writer, "data: %s\n\n", message)
+			if err != nil {
+				continue
+			}
 			c.Writer.Flush()
 		case <-c.Done():
 			close(notifyChan)
