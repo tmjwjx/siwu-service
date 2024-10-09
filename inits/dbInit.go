@@ -77,6 +77,9 @@ func TableInit() {
 		// 字典管理模块
 		&models.DictType{},
 		&models.DictItem{},
+
+		// 系统消息
+		&models.SystemMessage{},
 	)
 
 	if err != nil {
