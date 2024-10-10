@@ -10,9 +10,12 @@ import (
 // @Description: 创建用户的消息通道 监听新消息并发送到客户端
 // @param        c *gin.Context
 func NewMessageChan(c *gin.Context) {
-	// 创建一个通道，用于接收评论的变动消息
+	// 获取用户id
 	id, _ := c.Get("id")
-	userId := id.(string)
+	globals.Log.Infof("用户 %s 连接成功", id)
+	userId := fmt.Sprintf("%d", id)
+
+	// 将用户的通道存入全局变量
 	notifyChan := make(chan string)
 	globals.SubscriberChannels[userId] = notifyChan
 	//notifyChan := globals.SubscriberChannels[userId]

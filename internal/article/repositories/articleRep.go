@@ -429,10 +429,20 @@ func UpdateLikeRep(db *gorm.DB, req requests.ArticleLikeReq, userId uint) (err e
 			if err = db.Create(&like).Error; err != nil {
 				return err
 			}
+
+			// 创建点赞记录后 通知文章作者
+			var article models.Article
+			if err = db.Where("id = ?", req.ArticleId).First(&article).Error; err != nil {
+				return err
+			}
+			// 通知文章作者
+			authorId := strconv.Itoa(int(article.UserID))
+			internalUtils.MessagePush("like", authorId)
+
 		}
 	} else if req.LikeStatus == false {
 		// 查询用户是否点赞 如果点赞了 删除点赞记录
-		if err = db.Where("article_id = ? AND user_id = ?", req.ArticleId, userId).First(&like).Error; err != nil {
+		if err = db.Where("article_id = ? AND user_id = ?", req.ArticleId, userId).First(&like).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 			return err
 		}
 		// 删除点赞记录
@@ -464,14 +474,25 @@ func UpdateCollectionRep(db *gorm.DB, req requests.ArticleCollectionReq, userId 
 			if err = db.Create(&collection).Error; err != nil {
 				return err
 			}
+
+			// 创建收藏记录后 通知文章作者
+			var article models.Article
+			if err = db.Where("id = ?", req.ArticleId).First(&article).Error; err != nil {
+				//globals.Log.Errorf("err = %s", err)
+				return err
+			}
+			// 通知文章作者
+			authorId := strconv.Itoa(int(article.UserID))
+			internalUtils.MessagePush("collection", authorId)
+
 		}
 	} else if req.CollectionStatus == false {
-		// 查询用户是否收藏 如果收藏了 删除收藏记录
-		if err = db.Where("article_id = ? AND user_id = ?", req.ArticleId, userId).First(&collection).Error; err != nil {
-			return err
-		}
+		//// 查询用户是否收藏 如果收藏了 删除收藏记录
+		//if err = db.Where("article_id = ? AND user_id = ?", req.ArticleId, userId).First(&collection).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		//	return err
+		//}
 		// 删除收藏记录
-		if err = db.Delete(&collection).Error; err != nil {
+		if err = db.Where("article_id = ? AND user_id = ?", req.ArticleId, userId).Delete(&collection).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 			return err
 		}
 

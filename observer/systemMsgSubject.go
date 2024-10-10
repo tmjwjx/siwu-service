@@ -47,7 +47,7 @@ func (s *SystemMsgSubject) UnRegisterObserver(event string, observer event.Obser
 // @param        event string
 // @param        data string
 // @Author tianjiajie 2024-10-09 16:01:46
-func (s *SystemMsgSubject) Notify(event string, data string, userId string) {
+func (s *SystemMsgSubject) Notify(event string, data string) {
 	// 发布事件 event 给所有观察者 data为发送内容
 	s.EventBus.Publish(event, data)
 }
