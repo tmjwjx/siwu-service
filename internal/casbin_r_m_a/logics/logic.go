@@ -1,8 +1,8 @@
 package logics
 
 import (
-	"forum/internal/casbin/repositories"
-	"forum/internal/casbin/requests"
+	"forum/internal/casbin_r_m_a/repositories"
+	"forum/internal/casbin_r_m_a/requests"
 	"gorm.io/gorm"
 )
 

@@ -50,14 +50,14 @@ type ComList struct {
 
 // AddCommentReq 添加评论请求
 type AddCommentReq struct {
-	ArticleID    uint   `form:"article_id"`     // 所属文章ID，外键
-	UserID       uint   `form:"user_id"`        // 作者ID
-	HighestID    *uint  `form:"highest_id"`     // 最上层一级评论
-	ParentID     *uint  `form:"parent_id"`      // 上一条评论ID , 允许为 null，表示顶级评论
-	ParentUserID *uint  `form:"parent_user_id"` // 上一条评论的发布用户ID
-	Content      string `form:"content"`        // 评论内容
-	//CommentPath  string `form:"comment_path"`   // 用户发的评论中的图片
-	LikesCount int `form:"likes_count"` // 点赞数量
+	ArticleID    uint     `json:"article_id" form:"article_id"`         // 所属文章ID，外键
+	UserID       uint     `json:"user_id" form:"user_id"`               // 作者ID
+	HighestID    *uint    `json:"highest_id" form:"highest_id"`         // 最上层一级评论
+	ParentID     *uint    `json:"parent_id" form:"parent_id"`           // 上一条评论ID , 允许为 null，表示顶级评论
+	ParentUserID *uint    `json:"parent_user_id" form:"parent_user_id"` // 上一条评论的发布用户ID
+	Content      string   `json:"content" form:"content"`               // 评论内容
+	CommentPath  []string `json:"comment_path" form:"comment_path"`     // 用户发的评论中的图片
+	LikesCount   int      `json:"likes_count" form:"likes_count"`       // 点赞数量
 }
 
 // DelCommentReq 删除评论请求
@@ -72,9 +72,9 @@ type BsBatchDelCommentReq struct {
 
 // UpdateCommentReq 更新评论请求
 type UpdateCommentReq struct {
-	ID      uint   `form:"id"`      // 评论ID
-	Content string `form:"content"` // 评论内容
-	//CommentPath string `form:"comment_path"` // 评论中的图片
+	ID          uint     `form:"id"`           // 评论ID
+	Content     string   `form:"content"`      // 评论内容
+	CommentPath []string `form:"comment_path"` // 评论中的图片
 }
 
 // QueryCommentReq 查询评论请求

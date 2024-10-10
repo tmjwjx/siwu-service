@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"forum/internal/article/requests"
 	"forum/internal/image/controllers"
+	"forum/internal/image/logics"
 	"forum/internal/internal_pkg/internal_utils"
 	"forum/internal/models"
+	"forum/pkg/globals"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -194,10 +196,20 @@ func AddCommentRep(c *gin.Context, db *gorm.DB, req *requests.AddCommentReq) (er
 		return fmt.Errorf("AddCommentRep -> 获取新插入的评论的ID失败 -> %s", err), 500
 	}
 
-	// 将评论的图片存到文件系统中
-	err, status := controllers.UploadImagesControllers(c, "评论", comment.ID)
+	//// 将评论的图片存到文件系统中
+	//err, status := controllers.UploadImagesControllers(c, "评论", comment.ID)
+	//if err != nil {
+	//	return err, status
+	//}
+
+	u := &logics.UrlParam{
+		UrlPath: req.CommentPath,
+		Home:    globals.Comment,
+		HomeID:  comment.ID,
+	}
+	err = controllers.StoreUrlCtrl(u)
 	if err != nil {
-		return err, status
+		return fmt.Errorf("AddTagRep -> 存储图片的相关信息失败 -> %s", err), 500
 	}
 
 	//提交事务
@@ -298,10 +310,19 @@ func UpdateCommentRep(c *gin.Context, db *gorm.DB, req *requests.UpdateCommentRe
 		return fmt.Errorf("UpdateCommentRep -> 更新评论内容失败 -> %s", err), 500
 	}
 
-	// 更新评论图片
-	err, status := controllers.UploadImagesControllers(c, "评论", req.ID)
+	//// 更新评论图片
+	//err, status := controllers.UploadImagesControllers(c, "评论", req.ID)
+	//if err != nil {
+	//	return fmt.Errorf("UpdateCommentRep -> 更新评论图片失败 -> %s", err), status
+	//}
+	u := &logics.UrlParam{
+		UrlPath: req.CommentPath,
+		Home:    globals.Comment,
+		HomeID:  req.ID,
+	}
+	err = controllers.StoreUrlCtrl(u)
 	if err != nil {
-		return fmt.Errorf("UpdateCommentRep -> 更新评论图片失败 -> %s", err), status
+		return fmt.Errorf("AddTagRep -> 存储图片的相关信息失败 -> %s", err), 500
 	}
 
 	// 提交事务

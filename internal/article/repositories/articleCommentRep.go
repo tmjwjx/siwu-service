@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"forum/internal/article/requests"
 	"forum/internal/image/controllers"
+	"forum/internal/image/logics"
 	"forum/internal/internal_pkg/internal_utils"
 	"forum/internal/models"
+	"forum/pkg/globals"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -42,10 +44,19 @@ func InsertCommentRep(c *gin.Context, articleCommentReq *requests.ArticleComment
 		return fmt.Errorf("InsertCommentRep -> 获取新插入的评论的ID失败 -> %s", err), 500
 	}
 
-	// 将评论的图片存到文件系统中
-	err, status := controllers.UploadImagesControllers(c, "评论", articleComment.ID)
+	//// 将评论的图片存到文件系统中
+	//err, status := controllers.UploadImagesControllers(c, "评论", articleComment.ID)
+	//if err != nil {
+	//	return err, status
+	//}
+	u := &logics.UrlParam{
+		UrlPath: articleCommentReq.Path,
+		Home:    globals.Comment,
+		HomeID:  articleComment.ID,
+	}
+	err = controllers.StoreUrlCtrl(u)
 	if err != nil {
-		return err, status
+		return fmt.Errorf("AddTagRep -> 存储图片的相关信息失败 -> %s", err), 500
 	}
 
 	// 提交事务

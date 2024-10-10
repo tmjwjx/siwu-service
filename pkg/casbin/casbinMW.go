@@ -27,25 +27,6 @@ func NewCasbinAuth(cbs *CasbinService) gin.HandlerFunc {
 			return
 		}
 
-		//// 获取请求头token解析出userRole
-		//token := c.GetHeader("token")
-		//// 查询账号对应的角色
-		//role, err := token2.GetRole(token)
-		//if err != nil || role == "" {
-		//	e := response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("NewCasbinAuth -> token中没有携带角色"), nil)
-		//	response.Failed(c, 400, e)
-		//	c.Abort()
-		//	return
-		//}
-		//// 该部分写菜单
-		//menuId, err := SelMenId(c.Request.URL.Path, c.Request.Method)
-		//if err != nil || menuId == "" {
-		//	e := response.NewAppErr(globals.StatusBadRequest, err, nil)
-		//	response.Failed(c, 400, e)
-		//	c.Abort()
-		//	return
-		//}
-
 		//权限验证
 
 		// 获取apiId

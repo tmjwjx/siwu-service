@@ -615,10 +615,10 @@ func (u *UserReqContext) UploadHeadshot(id uint) error {
 		return fmt.Errorf("UserReqContext.UploadHeadshot() err: 不存在id为 %v 的用户", id)
 	}
 
-	// 存头像
-	err, _ := controllers.UploadImagesControllers(u.Ctx, "用户", id)
-	if err != nil {
-		return fmt.Errorf("UserReqContext.UploadHeadshot() 存头像错误err: %v", err)
-	}
+	//// 存头像
+	//err, _ := controllers.UploadImagesControllers(u.Ctx, "用户", id)
+	//if err != nil {
+	//	return fmt.Errorf("UserReqContext.UploadHeadshot() 存头像错误err: %v", err)
+	//}
 	return nil
 }

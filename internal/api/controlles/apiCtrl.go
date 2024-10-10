@@ -31,7 +31,7 @@ func ApiInitCtrl(c *gin.Context) {
 func GetApiDetailsCtrl(c *gin.Context) {
 	// 获取参数
 	idStr := c.Param("id")
-	id, err := internal_utils.ChangeType(idStr)
+	id, err := internal_utils.ChangeStringToUint(idStr)
 	if err != nil {
 		e := response.NewAppErr(globals.StatusInternalServerError, err, nil)
 		response.Failed(c, 500, e)

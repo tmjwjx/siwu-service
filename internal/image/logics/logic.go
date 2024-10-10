@@ -4,53 +4,71 @@ import (
 	"fmt"
 	"forum/internal/image/repositories"
 	"forum/internal/image/requests"
-	"forum/internal/internal_pkg/internal_utils"
 	"forum/internal/models"
 	"forum/pkg/globals"
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
+	"os"
 	"path/filepath"
-	"strconv"
+	"strings"
 )
 
-// UploadHandlerLogic 图片文件的逻辑处理
-// home:图片所属单位，即属于文章图片还是用户图片或是资源表图片
-// homeID:图片对应的具体文章或用户的ID
-func UploadHandlerLogic(c *gin.Context, home string, homeID uint) error {
-	// 使用 MultipartForm 提取所有字段
-	form, _ := c.MultipartForm()
-	// 提取文件
-	files := form.File["uploads"]
-	for _, file := range files {
+// UrlParam 存储URL时许需要传的参数
+type UrlParam struct {
+	UrlPath []string     // url路径
+	Home    globals.Home // home:图片所属单位，即属于文章图片还是用户图片或是资源表图片
+	HomeID  uint         // homeID:图片对应的具体文章或用户的ID
+}
 
-		// 如果文件中没有图片，直接返回nil。
-		if file.Size == 0 {
-			return nil
+func StoreUrlLogic(u *UrlParam) error {
+
+	var outFile string       // 图片在服务器的存储路径
+	var fileExtension string // 图片扩展名
+
+	for _, url := range u.UrlPath {
+
+		originalURL := url
+
+		// 获取最后一个 '/' 的位置
+		lastSlashIndex := strings.LastIndex(originalURL, "/")
+		// 如果找到了 '/', 进行截取
+		if lastSlashIndex != -1 {
+
+			// 获取最后一个 '/' 前面的部分（不包含最后一个 '/'）
+			prefix := originalURL[:lastSlashIndex]
+			// 替换前缀为 './static/images'
+			outFile = strings.Replace(originalURL, prefix, "./static/images", 1)
+
+		} else {
+			return fmt.Errorf("StoreUrlCtrl -> 获取最后一个 '/' 的位置失败")
 		}
 
-		// 生成唯一的文件名
-		uniqueFilename := generateUniqueFilename(file.Filename)
+		// 获取文件名
+		fileName := originalURL[strings.LastIndex(originalURL, "/")+1:]
+		// 获取扩展名（包括点）
+		ext := filepath.Ext(fileName)
+		// 去掉前面的点
+		if len(ext) > 1 {
+			fileExtension = ext[1:]
+		} else {
+			return fmt.Errorf("UploadHandlerLogic -> 未找到扩展名")
+		}
 
-		// 删除文件系统中的图片
-		err := internal_utils.DeleteFile(home, homeID)
+		// 使用 os.Stat 获取文件信息
+		fileInfo, err := os.Stat(outFile)
 		if err != nil {
-			return err
+			return fmt.Errorf("UploadHandlerLogic -> 使用 os.Stat 获取文件信息失败 -> %s", err)
 		}
 
-		// 将文件内容写入目标文件
-		err = c.SaveUploadedFile(file, globals.SConfig.Path+"/"+uniqueFilename)
-		if err != nil {
-			return err
-		}
+		// // 获取文件大小（字节）
+		fileSize := fileInfo.Size()
 
 		// 将文件路径及其相关信息存入数据库中
 		attachment := &requests.Attachment{
-			Home:   home,
-			HomeID: homeID,
-			Name:   file.Filename,
-			Type:   "images/" + filepath.Ext(file.Filename), // filepath.Ext(filename) 获得文件的扩展名
-			Size:   file.Size,
-			Path:   "http://" + globals.AppConfig.App.Host + ":" + strconv.Itoa(globals.AppConfig.App.Port) + globals.SConfig.Prefix + "/" + uniqueFilename,
+			Home:   u.Home,
+			HomeID: u.HomeID,
+			Name:   fileName,
+			Type:   "images/" + fileExtension, // filepath.Ext(filename) 获得文件的扩展名
+			Size:   fileSize,
+			Path:   url,
 		}
 
 		// 将文件插入数据库中
@@ -67,10 +85,6 @@ func UploadHandlerLogic(c *gin.Context, home string, homeID uint) error {
 func GetImagesLogic(home string, homeID uint) (*[]models.Attachment, error) {
 	images, err := repositories.GetImages(home, homeID)
 	return images, err
-	/*if err != nil {
-		return nil, fmt.Errorf("GetImagesLogic -> %s", err)
-	}
-	return images, nil*/
 }
 
 // GetAdvertisementImageLogic 专门用于取数据库中的广告图片
@@ -82,35 +96,3 @@ func GetAdvertisementImageLogic(home string, status int) (*[]models.Advertisemen
 	}
 	return images, nil
 }
-
-// generateUniqueFilename 生成唯一文件名
-func generateUniqueFilename(filename string) string {
-	// 生成一个唯一的 UUID
-	uniqueID := uuid.New().String()
-
-	// 分离文件名和扩展名
-	base := filename[:len(filename)-len(filepath.Ext(filename))]
-	ext := filepath.Ext(filename)
-
-	// 创建一个新的唯一文件名
-	return fmt.Sprintf("%s_%s%s", base, uniqueID, ext)
-}
-
-/*// DeleteFile 从文件系统中删除图片
-func DeleteFile(home string, homeID uint) error {
-	var path string
-	// 查询要删除的图片文件路径
-	err := globals.DB.Model(models.Attachment{}).Where("home = ? and home_id = ?", home, homeID).Select("path").First(&path).Error
-	if err != nil {
-		//return fmt.Errorf("deleteFile -> %s", err)
-		// 没有查到说明文件系统中没有该图片，直接添加进入文件系统即可
-		return nil
-	}
-	path = "./static" + path
-	// 删除图片
-	err = os.Remove(path)
-	if err != nil {
-		return fmt.Errorf("deleteFile -> 文件系统中的图片删除失败 -> %s", err)
-	}
-	return nil
-}*/
