@@ -117,6 +117,14 @@ func ArticlesOrder(kind int) string {
 	return condition
 }
 
+// MessagePush 向用户实时发送更新数据
+func MessagePush(data string, userId string) {
+	notifyChan, exist := globals.SubscriberChannels[userId]
+	if exist {
+		notifyChan <- data
+	}
+}
+
 // ChangeType 将string类型的值转换成uint类型
 func ChangeType(str string) (uint, error) {
 
