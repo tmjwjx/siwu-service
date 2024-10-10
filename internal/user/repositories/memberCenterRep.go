@@ -2,7 +2,7 @@ package repositories
 
 import (
 	"fmt"
-	"forum/internal/internal_pkg/internal_utils"
+	"forum/internal/internalPkg/internalUtils"
 	"forum/internal/models"
 	"forum/internal/user/requests"
 	"gorm.io/gorm"
@@ -59,7 +59,7 @@ func InitUserInfoRep(db *gorm.DB, qid string, gid string) (*requests.InitUserInf
 		initUserInfoRes.ConcernStatus = 2
 	} else {
 		// 将string类型的值转换成int类型
-		gid2, err := internal_utils.ChangeStringToInt(gid)
+		gid2, err := internalUtils.ChangeStringToInt(gid)
 		if err != nil {
 			return nil, fmt.Errorf("InitUserInfoRep -> %s", err)
 		}
