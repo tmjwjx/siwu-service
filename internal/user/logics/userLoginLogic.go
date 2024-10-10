@@ -24,6 +24,13 @@ type UserReqContext struct {
 	SendEmailCfg *globals.SendEmailConfig // 发送邮件
 }
 
+// NewUserReqContext
+// @Description: 新建UserReqContext对象
+// @Author lizhuang 2024-10-09 09:38:14
+// @param        db *gorm.DB
+// @param        c *gin.Context
+// @param        sendEmailCfg *globals.SendEmailConfig
+// @return       *UserReqContext
 func NewUserReqContext(db *gorm.DB, c *gin.Context, sendEmailCfg *globals.SendEmailConfig) *UserReqContext {
 	return &UserReqContext{
 		DB:           db,
