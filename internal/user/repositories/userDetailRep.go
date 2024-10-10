@@ -3,9 +3,11 @@ package repositories
 import (
 	"fmt"
 	"forum/internal/image/controllers"
+	"forum/internal/image/logics"
 	"forum/internal/internalPkg/internalUtils"
 	"forum/internal/models"
 	"forum/internal/user/requests"
+	"forum/pkg/globals"
 	"gorm.io/gorm"
 )
 
@@ -23,12 +25,7 @@ func QueryPersonEmail(userAccountReq *requests.UserAccountReq, db *gorm.DB) erro
 
 }
 
-// UserDataRequest
-//
-//	@Description:
-//	@param        userDataReq *requests.UserDataReq
-//	@param        db *gorm.DB
-//	@return       error
+// UserDataRequest 更新用户个人资料
 func UserDataRequest(userDataReq *requests.UserDataReq, db *gorm.DB) error {
 
 	var user models.User
@@ -114,6 +111,16 @@ func UserDataRequest(userDataReq *requests.UserDataReq, db *gorm.DB) error {
 			tx.Rollback() // 回滚事务
 			return fmt.Errorf("UserDataRequest -> 添加新的用户标签关联失败 -> %s", err)
 		}
+	}
+
+	u := &logics.UrlParam{
+		UrlPath: userDataReq.Path,
+		Home:    globals.User,
+		HomeID:  userDataReq.ID,
+	}
+	err = controllers.StoreUrlCtrl(u)
+	if err != nil {
+		return fmt.Errorf("UserDataRequest -> 存储图片的相关信息失败 -> %s", err)
 	}
 
 	// 提交事务

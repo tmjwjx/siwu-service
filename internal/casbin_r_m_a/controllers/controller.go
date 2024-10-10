@@ -2,8 +2,8 @@ package controllers
 
 import (
 	"fmt"
-	"forum/internal/casbin/logics"
-	"forum/internal/casbin/requests"
+	"forum/internal/casbin_r_m_a/logics"
+	"forum/internal/casbin_r_m_a/requests"
 	"forum/pkg/globals"
 	"forum/pkg/response"
 	"github.com/gin-gonic/gin"

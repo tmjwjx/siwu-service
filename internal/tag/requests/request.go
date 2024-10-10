@@ -31,12 +31,12 @@ type Tag struct {
 
 // BsAddTagReq 后台新增请求
 type BsAddTagReq struct {
-	Name         string `json:"name" form:"name"`                   // 标签名称
-	Description  string `json:"description" form:"description"`     // 标签描述
-	ArticleCount int    `json:"article_count" form:"article_count"` // 标签关联的文章数量
-	Heat         int    `json:"heat" form:"heat"`                   // 标签热度
-	FansCount    int    `json:"fans_count" form:"fans_count"`       // 关注人数
-	//Path         string `json:"path" form:"path"`                   // 标签头像
+	Name         string   `json:"name" form:"name"`                   // 标签名称
+	Description  string   `json:"description" form:"description"`     // 标签描述
+	ArticleCount int      `json:"article_count" form:"article_count"` // 标签关联的文章数量
+	Heat         int      `json:"heat" form:"heat"`                   // 标签热度
+	FansCount    int      `json:"fans_count" form:"fans_count"`       // 关注人数
+	Path         []string `json:"path" form:"path"`                   // 标签头像
 }
 
 // BsDelTagReq 后台删除请求
@@ -51,13 +51,13 @@ type BsBatchDelTagReq struct {
 
 // BsUpTagReq 后台更新请求
 type BsUpTagReq struct {
-	ID           uint   `json:"id" form:"id"`                       // 标签ID
-	Name         string `json:"name" form:"name"`                   // 标签名称
-	Description  string `json:"description" form:"description"`     // 标签描述
-	ArticleCount int    `json:"article_count" form:"article_count"` // 标签关联的文章数量
-	Heat         int    `json:"heat" form:"heat"`                   // 标签热度
-	FansCount    int    `json:"fans_count" form:"fans_count"`       // 关注人数
-	//Path         string `json:"path" form:"path"`                   // 标签头像
+	ID           uint     `json:"id" form:"id"`                       // 标签ID
+	Name         string   `json:"name" form:"name"`                   // 标签名称
+	Description  string   `json:"description" form:"description"`     // 标签描述
+	ArticleCount int      `json:"article_count" form:"article_count"` // 标签关联的文章数量
+	Heat         int      `json:"heat" form:"heat"`                   // 标签热度
+	FansCount    int      `json:"fans_count" form:"fans_count"`       // 关注人数
+	Path         []string `json:"path" form:"path"`                   // 标签头像
 }
 
 // BsQueTagReq 后台查询请求

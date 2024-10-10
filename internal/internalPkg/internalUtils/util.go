@@ -117,8 +117,13 @@ func ArticlesOrder(kind int) string {
 	return condition
 }
 
-// ChangeType 将string类型的值转换成uint类型
-func ChangeType(str string) (uint, error) {
+// ChangeStringToUint
+// @Description: 将string类型的值转换成uint类型
+// @Author wangyulong 2024-10-09 15:26:15
+// @param        str string
+// @return       uint
+// @return       error
+func ChangeStringToUint(str string) (uint, error) {
 
 	// 将字符串转换成uint64, 基数为 10, 位大小为 64 位
 	num, err := strconv.ParseUint(str, 10, 64)
@@ -130,6 +135,20 @@ func ChangeType(str string) (uint, error) {
 	uintNum := uint(num)
 
 	return uintNum, nil
+}
+
+// ChangeStringToInt
+// @Description: 将string类型的值转换成int类型
+// @Author wangyulong 2024-10-10 12:32:45
+// @param        str string
+// @return       int
+// @return       error
+func ChangeStringToInt(str string) (int, error) {
+	intValue, err := strconv.Atoi(str)
+	if err != nil {
+		return 0, fmt.Errorf("ChangeStringToInt -> 将string类型的值转换成int类型失败 -> %s", err)
+	}
+	return intValue, nil
 }
 
 // TimeAgo 函数根据传入的 time.Time 和当前时间计算差值并返回相应的时间描述

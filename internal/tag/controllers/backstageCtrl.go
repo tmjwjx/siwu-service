@@ -13,7 +13,7 @@ func AddTagCtrl(c *gin.Context) {
 
 	// 获取参数
 	var req requests.BsAddTagReq
-	err := c.ShouldBind(&req)
+	err := c.ShouldBindJSON(&req)
 	if err != nil {
 		e := response.NewAppErr(globals.StatusBadRequest, err, nil)
 		response.Failed(c, 400, e)
@@ -35,7 +35,7 @@ func AddTagCtrl(c *gin.Context) {
 		e := response.NewAppErr(state, err, nil)
 		response.Failed(c, status, e)
 	} else {
-		d := response.NewAppData(globals.StatusOK, "用户信息更新成功", nil)
+		d := response.NewAppData(globals.StatusOK, "新增标签成功", nil)
 		response.Success(c, 200, d)
 	}
 

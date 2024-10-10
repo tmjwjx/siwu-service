@@ -8,6 +8,6 @@ import (
 // ProduceImageUrl 生成图片的url
 func ProduceImageUrl(e *gin.Engine) {
 
-	e.GET("/produce_image_url", controllers.ProduceUrlCtrl)
+	e.POST("/produce_image_url", controllers.ProduceUrlCtrl)
 
 }

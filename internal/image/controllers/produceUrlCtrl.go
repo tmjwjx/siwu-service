@@ -21,20 +21,20 @@ func ProduceUrlCtrl(c *gin.Context) {
 
 	// 返回响应
 	if err != nil {
-		//e := response.NewAppErr(globals.StatusInternalServerError, err, nil)
-		//response.Failed(c, 500, e)
-		//return
-		url := &requests.UrlPath{
-			Url: "",
-		}
+		//var urls []*requests.UrlPath
+		//res := &requests.ImageUrl{
+		//	Data:  urls,
+		//	Errno: 1,
+		//}
+		// 如果文件中没有图片，直接返回空。
+		urls := make([]*requests.UrlPath, 0)
 		res := &requests.ImageUrl{
-			Errno: 0,
-			Data:  url,
+			Data:  urls,
+			Errno: 1,
 		}
 		c.JSON(500, res)
+	} else {
+		c.JSON(200, imageUrl)
 	}
 
-	//d := response.NewAppData(globals.StatusOK, "图片保存成功且图片url生成成功", imageUrl)
-	//response.Success(c, 200, d)
-	c.JSON(200, imageUrl)
 }
