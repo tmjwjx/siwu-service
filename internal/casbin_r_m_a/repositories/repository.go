@@ -2,9 +2,9 @@ package repositories
 
 import (
 	"fmt"
-	"forum/casbin"
-	"forum/internal/casbin/requests"
+	"forum/internal/casbin_r_m_a/requests"
 	"forum/internal/models"
+	"forum/pkg/casbin"
 	"gorm.io/gorm"
 )
 

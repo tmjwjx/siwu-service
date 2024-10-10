@@ -9,14 +9,12 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
-	"log"
 )
 
 // DBInit 初始化mysql
 func DBInit() {
-
 	if err := viper.UnmarshalKey("database", &globals.AppConfig.Database); err != nil {
-		log.Fatalf("无法解码为结构: %s", err)
+		globals.Log.Panicf("无法解码为结构: %s", err)
 	}
 
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local",
@@ -35,7 +33,7 @@ func DBInit() {
 		},
 	})
 	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
+		globals.Log.Panicf("Failed to connect to database: %v", err)
 	}
 }
 
@@ -44,7 +42,6 @@ func DBInit() {
 //	@Description: 初始化表
 func TableInit() {
 	err := globals.DB.AutoMigrate(
-		// &models.Administrator{},
 		&models.Advertisement{},
 		&models.Attachment{},
 		&models.Resource{},
@@ -67,7 +64,8 @@ func TableInit() {
 		&models.UserTag{},
 
 		&gormadapter.CasbinRule{},
-		//&models.UserCasbinRules{},
+		// &models.UserCasbinRules{},
+
 		&models.Menu{},
 
 		// 角色管理模块
@@ -83,7 +81,7 @@ func TableInit() {
 	)
 
 	if err != nil {
-		globals.Log.Errorf("db.AutoMigrate err = %s", err)
+		globals.Log.Panicf("db.AutoMigrate err = %s", err)
 		return
 	}
 }

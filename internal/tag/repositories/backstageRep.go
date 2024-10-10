@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"forum/internal/image/controllers"
 	"forum/internal/internalPkg/internalUtils"
+	"forum/internal/image/logics"
 	"forum/internal/models"
 	"forum/internal/tag/requests"
+	"forum/pkg/globals"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -21,12 +23,10 @@ func AddTagRep(c *gin.Context, db *gorm.DB, req *requests.BsAddTagReq) (error, i
 
 	// 查询该标签是否已经存在
 	var tag models.Tag
-	err := tx.Where("name = ?", req.Name).First(&tag).Error
-	if err == nil {
-		// 回滚事务
-		tx.Rollback()
-		return fmt.Errorf("AddTagRep -> 该标签已经存在"), 500
-	}
+	//err := tx.Where("name = ?", req.Name).First(&tag).Error
+	//if err == nil {
+	//	return fmt.Errorf("AddTagRep -> 该标签已经存在"), 500
+	//}
 
 	// 到这里说明该标签不存在，可以插入到数据库中
 	// 将处图片之外的信息存到数据库中
@@ -36,7 +36,7 @@ func AddTagRep(c *gin.Context, db *gorm.DB, req *requests.BsAddTagReq) (error, i
 	tag.Heat = req.Heat
 	tag.FansCount = req.FansCount
 
-	err = tx.Create(&tag).Error
+	err := tx.Create(&tag).Error
 	if err != nil {
 		// 回滚事务
 		tx.Rollback()
@@ -52,9 +52,19 @@ func AddTagRep(c *gin.Context, db *gorm.DB, req *requests.BsAddTagReq) (error, i
 	}
 
 	// 存储图片的相关信息
-	err, status := controllers.UploadImagesControllers(c, "标签", tag.ID)
+	//err, status := controllers.UploadImagesControllers(c, "标签", tag.ID)
+	//if err != nil {
+	//	return fmt.Errorf("AddTagRep ->  存储图片的相关信息失败 -> %s", err), status
+	//}
+
+	u := &logics.UrlParam{
+		UrlPath: req.Path,
+		Home:    globals.Tag,
+		HomeID:  tag.ID,
+	}
+	err = controllers.StoreUrlCtrl(u)
 	if err != nil {
-		return fmt.Errorf("AddTagRep ->  存储图片的相关信息失败 -> %s", err), status
+		return fmt.Errorf("AddTagRep -> 存储图片的相关信息失败 -> %s", err), 500
 	}
 
 	// 提交事务
@@ -177,10 +187,19 @@ func UpdateTagRep(c *gin.Context, db *gorm.DB, req *requests.BsUpTagReq) (error,
 		return fmt.Errorf("UpdateTagRep -> 标签信息更新失败 -> %s", err), 500
 	}
 
-	// 更新标签头像
-	err, status := controllers.UploadImagesControllers(c, "标签", req.ID)
+	//// 更新标签头像
+	//err, status := controllers.UploadImagesControllers(c, "标签", req.ID)
+	//if err != nil {
+	//	return fmt.Errorf("UpdateTagRep ->  更新标签头像失败 -> %s", err), status
+	//}
+	u := &logics.UrlParam{
+		UrlPath: req.Path,
+		Home:    globals.Tag,
+		HomeID:  tag.ID,
+	}
+	err = controllers.StoreUrlCtrl(u)
 	if err != nil {
-		return fmt.Errorf("UpdateTagRep ->  更新标签头像失败 -> %s", err), status
+		return fmt.Errorf("AddTagRep -> 存储图片的相关信息失败 -> %s", err), 500
 	}
 
 	// 提交事务

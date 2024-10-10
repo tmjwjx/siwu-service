@@ -54,7 +54,7 @@ func Comment(e *gin.Engine) {
 	r.GET("/replies", controllers.GetRepliesRep2Ctrl)
 
 	// 删除评论
-	r.DELETE("/delete", controllers.DeleteCommentCtrl)
+	r.POST("/delete", controllers.DeleteCommentCtrl)
 
 	// 更新点赞的数量
 	r.POST("/praise", controllers.UpdatePraiseCountCtrl)
