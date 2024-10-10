@@ -117,7 +117,11 @@ func ArticlesOrder(kind int) string {
 	return condition
 }
 
-// MessagePush 向用户实时发送更新数据
+// MessagePush
+// @Description: 向用户实时发送更新数据
+// @param        data string
+// @param        userId string
+// @Author tianjiajie 2024-10-10 21:45:13
 func MessagePush(data string, userId string) {
 	notifyChan, exist := globals.SubscriberChannels[userId]
 	if exist {
