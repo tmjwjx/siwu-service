@@ -10,11 +10,20 @@ import (
 // @Description: 创建用户的消息通道 监听新消息并发送到客户端
 // @param        c *gin.Context
 func NewMessageChan(c *gin.Context) {
-	// 创建一个通道，用于接收评论的变动消息
-	userId := c.Query("user_id")
+	// 获取用户id
+	id, _ := c.Get("id")
+	globals.Log.Infof("用户 %s 连接成功", id)
+	userId := fmt.Sprintf("%d", id)
+
+	// 将用户的通道存入全局变量
 	notifyChan := make(chan string)
 	globals.SubscriberChannels[userId] = notifyChan
 	//notifyChan := globals.SubscriberChannels[userId]
+
+	//// 创建一个观察者
+	//observer.NewSystemMsgObserver(userId)
+	//// 注册观察者到事件
+	//globals.SystemMsgSubject.RegisterObserver("systemMsg", observer.NewSystemMsgObserver(userId))
 
 	for {
 		select {
@@ -25,8 +34,14 @@ func NewMessageChan(c *gin.Context) {
 			}
 			c.Writer.Flush()
 		case <-c.Done():
+			// 关闭通道
 			close(notifyChan)
+
+			// 删除用户的通道
 			delete(globals.SubscriberChannels, userId)
+
+			//// 取消注册观察者
+			//globals.SystemMsgSubject.UnRegisterObserver("systemMsg", observer.NewSystemMsgObserver(userId))
 			return
 		}
 	}
