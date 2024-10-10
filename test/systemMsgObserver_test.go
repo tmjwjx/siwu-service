@@ -8,10 +8,10 @@ import (
 )
 
 func TestPushMessage(t *testing.T) {
-	
+
 	userId := "1"
 	eventName := "hello"
-	
+
 	notifyChan := make(chan string)
 	globals.SubscriberChannels[userId] = notifyChan
 	go func() {
@@ -22,6 +22,6 @@ func TestPushMessage(t *testing.T) {
 			}
 		}
 	}()
-	
+
 	observer.PushMessage(userId, eventName)
 }

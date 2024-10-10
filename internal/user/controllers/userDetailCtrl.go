@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"fmt"
-	"forum/internal/internal_pkg/internal_utils"
+	"forum/internal/internalPkg/internalUtils"
 	"forum/internal/user/logics"
 	"forum/internal/user/requests"
 	"forum/pkg/globals"
@@ -28,7 +28,7 @@ func UserDataRequestCtrl(c *gin.Context) {
 	// 验证参数
 
 	// 验证用户名是否合法
-	res := internal_utils.IsValidNickname(userDataReq.Nickname)
+	res := internalUtils.IsValidNickname(userDataReq.Nickname)
 	if !res {
 		e := response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("UserDataRequestCtrl -> 用户名格式不正确"), nil)
 		response.Failed(c, 400, e)
@@ -101,14 +101,14 @@ func UserAccountRequestCtrl(c *gin.Context) {
 
 	// 参数验证
 	// 验证邮箱是否合法
-	res := internal_utils.IsValidEmail(userAccountReq.Email)
+	res := internalUtils.IsValidEmail(userAccountReq.Email)
 	if !res {
 		e := response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("邮箱格式不正确"), nil)
 		response.Failed(c, 400, e)
 		return
 	}
 	// 验证密码是否合法
-	res = internal_utils.IsValidPassword(userAccountReq.Password)
+	res = internalUtils.IsValidPassword(userAccountReq.Password)
 	if !res {
 		e := response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("密码格式不正确"), nil)
 		response.Failed(c, 400, e)

@@ -2,8 +2,9 @@ package server
 
 import (
 	articleRouter "forum/internal/article/routes"
-	"forum/internal/image/routes"
 	dictRouter "forum/internal/dictManage/routes"
+	imageRouter "forum/internal/image/routes"
+	messageRouter "forum/internal/message/routes"
 	roleRouter "forum/internal/roleManage/routes"
 	tagRouter "forum/internal/tag/routes"
 	userRouter "forum/internal/user/routes"
@@ -16,6 +17,9 @@ func SetupRouter() {
 	// 用户分路由
 	userRouter.User(globals.Router)
 
+	// 消息分路由
+	messageRouter.Message(globals.Router)
+
 	// 文章分路由
 	articleRouter.Article(globals.Router)
 
@@ -26,7 +30,7 @@ func SetupRouter() {
 	articleRouter.Comment(globals.Router)
 
 	// 图片url分路由
-	routes.ProduceImageUrl(globals.Router)
+	imageRouter.ProduceImageUrl(globals.Router)
 	// 角色管理分路由
 	roleRouter.Role(globals.Router)
 

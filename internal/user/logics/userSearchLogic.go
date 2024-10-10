@@ -3,7 +3,8 @@ package logics
 import (
 	"fmt"
 	"forum/internal/image/controllers"
-	"forum/internal/internal_pkg/internal_utils"
+	"forum/internal/internalPkg/internalUtils"
+	"forum/internal/internalPkg/sqlUtils"
 	"forum/internal/models"
 	"forum/internal/user/repositories"
 	"forum/internal/user/requests"
@@ -56,27 +57,27 @@ func (u *UserReqContext) Follow(follow requests.FollowReq) error {
 			FollowedId: followedId,
 		}
 		// 插入关注数据
-		if err := repositories.InsertObject(u.DB, userFollow); err != nil {
+		if err := sqlUtils.InsertObject(u.DB, userFollow); err != nil {
 			return fmt.Errorf("UserReqContext.Follow() -> %v", err)
 		}
 
 		//  followerId关注数量+1，followedId粉丝数量+1
-		if err = repositories.UpdateObjects(u.DB, &models.User{Model: gorm.Model{ID: followerId}}, map[string]interface{}{"attention_count": len(followedIDSli) + 1}); err != nil {
+		if err = sqlUtils.UpdateObjects(u.DB, &models.User{Model: gorm.Model{ID: followerId}}, map[string]interface{}{"attention_count": len(followedIDSli) + 1}); err != nil {
 			return fmt.Errorf("UserReqContext.Follow() -> %v", err)
 		}
-		if err = repositories.UpdateObjects(u.DB, &models.User{Model: gorm.Model{ID: followedId}}, map[string]interface{}{"fans_count": len(followerIDSli) + 1}); err != nil {
+		if err = sqlUtils.UpdateObjects(u.DB, &models.User{Model: gorm.Model{ID: followedId}}, map[string]interface{}{"fans_count": len(followerIDSli) + 1}); err != nil {
 			return fmt.Errorf("UserReqContext.Follow() -> %v", err)
 		}
 
 	} else { // 取消关注
-		if _, err := repositories.DeleteObjectsByTable(u.DB, "sw_user_follows", map[string]interface{}{"follower_id": followerId, "followed_id": followedId}); err != nil {
+		if _, err := sqlUtils.DeleteObjectsByTable(u.DB, "sw_user_follows", map[string]interface{}{"follower_id": followerId, "followed_id": followedId}); err != nil {
 			return fmt.Errorf("UserReqContext.Follow() -> %v", err)
 		}
 		//  followerId关注数量-1，followedId粉丝数量-1
-		if err = repositories.UpdateObjects(u.DB, &models.User{Model: gorm.Model{ID: followerId}}, map[string]interface{}{"attention_count": len(followedIDSli) - 1}); err != nil {
+		if err = sqlUtils.UpdateObjects(u.DB, &models.User{Model: gorm.Model{ID: followerId}}, map[string]interface{}{"attention_count": len(followedIDSli) - 1}); err != nil {
 			return fmt.Errorf("UserReqContext.Follow() -> %v", err)
 		}
-		if err = repositories.UpdateObjects(u.DB, &models.User{Model: gorm.Model{ID: followedId}}, map[string]interface{}{"fans_count": len(followerIDSli) - 1}); err != nil {
+		if err = sqlUtils.UpdateObjects(u.DB, &models.User{Model: gorm.Model{ID: followedId}}, map[string]interface{}{"fans_count": len(followerIDSli) - 1}); err != nil {
 			return fmt.Errorf("UserReqContext.Follow() -> %v", err)
 		}
 	}
@@ -123,7 +124,7 @@ func (u *UserReqContext) UserRank(id uint, msg requests.UserRankReq) ([]*request
 		userImgs, err := controllers.GetImagesControllers("用户", v.ID)
 		if err != nil {
 			// 数据库中没有该用户的头像，使用默认的头像
-			userRankReqSli[i].AvatarPath = internal_utils.UserDefaultImage
+			userRankReqSli[i].AvatarPath = internalUtils.UserDefaultImage
 		} else {
 			userRankReqSli[i].AvatarPath = (*userImgs)[0].Path
 		}

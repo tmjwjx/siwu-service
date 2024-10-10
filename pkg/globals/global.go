@@ -37,6 +37,6 @@ var (
 	// SubscriberChannels 全局 map，用于存储各文章 ID 的 SSE 订阅者通道
 	SubscriberChannels = make(map[string]chan string)
 
-	// BusDispatcher 观察者和事件之间的总线调度员r
+	// BusDispatcher 观察者和事件之间的总线调度员
 	BusDispatcher = event.NewDispatcher()
 )

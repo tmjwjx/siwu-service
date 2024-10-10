@@ -11,7 +11,7 @@ import (
 )
 
 // LikeArticleCtrl
-// @Description: 用户对文章点赞
+// @Description: 点赞文章
 // @param        c *gin.Context
 func LikeArticleCtrl(c *gin.Context) {
 	// 初始化需要的变量

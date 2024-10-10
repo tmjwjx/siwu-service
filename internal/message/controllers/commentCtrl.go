@@ -21,7 +21,7 @@ func CommentMesCtrl(c *gin.Context) {
 		return
 	}
 	// 解析json格式的数据
-	var req requests.CommentMesReq
+	var req requests.MessageReq
 	err := c.ShouldBindJSON(&req)
 	if err != nil {
 		e := response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("CommentMesCtrl -> 解析json格式的数据失败 -> %s", err), nil)

@@ -24,12 +24,13 @@ type UpdateTypeReq struct {
 
 // GetTypeReq 获取字典类型请求
 type GetTypeReq struct {
-	Name     string `json:"name" form:"name"`
-	Code     string `json:"code" form:"code"`
-	Status   int    `json:"status" form:"status"`
-	CreateAt string `json:"create_at" form:"create_at"`
-	Page     int    `json:"page" form:"page"`
-	Limit    int    `json:"limit" form:"limit"`
+	Name          string `json:"name" form:"name"`
+	Code          string `json:"code" form:"code"`
+	Status        int    `json:"status" form:"status"`
+	CreateAtBegin string `json:"create_at_begin" form:"create_at_begin"`
+	CreateAtEnd   string `json:"create_at_end" form:"create_at_end"`
+	Page          int    `json:"page" form:"page"`
+	Limit         int    `json:"limit" form:"limit"`
 }
 
 // GetTypeRes 获取字典类型响应
@@ -72,12 +73,13 @@ type UpdateItemReq struct {
 
 // GetItemReq 获取字典项请求
 type GetItemReq struct {
-	CreateAt     string `json:"create_at" form:"create_at"`
-	DictTypeCode string `json:"dict_type_code" form:"dict_type_code"`
-	Label        string `json:"label" form:"label"`
-	Status       int    `json:"status" form:"status"`
-	Page         int    `json:"page" form:"page"`
-	Limit        int    `json:"limit" form:"limit"`
+	CreateAtBegin string `json:"create_at_begin" form:"create_at_begin"`
+	CreateAtEnd   string `json:"create_at_end" form:"create_at_end"`
+	DictTypeCode  string `json:"dict_type_code" form:"dict_type_code"`
+	Label         string `json:"label" form:"label"`
+	Status        int    `json:"status" form:"status"`
+	Page          int    `json:"page" form:"page"`
+	Limit         int    `json:"limit" form:"limit"`
 }
 
 // GetItemRes 获取字典项响应

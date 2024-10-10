@@ -3,8 +3,8 @@ package repositories
 import (
 	"fmt"
 	"forum/internal/image/controllers"
+	"forum/internal/internalPkg/internalUtils"
 	"forum/internal/image/logics"
-	"forum/internal/internal_pkg/internal_utils"
 	"forum/internal/models"
 	"forum/internal/tag/requests"
 	"forum/pkg/globals"
@@ -97,12 +97,12 @@ func DeleteTagRep(db *gorm.DB, req *requests.BsDelTagReq) error {
 	}
 
 	// 删除文件系统中的图片
-	err := internal_utils.DeleteFile("标签", req.ID)
+	err := internalUtils.DeleteFile("标签", req.ID)
 	if err != nil {
 		return fmt.Errorf("DeleteTagRep -> %s", err)
 	}
 
-	//提交事务
+	// 提交事务
 	err = tx.Commit().Error
 	if err != nil {
 		return fmt.Errorf("DeleteTagRep -> 提交事务失败 -> %s", err)
@@ -138,7 +138,7 @@ func BatchDelTagRep(db *gorm.DB, req *requests.BsBatchDelTagReq) error {
 		}
 
 		// 删除文件系统中的图片
-		err := internal_utils.DeleteFile("标签", id)
+		err := internalUtils.DeleteFile("标签", id)
 		if err != nil {
 			return fmt.Errorf("BatchDelTagRep3 -> %s", err)
 		}
@@ -234,7 +234,7 @@ func QueryTagRep(db *gorm.DB, req *requests.BsQueTagReq) (*requests.BsQueTagRes,
 	// 查询标签头像
 	images, err := controllers.GetImagesControllers("标签", tag.ID)
 	if err != nil {
-		tagRes.Path = internal_utils.TagDefaultImage
+		tagRes.Path = internalUtils.TagDefaultImage
 	} else {
 		for _, image := range *images {
 			tagRes.Path = image.Path
@@ -274,7 +274,7 @@ func BatchQueryTagRep(db *gorm.DB, req *requests.BsBatchQueTagReq) (*[]*requests
 		// 查询标签头像
 		images, err := controllers.GetImagesControllers("标签", tag.ID)
 		if err != nil {
-			tag.Path = internal_utils.TagDefaultImage
+			tag.Path = internalUtils.TagDefaultImage
 		} else {
 			for _, image := range *images {
 				tag.Path = image.Path

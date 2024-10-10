@@ -20,7 +20,7 @@ func User(e *gin.Engine) {
 
 	// 分组
 	r := e.Group("/user")
-	//token 校验
+	// token 校验
 	r.Use(token.AuthMiddleware(), middlewares.CorsMiddleware())
 
 	// 关注
@@ -71,9 +71,9 @@ func User(e *gin.Engine) {
 	// 上传用户头像
 	r.POST("/upload/headshot", controllers.UploadHeadshot)
 
-	message := e.Group("/message")
-	{
-		message.POST("/like", controllers.LikeMessageCtrl)
-	}
+	//message := e.Group("/message")
+	//{
+	//	message.POST("/like", controllers.LikeMessageCtrl)
+	//}
 
 }

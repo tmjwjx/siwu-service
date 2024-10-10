@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"fmt"
-	"forum/internal/internal_pkg/internal_utils"
+	"forum/internal/internalPkg/internalUtils"
 	"forum/internal/user/logics"
 	"forum/internal/user/requests"
 	"forum/pkg/globals"
@@ -43,7 +43,7 @@ func Add(c *gin.Context) {
 
 	// 数据检验
 	// 检验邮箱是否合法
-	if !internal_utils.IsValidEmail(addReq.Email) {
+	if !internalUtils.IsValidEmail(addReq.Email) {
 		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("Add() err: 邮箱不合法"), nil))
 		return
 	}
@@ -89,7 +89,7 @@ func Edit(c *gin.Context) {
 
 	// 数据校验
 	// 判断邮箱是否合法
-	if !internal_utils.IsValidEmail(editReq.Email) {
+	if !internalUtils.IsValidEmail(editReq.Email) {
 		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("Edit() err: 邮箱不合法"), nil))
 		return
 	}

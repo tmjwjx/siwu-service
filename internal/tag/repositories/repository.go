@@ -3,7 +3,7 @@ package repositories
 import (
 	"fmt"
 	"forum/internal/image/controllers"
-	"forum/internal/internal_pkg/internal_utils"
+	"forum/internal/internalPkg/internalUtils"
 	"forum/internal/models"
 	"forum/internal/tag/requests"
 	"forum/pkg/globals"
@@ -97,9 +97,9 @@ func UpdateTagArticleCountReq() (*requests.TagRes, error) {
 		// 将图片存入结构体 t 中
 		images, err := controllers.GetImagesControllers("标签", tag.ID)
 		if err != nil {
-			//return nil, fmt.Errorf("UpdateTagArticleCountReq -> %s", err)
+			// return nil, fmt.Errorf("UpdateTagArticleCountReq -> %s", err)
 			// 如果没有找到就使用默认标签头像图片
-			t.Path = internal_utils.TagDefaultImage
+			t.Path = internalUtils.TagDefaultImage
 		} else {
 			for _, image := range *images {
 				t.Path = image.Path

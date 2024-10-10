@@ -2,7 +2,8 @@ package logics
 
 import (
 	"fmt"
-	"forum/internal/internal_pkg/internal_utils"
+	"forum/internal/internalPkg/internalUtils"
+	"forum/internal/internalPkg/sqlUtils"
 	"forum/internal/models"
 	"forum/internal/user/repositories"
 	"forum/internal/user/requests"
@@ -23,6 +24,13 @@ type UserReqContext struct {
 	SendEmailCfg *globals.SendEmailConfig // 发送邮件
 }
 
+// NewUserReqContext
+// @Description: 新建UserReqContext对象
+// @Author lizhuang 2024-10-09 09:38:14
+// @param        db *gorm.DB
+// @param        c *gin.Context
+// @param        sendEmailCfg *globals.SendEmailConfig
+// @return       *UserReqContext
 func NewUserReqContext(db *gorm.DB, c *gin.Context, sendEmailCfg *globals.SendEmailConfig) *UserReqContext {
 	return &UserReqContext{
 		DB:           db,
@@ -59,25 +67,25 @@ func (u *UserReqContext) Register(registerMsg requests.RegisterReq) error {
 	// 判断验证码是否已经超时
 	now := time.Now()
 	duration := now.Sub(userVerifyCode.UpdatedAt)
-	if duration > internal_utils.VerifyCodeEffectiveDuration {
+	if duration > internalUtils.VerifyCodeEffectiveDuration {
 		return fmt.Errorf("UserReqContext.Register() : 验证码%s已过期", verifyCode)
 	}
 
 	// 密码加密
-	encryptedPassword, err := internal_utils.HashPassword(password)
+	encryptedPassword, err := internalUtils.HashPassword(password)
 	if err != nil {
 		return fmt.Errorf("UserReqContext.Register() : 密码%s加密失败", password)
 	}
 
 	// 更新用户密码
 	// err = repositories.UpdateObjects(u.DB, &models.User{}, map[string]interface{}{"id": userID, "email": email}, map[string]interface{}{"password": encryptedPassword})
-	err = repositories.UpdateObjects(u.DB, &models.User{Model: gorm.Model{ID: userID}, Email: email}, map[string]interface{}{"password": encryptedPassword})
+	err = sqlUtils.UpdateObjects(u.DB, &models.User{Model: gorm.Model{ID: userID}, Email: email}, map[string]interface{}{"password": encryptedPassword})
 	if err != nil {
 		return fmt.Errorf("UserReqContext.Register() err: %v", err)
 	}
 
 	// 删除该用户对应的全部验证码
-	_, err = repositories.DeleteObjectsByModel(u.DB, &models.UserVerifyCode{}, map[string]interface{}{"user_id": userID})
+	_, err = sqlUtils.DeleteObjectsByModel(u.DB, &models.UserVerifyCode{}, map[string]interface{}{"user_id": userID})
 	if err != nil {
 		return fmt.Errorf("UserReqContext.Register() err: %v", err)
 	}
@@ -87,7 +95,7 @@ func (u *UserReqContext) Register(registerMsg requests.RegisterReq) error {
 // ReqVerifyCode 用户请求验证码
 func (u *UserReqContext) ReqVerifyCode(email string) error {
 	// 随机生成验证码
-	verifyCode := internal_utils.RandomGenerateStrings(internal_utils.VerifyCodeLen)
+	verifyCode := internalUtils.RandomGenerateStrings(internalUtils.VerifyCodeLen)
 
 	// 存储数据
 
@@ -96,25 +104,25 @@ func (u *UserReqContext) ReqVerifyCode(email string) error {
 	// 如果没有用户使用过这个email，向user表中插入用户，并向UserVerifyCode表中插入验证码
 	if user == nil {
 		// 随机生成用户名
-		name := internal_utils.RandomGenerateStrings(internal_utils.UserNameLen)
+		name := internalUtils.RandomGenerateStrings(internalUtils.UserNameLen)
 		// 给用户生成一个默认密码
-		password := internal_utils.RandomGenerateStrings(12)
+		password := internalUtils.RandomGenerateStrings(12)
 		// 使用InsertObject()方法向user表中插入新数据，model参数必须是指针类型
-		if err := repositories.InsertObject(u.DB, &models.User{Nickname: name, Email: email, Password: password}); err != nil {
+		if err := sqlUtils.InsertObject(u.DB, &models.User{Nickname: name, Email: email, Password: password}); err != nil {
 			return fmt.Errorf("UserReqContext.VerifyCodeReq() -> %v", err)
 		}
 
 		// 查询该email对应的id
 		us := repositories.QueryUserByEmail(u.DB, email)
 		// 向 UserDetail 用户详情表中插入数据
-		if err := repositories.InsertObject(u.DB, &models.UserDetail{UserID: us.ID}); err != nil {
+		if err := sqlUtils.InsertObject(u.DB, &models.UserDetail{UserID: us.ID}); err != nil {
 			return fmt.Errorf("UserReqContext.VerifyCodeReq() -> %v", err)
 		}
 
 		// 获取用户id
 		user = repositories.QueryUserByEmail(u.DB, email)
 		// 将验证码插入到 UserVerifyCode表
-		if err := repositories.InsertObject(u.DB, &models.UserVerifyCode{UserID: user.ID, VerifyCode: verifyCode}); err != nil {
+		if err := sqlUtils.InsertObject(u.DB, &models.UserVerifyCode{UserID: user.ID, VerifyCode: verifyCode}); err != nil {
 			return fmt.Errorf("UserReqContext.VerifyCodeReq() -> %v", err)
 		}
 
@@ -122,13 +130,13 @@ func (u *UserReqContext) ReqVerifyCode(email string) error {
 		userVerifyCode, err := repositories.QueryLastUserVerifyCodeByUserID(u.DB, user.ID)
 		if err != nil { // 执行错误，没有查询到验证码（可能是手动删除了数据库中的验证码，所以报错）
 			// 插入一条新的验证码数据
-			if err = repositories.InsertObject(u.DB, &models.UserVerifyCode{UserID: user.ID, VerifyCode: verifyCode}); err != nil {
+			if err = sqlUtils.InsertObject(u.DB, &models.UserVerifyCode{UserID: user.ID, VerifyCode: verifyCode}); err != nil {
 				return fmt.Errorf("UserReqContext.VerifyCodeReq() -> %v", err)
 			}
 			// 给用户发送验证码
-			// body := fmt.Sprintf("你的验证码为 %s，有效时间为 %d 分钟\n", verifyCode, int(internal_utils.VerifyCodeEffectiveDuration.Minutes()))
+			// body := fmt.Sprintf("你的验证码为 %s，有效时间为 %d 分钟\n", verifyCode, int(internalUtils.VerifyCodeEffectiveDuration.Minutes()))
 			// 读取邮件模板
-			templateFile, err := os.Open("internal/internal_pkg/internal_utils/email_template.html")
+			templateFile, err := os.Open("internal/internalPkg/template/emailFormatTemplate.html")
 			if err != nil {
 				return fmt.Errorf("UserReqContext.VerifyCodeReq() err: 无法打开模板文件: %v", err)
 			}
@@ -138,8 +146,8 @@ func (u *UserReqContext) ReqVerifyCode(email string) error {
 				return fmt.Errorf("UserReqContext.VerifyCodeReq() err: 无法读取模板内容: %v", err)
 			}
 			// 格式化邮件内容
-			body := fmt.Sprintf(string(templateContent), verifyCode, int(internal_utils.VerifyCodeEffectiveDuration.Minutes()))
-			if err = u.SendEmail(email, internal_utils.VerifyCodeSubject, body); err != nil {
+			body := fmt.Sprintf(string(templateContent), verifyCode, int(internalUtils.VerifyCodeEffectiveDuration.Minutes()))
+			if err = u.SendEmail(email, internalUtils.VerifyCodeSubject, body); err != nil {
 				return fmt.Errorf("UserReqContext.VerifyCodeReq() -> %v", err)
 			}
 			return nil
@@ -151,20 +159,20 @@ func (u *UserReqContext) ReqVerifyCode(email string) error {
 		// 计算更新时间和当前时间的差异
 		duration := now.Sub(userVerifyCode.UpdatedAt)
 		// 如果冷却时间未到，返回错误
-		if duration < internal_utils.VerifyCodeCoolTime {
+		if duration < internalUtils.VerifyCodeCoolTime {
 			return fmt.Errorf("UserReqContext.VerifyCodeReq() err: 发送验证码正在冷却时间中")
 		}
 
 		// 插入一条新的验证码数据
-		if err = repositories.InsertObject(u.DB, &models.UserVerifyCode{UserID: user.ID, VerifyCode: verifyCode}); err != nil {
+		if err = sqlUtils.InsertObject(u.DB, &models.UserVerifyCode{UserID: user.ID, VerifyCode: verifyCode}); err != nil {
 			return fmt.Errorf("UserReqContext.VerifyCodeReq() -> %v", err)
 		}
 	}
 
 	// 给用户发送验证码
-	// body := fmt.Sprintf("你的验证码为 %s，不区分大小写，有效时间为 %d 分钟\n", verifyCode, int(internal_utils.VerifyCodeEffectiveDuration.Minutes()))
+	// body := fmt.Sprintf("你的验证码为 %s，不区分大小写，有效时间为 %d 分钟\n", verifyCode, int(internalUtils.VerifyCodeEffectiveDuration.Minutes()))
 	// 读取邮件模板
-	templateFile, err := os.Open("internal/internal_pkg/internal_utils/email_template.html")
+	templateFile, err := os.Open("internal/internalPkg/template/emailFormatTemplate.html")
 	if err != nil {
 		return fmt.Errorf("UserReqContext.VerifyCodeReq() err: 无法打开模板文件: %v", err)
 	}
@@ -175,8 +183,8 @@ func (u *UserReqContext) ReqVerifyCode(email string) error {
 		return fmt.Errorf("UserReqContext.VerifyCodeReq() err: 无法读取模板内容: %v", err)
 	}
 	// 格式化邮件内容
-	body := fmt.Sprintf(string(templateContent), verifyCode, int(internal_utils.VerifyCodeEffectiveDuration.Minutes()))
-	if err = u.SendEmail(email, internal_utils.VerifyCodeSubject, body); err != nil {
+	body := fmt.Sprintf(string(templateContent), verifyCode, int(internalUtils.VerifyCodeEffectiveDuration.Minutes()))
+	if err = u.SendEmail(email, internalUtils.VerifyCodeSubject, body); err != nil {
 		return fmt.Errorf("UserReqContext.VerifyCodeReq() -> %v", err)
 	}
 
@@ -189,7 +197,7 @@ func (u *UserReqContext) ReqVerifyCode(email string) error {
 // subject: 主题
 func (u *UserReqContext) SendEmail(to string, subject string, body string) error {
 	// 判断邮箱是否合法
-	if !internal_utils.IsValidEmail(to) {
+	if !internalUtils.IsValidEmail(to) {
 		return fmt.Errorf("UserReqContext.SendEmail() err: 接收者邮箱错误")
 	}
 
@@ -223,13 +231,13 @@ func (u *UserReqContext) Login(logicMsg requests.LogicReq) error {
 
 	// 比较加密密码
 	encryptedPassword := user.Password
-	if !internal_utils.CheckPasswordHash(password, encryptedPassword) {
+	if !internalUtils.CheckPasswordHash(password, encryptedPassword) {
 		return fmt.Errorf("UserReqContext.Login() err: 密码错误")
 	}
 
 	// 改变 LastLoginTime
 	now := time.Now() // 获取当前时间
-	if err := repositories.UpdateObjects(u.DB, &models.User{Model: gorm.Model{ID: user.ID}}, map[string]interface{}{"last_login_time": now}); err != nil {
+	if err := sqlUtils.UpdateObjects(u.DB, &models.User{Model: gorm.Model{ID: user.ID}}, map[string]interface{}{"last_login_time": now}); err != nil {
 		return fmt.Errorf("UserReqContext.Login() -> %v", err)
 	}
 

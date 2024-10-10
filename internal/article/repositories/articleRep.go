@@ -3,7 +3,7 @@ package repositories
 import (
 	"fmt"
 	"forum/internal/article/requests"
-	"forum/internal/internal_pkg/internal_utils"
+	"forum/internal/internalPkg/internalUtils"
 	"forum/internal/models"
 	"forum/pkg/globals"
 	"github.com/gin-gonic/gin"
@@ -22,13 +22,13 @@ import (
 func InsertArticlesRep(db *gorm.DB, req requests.ReqPublish, userId uint) (int, error) {
 
 	newArticle := models.Article{
-		//UserID:     req.UserId,
-		//Title:      req.Title,
-		//Status:     req.Status,
-		//CategoryID: req.CategoryID,
-		//Summary:    req.Summary,
-		//Content:    req.Content,
-		//ImageUrl:   req.ImageUrl,
+		// UserID:     req.UserId,
+		// Title:      req.Title,
+		// Status:     req.Status,
+		// CategoryID: req.CategoryID,
+		// Summary:    req.Summary,
+		// Content:    req.Content,
+		// ImageUrl:   req.ImageUrl,
 	}
 
 	// 设置文章ID
@@ -116,11 +116,11 @@ func QueryCategory(db *gorm.DB) (categories []models.Category, err error) {
 
 }
 
-//// ArticlesOrder
-//// @Description: 选择排序方式 0热度 1时间
-//// @param        kind int
-//// @return       string
-//func ArticlesOrder(kind int) string {
+// // ArticlesOrder
+// // @Description: 选择排序方式 0热度 1时间
+// // @param        kind int
+// // @return       string
+// func ArticlesOrder(kind int) string {
 //	var condition string
 //	if kind == 0 { // 0 代表按照热度排序
 //		condition = "heat DESC"
@@ -128,32 +128,32 @@ func QueryCategory(db *gorm.DB) (categories []models.Category, err error) {
 //		condition = "published_at DESC"
 //	}
 //	return condition
-//}
+// }
 //
-//// emptyFilled
-//// @Description: 空接口填充
-//// @param        data interface{}
-//func emptyFilled(data interface{}) interface{} {
+// // emptyFilled
+// // @Description: 空接口填充
+// // @param        data interface{}
+// func emptyFilled(data interface{}) interface{} {
 //	if data == nil {
 //		data = gin.H{}
 //	}
 //	return data
-//}
+// }
 
 // SearchArticlesRep 搜索文章
 func SearchArticlesRep(db *gorm.DB, req *requests.ArticleSearchReq) (articles []requests.SearchArticleListRes, err error) {
 
-	condition := internal_utils.ArticlesOrder(req.Kind) // 选择排序方式  0热度 1时间
+	condition := internalUtils.ArticlesOrder(req.Kind) // 选择排序方式  0热度 1时间
 
 	query := db.Model(&models.Article{}).Preload("Tags").
 		Select("sw_articles.*, sw_users.nickname").
 		Joins("LEFT JOIN sw_users ON sw_users.id = sw_articles.user_id")
 
-	//if req.UserId != 0 { // 按用户ID筛选
+	// if req.UserId != 0 { // 按用户ID筛选
 	//	query = query.Joins("JOIN user_follows ON articles.user_id = user_follows.followed_id").
 	//		Where("user_follows.follower_id = ?", req.UserId)
 	//	condition = "published_at DESC" // 按照 关注 查询只能按照 时间 排序
-	//}
+	// }
 	if req.Keyword != "" { // 按关键词搜索
 		query = query.Where("title LIKE ? OR summary LIKE ?", "%"+req.Keyword+"%", "%"+req.Keyword+"%")
 	}
@@ -188,14 +188,14 @@ func SearchArticlesRep(db *gorm.DB, req *requests.ArticleSearchReq) (articles []
 // @return       data
 // @return       err
 func SearchArticlesListRep(db *gorm.DB, req *requests.ArticleListReq) (data interface{}, err error) {
-	//var articleList []requests.ArcList
+	// var articleList []requests.ArcList
 	var articleList []requests.SearchArticleListRes
 
 	query := db.Model(&models.Article{}).Preload("Tags").
 		Joins("LEFT JOIN sw_users ON sw_users.id = sw_articles.user_id").
 		Joins("LEFT JOIN sw_article_tags ON sw_article_tags.article_id = sw_articles.id").
 		Select("DISTINCT sw_articles.*, sw_users.nickname")
-	//query.Select(
+	// query.Select(
 	//	"sw_articles.id, " +
 	//		"title, " +
 	//		"article_condition, " +
@@ -209,16 +209,16 @@ func SearchArticlesListRep(db *gorm.DB, req *requests.ArticleListReq) (data inte
 	//		//"sw_tags.name AS tag_name, "
 	//		"sw_articles.published_at, " +
 	//		"sw_articles.updated_at")
-	//Joins("LEFT JOIN sw_users ON sw_users.id = sw_articles.user_id")
-	//Joins("LEFT JOIN sw_article_tags ON sw_article_tags.article_id = sw_articles.id").
-	//Joins("LEFT JOIN sw_tags ON sw_tags.id = sw_article_tags.tag_id")
+	// Joins("LEFT JOIN sw_users ON sw_users.id = sw_articles.user_id")
+	// Joins("LEFT JOIN sw_article_tags ON sw_article_tags.article_id = sw_articles.id").
+	// Joins("LEFT JOIN sw_tags ON sw_tags.id = sw_article_tags.tag_id")
 
-	//状态 0全部1公开2封禁
+	// 状态 0全部1公开2封禁
 	if req.ArticleCondition != 0 {
 		query = query.Where("article_condition = ?", req.ArticleCondition)
 	}
 
-	//时间
+	// 时间
 	if !req.StartTime.IsZero() && !req.EndTime.IsZero() {
 		query = query.Where("published_at BETWEEN ? AND ?", req.StartTime, req.EndTime)
 	} else {
@@ -238,7 +238,7 @@ func SearchArticlesListRep(db *gorm.DB, req *requests.ArticleListReq) (data inte
 		query = query.Where("title LIKE ?", "%"+req.Keyword+"%")
 	}
 
-	//标签id
+	// 标签id
 	if len(req.ArticleTags) > 0 {
 		query = query.Where("sw_article_tags.tag_id IN (?)", req.ArticleTags)
 	}
@@ -310,10 +310,10 @@ func DeleteArticlesRep(db *gorm.DB, id string) error {
 		return result.Error
 	}
 
-	//if err := db.Where("id = ?", id).Delete(&models.Article{}).Error; err != nil {
+	// if err := db.Where("id = ?", id).Delete(&models.Article{}).Error; err != nil {
 	//	globals.Log.Errorf("err = %s", err)
 	//	return err
-	//}
+	// }
 	return nil
 }
 
@@ -332,7 +332,7 @@ func ArticleDetailRep(db *gorm.DB, id string) (requests.ArticleDetailRes, error)
 
 	query = query.Where("sw_articles.id = ?", id)
 
-	//query = query.Joins("LEFT JOIN sw_users ON sw_users.id = sw_articles.user_id")
+	// query = query.Joins("LEFT JOIN sw_users ON sw_users.id = sw_articles.user_id")
 
 	query.Find(&articleDetail)
 
@@ -342,10 +342,10 @@ func ArticleDetailRep(db *gorm.DB, id string) (requests.ArticleDetailRes, error)
 // ArticleLikeQueryReq
 // @Description: 查询文章点赞
 func ArticleLikeQueryReq(db *gorm.DB, articleId int, userId int) (bool, error) {
-	//var like models.Like
-	//if err := db.Where("article_id = ? AND user_id = ?", articleId, userId).First(&like).Error; err != nil {
+	// var like models.Like
+	// if err := db.Where("article_id = ? AND user_id = ?", articleId, userId).First(&like).Error; err != nil {
 	//	return false, err
-	//}
+	// }
 	return true, nil
 }
 
