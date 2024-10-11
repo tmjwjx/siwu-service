@@ -3,12 +3,22 @@ package inits
 import (
 	"forum/pkg/globals"
 	"forum/pkg/logger"
+	"github.com/spf13/viper"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"os"
 )
 
-func LogInit(logPath, appName string) {
+func LogInit() {
+
+	if err := viper.UnmarshalKey("log", &globals.AppConfig.Log); err != nil {
+		globals.Log.Panicf("无法解码为结构: %s", err)
+	}
+
+	//level := globals.AppConfig.Log.Level
+	logPath := globals.AppConfig.Log.LogPath
+	appName := globals.AppConfig.Log.AppName
+
 	writeSyncer := logger.GetLogWriter(logPath, appName)
 	encoder := logger.GetEncoder()
 
