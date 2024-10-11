@@ -29,3 +29,9 @@ send_email:
 static:
   prefix: "/images"
   path: "./static/images"
+
+# 日志配置
+log:
+  #  level: "debug"
+  logPath: "./logs"
+  appName: "forum"

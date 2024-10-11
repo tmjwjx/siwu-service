@@ -12,14 +12,13 @@ func init() {
 	ServerInit()
 
 	// 初始化日志文件
-	LogInit("logs", "forum")
+	LogInit()
 
 	// 初始化 mysql
 	DBInit()
 
 	// 初始化 redis
-	RedisInit()
-
+	//RedisInit()
 	// 初始化表
 	TableInit()
 

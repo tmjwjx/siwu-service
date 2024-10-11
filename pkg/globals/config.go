@@ -40,6 +40,16 @@ type Config struct {
 	Redis        RedisConfig     `yaml:"redis"`
 	App          App             `yaml:"app"`
 	SendEmailCfg SendEmailConfig `yaml:"verifyCode"`
+	Log          LogConfig       `yaml:"log"`
+}
+
+// LogConfig
+// @Description: 日志配置
+// @Author tianjiajie 2024-10-11 21:59:41
+type LogConfig struct {
+	Level   string `yaml:"level"`
+	LogPath string `yaml:"logPath"`
+	AppName string `yaml:"appName"`
 }
 
 // StaticConfig 静态文件配置

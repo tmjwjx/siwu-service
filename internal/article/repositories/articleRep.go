@@ -421,6 +421,7 @@ func UpdateLikeRep(db *gorm.DB, req requests.ArticleLikeReq, userId uint) (err e
 
 	if req.LikeStatus == true {
 		if err = db.Where("article_id = ? AND user_id = ?", req.ArticleId, userId).First(&like).Error; err != nil {
+
 			// 如果没有找到点赞记录，创建点赞记录
 			like = models.ArticleLike{
 				ArticleID: req.ArticleId,
@@ -438,8 +439,8 @@ func UpdateLikeRep(db *gorm.DB, req requests.ArticleLikeReq, userId uint) (err e
 			// 通知文章作者
 			authorId := strconv.Itoa(int(article.UserID))
 			internalUtils.MessagePush("like", authorId)
-
 		}
+
 	} else if req.LikeStatus == false {
 		// 查询用户是否点赞 如果点赞了 删除点赞记录
 		if err = db.Where("article_id = ? AND user_id = ?", req.ArticleId, userId).First(&like).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
