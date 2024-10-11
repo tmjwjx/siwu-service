@@ -13,7 +13,7 @@ func LogInit(logPath, appName string) {
 	encoder := logger.GetEncoder()
 
 	// 新增部分：将日志输出到控制台
-	consoleCore := zapcore.NewCore(encoder, zapcore.AddSync(os.Stdout), zapcore.ErrorLevel)
+	consoleCore := zapcore.NewCore(encoder, zapcore.AddSync(os.Stdout), zapcore.DebugLevel)
 
 	// 新增部分：将日志输出到文件
 	fileCore := zapcore.NewCore(encoder, writeSyncer, zapcore.DebugLevel)

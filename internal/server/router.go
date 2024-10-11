@@ -31,6 +31,7 @@ func SetupRouter() {
 
 	// 图片url分路由
 	imageRouter.ProduceImageUrl(globals.Router)
+
 	// 角色管理分路由
 	roleRouter.Role(globals.Router)
 
