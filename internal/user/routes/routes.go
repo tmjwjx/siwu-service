@@ -71,6 +71,9 @@ func User(e *gin.Engine) {
 	// 上传用户头像
 	r.POST("/upload/headshot", controllers.UploadHeadshot)
 
+	// 初始化用户信息(会员中心)
+	e.GET("/init_userinfo", controllers.InitUserInfoCtrl)
+
 	//message := e.Group("/message")
 	//{
 	//	message.POST("/like", controllers.LikeMessageCtrl)

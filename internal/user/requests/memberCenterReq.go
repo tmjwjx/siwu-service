@@ -26,3 +26,10 @@ type InitUserInfoRes struct {
 //type UserFollowed struct {
 //	FollowerId uint `json:"follower_id"`
 //}
+
+// EditSignatureReq
+// @Description: 编辑个签
+// @Author wangyulong 2024-10-11 14:46:26
+type EditSignatureReq struct {
+	Signature string `json:"signature"`
+}

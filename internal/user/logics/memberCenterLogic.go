@@ -18,3 +18,15 @@ func InitUserInfoLogic(db *gorm.DB, qid string, gid string) (*requests.InitUserI
 	req, err := repositories.InitUserInfoRep(db, qid, gid)
 	return req, err
 }
+
+// EditSignatureLogic
+// @Description: 编辑个签
+// @Author wangyulong 2024-10-11 16:10:42
+// @param        db *gorm.DB
+// @param        req *requests.EditSignatureReq
+// @param        id uint
+// @return       error
+func EditSignatureLogic(db *gorm.DB, req *requests.EditSignatureReq, id uint) error {
+	err := repositories.EditSignatureRep(db, req, id)
+	return err
+}

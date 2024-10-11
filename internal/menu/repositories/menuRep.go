@@ -19,21 +19,29 @@ func MenuSearchRep(db *gorm.DB, req *requests.MenuSearchReq) (*requests.MenuSear
 	// 添加查询条件
 	if req.Icon != "" {
 		query = query.Where("icon = ?", req.Icon)
-	} else if req.Name != "" {
+	}
+	if req.Name != "" {
 		query = query.Where("name = ?", req.Name)
-	} else if req.Type == 1 || req.Type == 2 || req.Type == 3 {
+	}
+	if req.Type == 1 || req.Type == 2 || req.Type == 3 {
 		query = query.Where("type = ?", req.Type)
-	} else if req.RouteName != "" {
+	}
+	if req.RouteName != "" {
 		query = query.Where("route_name = ?", req.RouteName)
-	} else if req.RoutePath != "" {
+	}
+	if req.RoutePath != "" {
 		query = query.Where("route_path = ?", req.RoutePath)
-	} else if req.Visible == 1 || req.Visible == 2 || req.Visible == 3 {
+	}
+	if req.Visible == 1 || req.Visible == 2 || req.Visible == 3 {
 		query = query.Where("name = ?", req.Name)
-	} else if req.Code != "" {
+	}
+	if req.Code != "" {
 		query = query.Where("code = ?", req.Code)
-	} else if req.ComponentPath != "" {
+	}
+	if req.ComponentPath != "" {
 		query = query.Where("component_path = ?", req.ComponentPath)
-	} else if req.ParentId != nil {
+	}
+	if req.ParentId != nil {
 		query = query.Where("pid = ?", req.ParentId)
 	}
 
