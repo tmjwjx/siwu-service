@@ -9,7 +9,7 @@ import (
 
 var (
 
-	// AppConfig 项目的mysql，redis配置
+	// AppConfig 项目总配置
 	AppConfig Config
 
 	// SConfig 静态文件配置
@@ -36,6 +36,6 @@ var (
 	// SubscriberChannels 全局 map，用于存储各文章 ID 的 SSE 订阅者通道
 	SubscriberChannels = make(map[string]chan string)
 
-	//// SystemMsgSubject 系统消息主题
-	//SystemMsgSubject = observer.NewSystemMsgSubject()
+	// // SystemMsgSubject 系统消息主题
+	// SystemMsgSubject = observer.NewSystemMsgSubject()
 )
