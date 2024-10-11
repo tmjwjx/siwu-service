@@ -2,6 +2,7 @@ package globals
 
 // 和配置相关的结构体
 
+// DatabaseConfig mysql配置
 type DatabaseConfig struct {
 	Host     string `yaml:"host"`
 	Port     int    `yaml:"port"`
@@ -10,6 +11,7 @@ type DatabaseConfig struct {
 	Name     string `yaml:"name"`
 }
 
+// RedisConfig redis配置
 type RedisConfig struct {
 	Host     string `yaml:"host"`
 	Port     int    `yaml:"port"`
@@ -17,6 +19,7 @@ type RedisConfig struct {
 	DB       int    `yaml:"db"`
 }
 
+// App 配置
 type App struct {
 	Host string `yaml:"host"`
 	Port int    `yaml:"port"`
