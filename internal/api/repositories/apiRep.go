@@ -384,15 +384,19 @@ func SearchApiListRep(db *gorm.DB, req *requests.SearchApiListReq) (*requests.Se
 	// 添加查询条件
 	if req.Path != "" {
 		query = query.Where("path = ?", req.Path)
-	} else if req.RequestMethod != "" {
-		query = query.Where("sw_request_method.name = ?", req.RequestMethod)
-	} else if req.Grouping != "" {
-		query = query.Where("sw_group.name = ?", req.Grouping)
-	} else if req.BriefIntroduction != "" {
-		query = query.Where("brief_introduction = ?", req.BriefIntroduction)
-	} else {
-		return nil, fmt.Errorf("SearchApiListRep -> 查询条件不能全部为空")
 	}
+	if req.RequestMethod != "" {
+		query = query.Where("sw_request_method.name = ?", req.RequestMethod)
+	}
+	if req.Grouping != "" {
+		query = query.Where("sw_group.name = ?", req.Grouping)
+	}
+	if req.BriefIntroduction != "" {
+		query = query.Where("brief_introduction = ?", req.BriefIntroduction)
+	}
+	//else {
+	//	return nil, fmt.Errorf("SearchApiListRep -> 查询条件不能全部为空")
+	//}
 
 	// 查询数据
 	if req.Limit == 0 {

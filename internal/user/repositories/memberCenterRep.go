@@ -75,3 +75,52 @@ func InitUserInfoRep(db *gorm.DB, qid string, gid string) (*requests.InitUserInf
 
 	return initUserInfoRes, nil
 }
+
+// EditSignatureRep
+// @Description: 编辑个签
+// @Author wangyulong 2024-10-11 16:09:26
+// @param        db *gorm.DB
+// @param        req *requests.EditSignatureReq
+// @param        id uint
+// @return       error
+func EditSignatureRep(db *gorm.DB, req *requests.EditSignatureReq, id uint) error {
+
+	userDetail := &models.UserDetail{
+		UserID: id,
+	}
+	// 查询该用户详细信息是否存在
+	err := db.First(userDetail).Error
+
+	// 开启事务
+	tx := db.Begin()
+	if tx.Error != nil {
+		return fmt.Errorf("EditSignatureRep -> 开启事务失败 -> %s", tx.Error)
+	}
+
+	if err != nil {
+		// 该用户详细信息不存在，插入个签
+		userDetail.Signature = req.Signature
+		err = tx.Model(&models.UserDetail{}).Create(userDetail).Error
+		if err != nil {
+			// 回滚事务
+			tx.Rollback()
+			return fmt.Errorf("EditSignatureRep -> 编辑个签失败 -> %s", err)
+		}
+	} else {
+		// 该用户详细信息存在，只更新 个签 这一个字段
+		err = tx.Model(&models.UserDetail{}).Where("user_id = ?", id).Update("signature", req.Signature).Error
+		if err != nil {
+			// 回滚事务
+			tx.Rollback()
+			return fmt.Errorf("EditSignatureRep -> 编辑个签失败 -> %s", err)
+		}
+	}
+
+	// 提交事务
+	err = tx.Commit().Error
+	if err != nil {
+		return fmt.Errorf("EditSignatureRep -> 提交事务失败 -> %s", err)
+	}
+
+	return nil
+}
