@@ -28,6 +28,7 @@ func NewMessageChan(c *gin.Context) {
 	for {
 		select {
 		case message := <-notifyChan:
+			// "data: %s\n\n" 是SSE协议发送的固定格式
 			_, err := fmt.Fprintf(c.Writer, "data: %s\n\n", message)
 			if err != nil {
 				continue
