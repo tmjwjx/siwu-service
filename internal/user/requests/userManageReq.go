@@ -10,6 +10,7 @@ type AddReq struct {
 	Email      string `json:"email"`
 	UserStatus int    `json:"user_status"` // 用户状态 0全部 1正常 2封禁
 	RoleIds    []uint `json:"role_ids"`
+	AvatarPath string `json:"avatar_path"`
 }
 
 // EditReq 编辑用户请求
@@ -19,6 +20,7 @@ type EditReq struct {
 	Email      string `json:"email"`
 	UserStatus int    `json:"user_status"` // 用户状态 0全部 1正常 2封禁
 	RoleIds    []uint `json:"role_ids"`
+	AvatarPath string `json:"avatar_path"`
 }
 
 // DeleteReq 删除用户请求
@@ -55,12 +57,6 @@ type ListRes struct {
 	LastLoginTime string `json:"last_login_time"`
 	CreateTime    string `json:"create_time"`
 }
-
-// // Role 角色
-// type Role struct {
-// 	Id   uint   `json:"id"`
-// 	Name string `json:"name"`
-// }
 
 // GetInfoRes 获取当前用户基本信息响应
 type GetInfoRes struct {
