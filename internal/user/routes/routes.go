@@ -68,12 +68,13 @@ func User(e *gin.Engine) {
 	r.GET("/download_template", controllers.DownloadTemplate)
 	// 获取当前用户基本信息
 	r.GET("/getInfo", controllers.GetInfo)
-	// 上传用户头像
-	r.POST("/upload/headshot", controllers.UploadHeadshot)
 
-	//message := e.Group("/message")
-	//{
+	// 初始化用户信息(会员中心)
+	e.GET("/init_userinfo", controllers.InitUserInfoCtrl)
+
+	// message := e.Group("/message")
+	// {
 	//	message.POST("/like", controllers.LikeMessageCtrl)
-	//}
+	// }
 
 }

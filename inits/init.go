@@ -19,6 +19,7 @@ func init() {
 
 	// 初始化 redis
 	//RedisInit()
+
 	// 初始化表
 	TableInit()
 
