@@ -179,15 +179,7 @@ func (u *UserReqContext) ReqVerifyCode(email string) error {
 	// 读取邮件模板
 	templateFile, err := os.Open("internal/internalPkg/template/emailFormatTemplate.html")
 	if err != nil {
-
-		// test 目录位置
-		currentDirectory, err := os.Getwd()
-		if err != nil {
-			fmt.Println("Error:", err)
-		}
-		return fmt.Errorf("Current Directory:", currentDirectory)
-
-		//return fmt.Errorf("UserReqContext.VerifyCodeReq() err: 无法打开模板文件: %v", err)
+		return fmt.Errorf("UserReqContext.VerifyCodeReq() err: 无法打开模板文件: %v", err)
 
 	}
 	defer templateFile.Close()
