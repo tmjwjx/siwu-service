@@ -9,15 +9,15 @@ import (
 // @param        c *gin.Context
 // @Author tianjiajie 2024-10-19 15:25:42
 func SystemMessageCtrl(c *gin.Context) {
-	
+
 	// 初始化需要的变量
 	//db := globals.DB
 	//var req requests.MessageReq
-	
+
 	// 获取用户ID
 	//userId, _ := c.Get("id")
 	//globals.Log.Infoln("userId:", userId)
-	
+
 	//// 绑定查询参数到 req 变量，如果绑定失败，返回错误信息
 	//if err := c.ShouldBind(&req); err != nil {
 	//	// 日志记录错误信息
