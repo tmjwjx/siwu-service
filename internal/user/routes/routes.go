@@ -10,7 +10,7 @@ import (
 // User 用户路由
 func User(e *gin.Engine) {
 	// 跨域
-	e.Use(middlewares.CorsMiddleware())
+	e.Use(middlewares.Cors())
 
 	// 注册
 	e.POST("/user/register", controllers.Register)
