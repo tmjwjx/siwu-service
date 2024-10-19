@@ -107,8 +107,13 @@ func (u *UserReqContext) ReqVerifyCode(email string) error {
 		name := internalUtils.RandomGenerateStrings(internalUtils.UserNameLen)
 		// 给用户生成一个默认密码
 		password := internalUtils.RandomGenerateStrings(12)
+		encryptedPassword, err := internalUtils.HashPassword(password)
+		if err != nil {
+			return fmt.Errorf("UserReqContext.VerifyCodeReq() : 密码%s加密失败", password)
+		}
+		lastLogintime := time.Now()
 		// 使用InsertObject()方法向user表中插入新数据，model参数必须是指针类型
-		if err := sqlUtils.InsertObject(u.DB, &models.User{Nickname: name, Email: email, Password: password}); err != nil {
+		if err := sqlUtils.InsertObject(u.DB, &models.User{Nickname: name, Email: email, Password: encryptedPassword, LastLoginTime: lastLogintime}); err != nil {
 			return fmt.Errorf("UserReqContext.VerifyCodeReq() -> %v", err)
 		}
 
