@@ -175,22 +175,22 @@ func (u *UserReqContext) ReqVerifyCode(email string) error {
 	}
 
 	// 给用户发送验证码
-	// body := fmt.Sprintf("你的验证码为 %s，不区分大小写，有效时间为 %d 分钟\n", verifyCode, int(internalUtils.VerifyCodeEffectiveDuration.Minutes()))
+	body := fmt.Sprintf("你的验证码为 %s，不区分大小写，有效时间为 %d 分钟\n", verifyCode, int(internalUtils.VerifyCodeEffectiveDuration.Minutes()))
 	// 读取邮件模板
-	templateFile, err := os.Open("internal/internalPkg/template/emailFormatTemplate.html")
-	if err != nil {
-		return fmt.Errorf("UserReqContext.VerifyCodeReq() err: 无法打开模板文件: %v", err)
-
-	}
-	defer templateFile.Close()
-
-	templateContent, err := ioutil.ReadAll(templateFile)
-	if err != nil {
-		return fmt.Errorf("UserReqContext.VerifyCodeReq() err: 无法读取模板内容: %v", err)
-	}
-	// 格式化邮件内容
-	body := fmt.Sprintf(string(templateContent), verifyCode, int(internalUtils.VerifyCodeEffectiveDuration.Minutes()))
-	if err = u.SendEmail(email, internalUtils.VerifyCodeSubject, body); err != nil {
+	// templateFile, err := os.Open("internal/internalPkg/template/emailFormatTemplate.html")
+	// if err != nil {
+	// 	return fmt.Errorf("UserReqContext.VerifyCodeReq() err: 无法打开模板文件: %v", err)
+	//
+	// }
+	// defer templateFile.Close()
+	//
+	// // templateContent, err := ioutil.ReadAll(templateFile)
+	// if err != nil {
+	// 	return fmt.Errorf("UserReqContext.VerifyCodeReq() err: 无法读取模板内容: %v", err)
+	// }
+	// // 格式化邮件内容
+	// body := fmt.Sprintf(string(templateContent), verifyCode, int(internalUtils.VerifyCodeEffectiveDuration.Minutes()))
+	if err := u.SendEmail(email, internalUtils.VerifyCodeSubject, body); err != nil {
 		return fmt.Errorf("UserReqContext.VerifyCodeReq() -> %v", err)
 	}
 
