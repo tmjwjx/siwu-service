@@ -303,7 +303,6 @@ func BanArticlesRep(db *gorm.DB, id string) error {
 // @return       error
 func DeleteArticlesRep(db *gorm.DB, id string) error {
 	// 删除文章
-
 	idInt, _ := strconv.Atoi(id)
 	result := db.Delete(&models.Article{}, idInt) // 使用模型类型 + ID
 	if result.Error != nil {
@@ -500,4 +499,99 @@ func UpdateCollectionRep(db *gorm.DB, req requests.ArticleCollectionReq, userId 
 	}
 
 	return nil
+}
+
+// GetArticlesByTagRep
+// @Description: 获取标签下的文章
+// @param        db *gorm.DB
+// @param        tagId int
+// @return       articles
+// @return       err
+// @Author tianjiajie 2024-10-15 17:07:21
+func GetArticlesByTagRep(db *gorm.DB, req *requests.GetArticleByTagReq) (articles []requests.SearchArticleListRes, err error) {
+
+	globals.Log.Infof("req = %v", req)
+	condition := internalUtils.ArticlesOrder(req.Kind) // 选择排序方式  0热度 1时间
+
+	// 查询标签下的文章
+	query := db.Model(&models.Article{}).Preload("Tags").
+		Select("sw_articles.*, sw_users.nickname").
+		Joins("LEFT JOIN sw_users ON sw_users.id = sw_articles.user_id").
+		Joins("LEFT JOIN sw_article_tags ON sw_article_tags.article_id = sw_articles.id").
+		Joins("LEFT JOIN sw_tags ON sw_tags.id = sw_article_tags.tag_id").
+		Where("sw_article_tags.tag_id = ?", req.Id).
+		Order(condition)
+
+	// 分页
+	if req.Limit != 0 {
+		offset := (req.Page - 1) * req.Limit
+		query = query.Limit(req.Limit).Offset(offset)
+	}
+
+	// 只获取公开文章
+	query = query.Where("sw_articles.status = ?", "public").Where("sw_articles.article_condition = ?", 1)
+
+	// 执行查询
+	if err = query.Find(&articles).Error; err != nil {
+		globals.Log.Errorf("err = %s", err)
+		return // 结束函数执行
+	}
+
+	return articles, nil
+}
+
+// GetUserArticleOrCollectionRep
+// @Description: 获取用户文章或收藏列表
+// @param        *gorm.DB *gorm.DB
+// @param        *requests.UserArticleOrCollectionReq *requests.UserArticleOrCollectionReq
+// @param        int int
+// @return       articles
+// @return       err
+// @Author tianjiajie 2024-10-18 16:38:47
+func GetUserArticleOrCollectionRep(db *gorm.DB, req *requests.UserArticleOrCollectionReq, id int) (articles []requests.SearchArticleListRes, err error) {
+
+	condition := internalUtils.ArticlesOrder(1) // 选择排序方式  0热度 1时间
+
+	query := db.Model(&models.Article{}).Preload("Tags").
+		Select("sw_articles.*, sw_users.nickname").
+		//Select("sw_articles.id").
+		Joins("LEFT JOIN sw_users ON sw_users.id = sw_articles.user_id").
+		// 获取未封禁的文章
+		Where("sw_articles.article_condition = ?", 1)
+
+	// 判断是发布的文章还是收藏的文章
+	switch req.Type {
+	case "收藏":
+		query = query.Joins("JOIN article_collections ON articles.id = article_collections.article_id").
+			Where("article_collections.user_id = ?", req.Id)
+	case "文章":
+		query = query.Where("sw_articles.user_id = ?", req.Id)
+	}
+
+	// 按关键词搜索
+	if req.Keyword != "" {
+		query = query.Where("title LIKE ? OR summary LIKE ?", "%"+req.Keyword+"%", "%"+req.Keyword+"%")
+	}
+
+	// 选择排序方式 时间or热度
+	query = query.Order(condition)
+
+	// 判断是否分页
+	if req.Limit != 0 {
+		offset := (req.Page - 1) * req.Limit // 计算当前页的偏移量，用于分页
+		query = query.Limit(req.Limit).Offset(offset)
+	}
+
+	// 只获取公开文章
+	if req.Id != id {
+		query = query.Where("status = ?", "public")
+	}
+
+	// 执行查询
+	if err = query.Find(&articles).Error; err != nil {
+		globals.Log.Errorf("err = %s", err)
+		return // 结束函数执行
+	}
+
+	return articles, nil
 }

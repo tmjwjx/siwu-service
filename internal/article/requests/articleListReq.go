@@ -39,6 +39,7 @@ type SearchArticleListRes struct {
 	ImageUrl         string `json:"image_url"`         // 文章封面url
 	PublishedAt      string `json:"published_at"`      // 发布时间
 	UpdatedAt        string `json:"updated_at"`        // 更新时间
+	Status           string `json:"status"`            // 文章属性（草稿，私有，公开）
 	//Tags             []Tags `json:"tags" gorm:"many2many:article_tags;joinForeignKey:article_id;table:sw_tags"`
 	Tags []models.Tag `json:"tags" gorm:"many2many:article_tags;joinForeignKey:article_id"`
 }
@@ -47,3 +48,10 @@ type SearchArticleListRes struct {
 //	ID   int    `json:"id"`   // 标签ID
 //	Name string `json:"name"` // 标签名称
 //}
+
+type GetArticleByTagReq struct {
+	Id    int `json:"id" form:"id"`       // 标签ID
+	Kind  int `json:"kind" form:"kind"`   // 类型
+	Page  int `json:"page" form:"page"`   // 分页页码
+	Limit int `json:"limit" form:"limit"` // 每页条数
+}

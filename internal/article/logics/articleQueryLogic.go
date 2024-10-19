@@ -102,3 +102,42 @@ func ArticleEditLogic(db *gorm.DB) (data interface{}, err error) {
 
 	return data, nil
 }
+
+// GetArticlesByTagLogic
+// @Description: 获取标签下的文章
+// @Author tianjiajie 2024-10-15 16:59:17
+func GetArticlesByTagLogic(db *gorm.DB, req *requests.GetArticleByTagReq) (data interface{}, err error) {
+
+	articleList, err := repositories.GetArticlesByTagRep(db, req)
+	if err != nil {
+		return nil, err
+	}
+	data = gin.H{"article_list": articleList}
+	return data, nil
+
+}
+
+// GetUserArticleOrCollectionLogic
+// @Description: 获取用户文章或收藏列表
+// @Author tianjiajie 2024-10-18 15:37:28
+func GetUserArticleOrCollectionLogic(db *gorm.DB, req *requests.UserArticleOrCollectionReq, id int) (data interface{}, err error) {
+
+	articleList, err := repositories.GetUserArticleOrCollectionRep(db, req, id)
+	if err != nil {
+		return nil, err
+	}
+	// 将文章状态转换为中文
+	for i := 0; i < len(articleList); i++ {
+		switch articleList[i].Status {
+		case "public":
+			articleList[i].Status = "公开"
+		case "private":
+			articleList[i].Status = "私有"
+		case "draft":
+			articleList[i].Status = "草稿"
+		}
+
+	}
+	data = gin.H{"dataList": articleList}
+	return data, nil
+}
