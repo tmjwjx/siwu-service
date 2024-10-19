@@ -148,15 +148,7 @@ func (u *UserReqContext) ReqVerifyCode(email string) error {
 			defer templateFile.Close()
 			templateContent, err := ioutil.ReadAll(templateFile)
 			if err != nil {
-
-				// test 目录位置
-				currentDirectory, err := os.Getwd()
-				if err != nil {
-					fmt.Println("Error:", err)
-				}
-				return fmt.Errorf("Current Directory:", currentDirectory)
-
-				//return fmt.Errorf("UserReqContext.VerifyCodeReq() err: 无法读取模板内容: %v", err)
+				return fmt.Errorf("UserReqContext.VerifyCodeReq() err: 无法读取模板内容: %v", err)
 			}
 			// 格式化邮件内容
 			body := fmt.Sprintf(string(templateContent), verifyCode, int(internalUtils.VerifyCodeEffectiveDuration.Minutes()))
@@ -187,7 +179,16 @@ func (u *UserReqContext) ReqVerifyCode(email string) error {
 	// 读取邮件模板
 	templateFile, err := os.Open("internal/internalPkg/template/emailFormatTemplate.html")
 	if err != nil {
-		return fmt.Errorf("UserReqContext.VerifyCodeReq() err: 无法打开模板文件: %v", err)
+
+		// test 目录位置
+		currentDirectory, err := os.Getwd()
+		if err != nil {
+			fmt.Println("Error:", err)
+		}
+		return fmt.Errorf("Current Directory:", currentDirectory)
+
+		//return fmt.Errorf("UserReqContext.VerifyCodeReq() err: 无法打开模板文件: %v", err)
+
 	}
 	defer templateFile.Close()
 
