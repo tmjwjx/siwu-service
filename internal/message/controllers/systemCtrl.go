@@ -4,6 +4,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// SystemMessageCtrl
+// @Description: 系统消息
+// @param        c *gin.Context
+// @Author tianjiajie 2024-10-19 15:25:42
 func SystemMessageCtrl(c *gin.Context) {
 
 	// 初始化需要的变量
