@@ -176,6 +176,7 @@ func (u *UserReqContext) ReqVerifyCode(email string) error {
 
 	// 给用户发送验证码
 	body := fmt.Sprintf("你的验证码为 %s，不区分大小写，有效时间为 %d 分钟\n", verifyCode, int(internalUtils.VerifyCodeEffectiveDuration.Minutes()))
+	// todo
 	// 读取邮件模板
 	// templateFile, err := os.Open("internal/internalPkg/template/emailFormatTemplate.html")
 	// if err != nil {
