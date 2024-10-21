@@ -2,12 +2,14 @@ package server
 
 import (
 	articleRouter "forum/internal/article/routes"
+	bsLoginRouter "forum/internal/backstage/routes"
 	dictRouter "forum/internal/dictManage/routes"
 	imageRouter "forum/internal/image/routes"
 	messageRouter "forum/internal/message/routes"
 	roleRouter "forum/internal/roleManage/routes"
 	tagRouter "forum/internal/tag/routes"
 	userRouter "forum/internal/user/routes"
+
 	"forum/pkg/globals"
 )
 
@@ -37,4 +39,7 @@ func SetupRouter() {
 
 	// 字典管理分路由
 	dictRouter.Dict(globals.Router)
+
+	// 后台登陆分陆游
+	bsLoginRouter.Backstage(globals.Router)
 }
