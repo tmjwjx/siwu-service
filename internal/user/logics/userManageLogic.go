@@ -352,7 +352,7 @@ func (u *UserReqContext) GetInfo(id uint) (*requests.GetInfoRes, error) {
 
 	// 查询用户的头像路径
 	avatarPath := ""
-	userImgs, err := controllers.GetImagesControllers("用户", user.ID)
+	userImgs, err := controllers.GetImagesControllers("user", user.ID)
 	if err != nil { // 数据库中没有该用户的头像，使用默认的头像
 		avatarPath = internalUtils.UserDefaultImage
 	} else {
