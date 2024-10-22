@@ -9,7 +9,6 @@ import (
 	roleRouter "forum/internal/roleManage/routes"
 	tagRouter "forum/internal/tag/routes"
 	userRouter "forum/internal/user/routes"
-
 	"forum/pkg/globals"
 )
 
