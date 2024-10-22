@@ -2,8 +2,7 @@ package logics
 
 import (
 	"fmt"
-	"forum/internal/image/controllers"
-	"forum/internal/image/logics"
+	"forum/internal/internalPkg/internalUtils"
 	"forum/internal/user/repositories"
 	"forum/internal/user/requests"
 	"github.com/gin-gonic/gin"
@@ -19,12 +18,13 @@ func PersonalDataLogic(userDataReq *requests.UserDataReq, c *gin.Context, db *go
 	}
 
 	// 将图片文件的路径相关信息存入数据库和文件系统
-	u := &logics.UrlParam{
+	u := &internalUtils.UrlParam{
 		UrlPath: userDataReq.Path,
 		Home:    "用户",
 		HomeID:  userDataReq.ID,
+		DB:      db,
 	}
-	err = controllers.StoreUrlCtrl(u)
+	err = internalUtils.StoreUrl(u)
 	if err != nil {
 		return err, 500
 	}

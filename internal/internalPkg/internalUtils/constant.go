@@ -27,6 +27,8 @@ const (
 	TagDefaultImage = "/images/tag_default_image.png"
 	// AdvertisementDefaultImage 默认广告图片
 	AdvertisementDefaultImage = "/images/advertisement_default_image.png"
+	CommentDefaultImage       = ""
+	CategoryDefaultImage      = ""
 )
 
 // 用于判断广告是否被使用

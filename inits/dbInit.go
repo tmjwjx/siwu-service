@@ -66,11 +66,21 @@ func TableInit() {
 		&gormadapter.CasbinRule{},
 		// &models.UserCasbinRules{},
 
+		// api管理模块
+		&models.Api{},
+		&models.Group{},
+		&models.RequestMethod{},
+		&models.ApiGroup{},
+		&models.ApiRequestMethod{},
+
+		// 菜单管理模块
 		&models.Menu{},
+		&models.MenuApi{},
 
 		// 角色管理模块
 		&models.Role{},
 		&models.AdminRole{},
+		&models.RoleMenu{},
 
 		// 字典管理模块
 		&models.DictType{},

@@ -134,7 +134,7 @@ func UpdateMenuCtrl(c *gin.Context) {
 func GetMenuDetailCtrl(c *gin.Context) {
 
 	// 获取参数
-	id := c.Param("id")
+	id := c.Query("id")
 
 	// 逻辑处理
 	res, err := logics.GetMenuDetailLogic(globals.DB, id)
@@ -146,6 +146,26 @@ func GetMenuDetailCtrl(c *gin.Context) {
 		return
 	}
 	d := response.NewAppData(globals.StatusOK, "获取当前菜单详情成功", res)
+	response.Success(c, 200, d)
+
+}
+
+// GetSpecificMenuCtrl
+// @Description: 获取所有type为1和2的菜单
+// @Author wangyulong 2024-10-15 11:26:56
+// @param        c *gin.Context
+func GetSpecificMenuCtrl(c *gin.Context) {
+
+	// 逻辑处理
+	res, err := logics.GetSpecificMenuLogic(globals.DB)
+
+	// 返回响应
+	if err != nil {
+		e := response.NewAppErr(globals.StatusInternalServerError, err, nil)
+		response.Failed(c, 500, e)
+		return
+	}
+	d := response.NewAppData(globals.StatusOK, "获取所有type为1和2的菜单成功", res)
 	response.Success(c, 200, d)
 
 }

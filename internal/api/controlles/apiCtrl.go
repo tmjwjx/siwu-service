@@ -10,11 +10,31 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// ApiInitCtrl Api列表初始化
-func ApiInitCtrl(c *gin.Context) {
+//// ApiInitCtrl Api列表初始化
+//func ApiInitCtrl(c *gin.Context) {
+//
+//	// 逻辑处理
+//	res, err := logics.ApiInitLogic(globals.DB)
+//
+//	// 返回响应
+//	if err != nil {
+//		e := response.NewAppErr(globals.StatusInternalServerError, err, nil)
+//		response.Failed(c, 500, e)
+//		return
+//	}
+//	d := response.NewAppData(globals.StatusOK, "获取所有api列表成功", res)
+//	response.Success(c, 200, d)
+//
+//}
+
+// GetAllApiCtrl
+// @Description: 获取所有api列表
+// @Author wangyulong 2024-10-15 08:54:54
+// @param        c *gin.Context
+func GetAllApiCtrl(c *gin.Context) {
 
 	// 逻辑处理
-	res, err := logics.ApiInitLogic(globals.DB)
+	res, err := logics.GetAllApiLogic(globals.DB)
 
 	// 返回响应
 	if err != nil {
@@ -30,8 +50,8 @@ func ApiInitCtrl(c *gin.Context) {
 // GetApiDetailsCtrl 获取当前api详情
 func GetApiDetailsCtrl(c *gin.Context) {
 	// 获取参数
-	idStr := c.Param("id")
-	id, err := internalUtils.ChangeType(idStr)
+	idStr := c.Query("id")
+	id, err := internalUtils.ChangeStringToUint(idStr)
 	if err != nil {
 		e := response.NewAppErr(globals.StatusInternalServerError, err, nil)
 		response.Failed(c, 500, e)
@@ -184,7 +204,7 @@ func SearchApiListCtrl(c *gin.Context) {
 		response.Failed(c, 500, e)
 		return
 	}
-	d := response.NewAppData(globals.StatusOK, "添加api成功", res)
+	d := response.NewAppData(globals.StatusOK, "检索api列表成功", res)
 	response.Success(c, 200, d)
 
 }

@@ -21,22 +21,33 @@ type MenuPerm struct {
 
 // GetApiPermRes 获取当前角色的api权限
 type GetApiPermRes struct {
-	Group []*Group `json:"group"`
+	Group *[]uint `json:"group"`
 }
 
-type Group struct {
-	GroupId  uint     `json:"group_id"`
-	Children []*Child `json:"children"`
-}
+//// GetApiPermRes 获取当前角色的api权限
+//type GetApiPermRes struct {
+//	Group []*Group `json:"group"`
+//}
+//
+//type Group struct {
+//	GroupId  uint     `json:"group_id"`
+//	Children []*Child `json:"children"`
+//}
+//
+//type Child struct {
+//	ID uint `json:"id"`
+//}
 
-type Child struct {
-	ID uint `json:"id"`
-}
+//// AssignApiPermReq 为角色分配api权限
+//type AssignApiPermReq struct {
+//	ID   uint   `json:"id"`
+//	Apis []uint `json:"apis"`
+//}
 
 // AssignApiPermReq 为角色分配api权限
 type AssignApiPermReq struct {
-	ID   uint   `json:"id"`
-	Apis []uint `json:"apis"`
+	ID   string   `json:"id"`
+	Apis []string `json:"apis"`
 }
 
 // GetPermCodeRes 获取当前角色的所有权限标识

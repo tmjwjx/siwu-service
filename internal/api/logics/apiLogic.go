@@ -6,8 +6,19 @@ import (
 	"gorm.io/gorm"
 )
 
-func ApiInitLogic(db *gorm.DB) (*[]*requests.ApiInitRes, error) {
-	res, err := repositories.ApiInitRep(db)
+//func ApiInitLogic(db *gorm.DB) (*[]*requests.ApiInitRes, error) {
+//	res, err := repositories.ApiInitRep(db)
+//	return res, err
+//}
+
+// GetAllApiLogic
+// @Description: 获取所有api列表
+// @Author wangyulong 2024-10-15 08:55:08
+// @param        db *gorm.DB
+// @return       *requests.GetAllApiRes
+// @return       error
+func GetAllApiLogic(db *gorm.DB) (*requests.GetAllApiRes, error) {
+	res, err := repositories.GetAllApiRep(db)
 	return res, err
 }
 

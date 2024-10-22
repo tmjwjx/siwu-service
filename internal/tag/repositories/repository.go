@@ -2,7 +2,6 @@ package repositories
 
 import (
 	"fmt"
-	"forum/internal/image/controllers"
 	"forum/internal/internalPkg/internalUtils"
 	"forum/internal/models"
 	"forum/internal/tag/requests"
@@ -56,14 +55,14 @@ func UpdateTagUserCountReq(db *gorm.DB, tagID uint) (*requests.TagFansCountRes, 
 }
 
 // UpdateTagArticleCountReq 更新前端的标签页
-func UpdateTagArticleCountReq() (*requests.TagRes, error) {
+func UpdateTagArticleCountReq(db *gorm.DB) (*requests.TagRes, error) {
 
 	// 查询数据时要用到的结构体
 	var tags []models.Tag
 	// 用于存储要响应给前端的数据
 	var tagList []*requests.Tag
 	// 查询所有标签及其文章
-	err := globals.DB.Preload("Articles").Find(&tags).Error
+	err := db.Preload("Articles").Find(&tags).Error
 	if err != nil {
 		return nil, fmt.Errorf("UpdateTagArticleCountReq -> %s", err)
 	}
@@ -95,14 +94,12 @@ func UpdateTagArticleCountReq() (*requests.TagRes, error) {
 			t.FansCount = fmt.Sprintf("%d", tag.FansCount)
 		}
 		// 将图片存入结构体 t 中
-		images, err := controllers.GetImagesControllers("标签", tag.ID)
+		images, err := internalUtils.GetImages(db, globals.TagHome, tag.ID)
 		if err != nil {
-			// return nil, fmt.Errorf("UpdateTagArticleCountReq -> %s", err)
-			// 如果没有找到就使用默认标签头像图片
-			t.Path = internalUtils.TagDefaultImage
+			return nil, fmt.Errorf("UpdateTagArticleCountReq -> %s", err)
 		} else {
-			for _, image := range *images {
-				t.Path = image.Path
+			for _, path := range *images {
+				t.Path = path
 			}
 		}
 
@@ -115,5 +112,61 @@ func UpdateTagArticleCountReq() (*requests.TagRes, error) {
 	}
 
 	return tagRes, nil
+
+}
+
+// StorageTagRep
+// @Description: 存储新用户选择的标签
+// @Author wangyulong 2024-10-14 21:32:41
+// @param        db *gorm.DB
+// @param        req *requests.StorageTagReq
+// @param        userId uint
+// @return       error
+func StorageTagRep(db *gorm.DB, req *requests.StorageTagReq, userId uint) error {
+
+	// 开启事务
+	tx := db.Begin()
+	if tx.Error != nil {
+		return fmt.Errorf("StorageTagRep -> 开启事务失败 -> %s", tx.Error)
+	}
+
+	for _, tagID := range req.TagIDs {
+		userTag := &models.UserTag{
+			UserID: userId,
+			TagID:  tagID,
+		}
+		err := tx.Create(userTag).Error
+		if err != nil {
+			tx.Rollback() // 回滚事务
+			return fmt.Errorf("StorageTagRep -> 存储新用户选择的标签失败 -> %s", err)
+		}
+	}
+
+	// 提交事务
+	err := tx.Commit().Error
+	if err != nil {
+		return fmt.Errorf("StorageTagRep -> 提交事务失败 -> %s", err)
+	}
+
+	return nil
+}
+
+// GetAllTagRep
+// @Description: 获取所有标签的id和name
+// @Author wangyulong 2024-10-14 21:56:00
+// @param        db gorm.DB
+// @return       *requests.GetAllTagRes
+// @return       error
+func GetAllTagRep(db *gorm.DB) (*requests.GetAllTagRes, error) {
+
+	var tags []requests.T
+	err := db.Model(models.Tag{}).Select("id, name").Scan(&tags).Error
+	if err != nil {
+		return nil, fmt.Errorf("GetAllTagRep -> 提交事务失败 -> %s", err)
+	}
+	res := &requests.GetAllTagRes{
+		Tags: tags,
+	}
+	return res, nil
 
 }

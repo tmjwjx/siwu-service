@@ -2,9 +2,7 @@ package repositories
 
 import (
 	"fmt"
-	"forum/internal/image/controllers"
 	"forum/internal/internalPkg/internalUtils"
-	"forum/internal/image/logics"
 	"forum/internal/models"
 	"forum/internal/tag/requests"
 	"forum/pkg/globals"
@@ -57,12 +55,13 @@ func AddTagRep(c *gin.Context, db *gorm.DB, req *requests.BsAddTagReq) (error, i
 	//	return fmt.Errorf("AddTagRep ->  存储图片的相关信息失败 -> %s", err), status
 	//}
 
-	u := &logics.UrlParam{
+	u := &internalUtils.UrlParam{
 		UrlPath: req.Path,
-		Home:    globals.Tag,
+		Home:    globals.TagHome,
 		HomeID:  tag.ID,
+		DB:      tx,
 	}
-	err = controllers.StoreUrlCtrl(u)
+	err = internalUtils.StoreUrl(u)
 	if err != nil {
 		return fmt.Errorf("AddTagRep -> 存储图片的相关信息失败 -> %s", err), 500
 	}
@@ -192,12 +191,13 @@ func UpdateTagRep(c *gin.Context, db *gorm.DB, req *requests.BsUpTagReq) (error,
 	//if err != nil {
 	//	return fmt.Errorf("UpdateTagRep ->  更新标签头像失败 -> %s", err), status
 	//}
-	u := &logics.UrlParam{
+	u := &internalUtils.UrlParam{
 		UrlPath: req.Path,
-		Home:    globals.Tag,
+		Home:    globals.TagHome,
 		HomeID:  tag.ID,
+		DB:      db,
 	}
-	err = controllers.StoreUrlCtrl(u)
+	err = internalUtils.StoreUrl(u)
 	if err != nil {
 		return fmt.Errorf("AddTagRep -> 存储图片的相关信息失败 -> %s", err), 500
 	}
@@ -232,12 +232,12 @@ func QueryTagRep(db *gorm.DB, req *requests.BsQueTagReq) (*requests.BsQueTagRes,
 	}
 
 	// 查询标签头像
-	images, err := controllers.GetImagesControllers("标签", tag.ID)
+	images, err := internalUtils.GetImages(db, globals.TagHome, tag.ID)
 	if err != nil {
-		tagRes.Path = internalUtils.TagDefaultImage
+		return nil, fmt.Errorf("QueryTagRep -> %s", err)
 	} else {
-		for _, image := range *images {
-			tagRes.Path = image.Path
+		for _, path := range *images {
+			tagRes.Path = path
 		}
 	}
 
@@ -272,12 +272,12 @@ func BatchQueryTagRep(db *gorm.DB, req *requests.BsBatchQueTagReq) (*[]*requests
 	for _, tag := range tagRes {
 
 		// 查询标签头像
-		images, err := controllers.GetImagesControllers("标签", tag.ID)
+		images, err := internalUtils.GetImages(db, globals.TagHome, tag.ID)
 		if err != nil {
-			tag.Path = internalUtils.TagDefaultImage
+			return nil, fmt.Errorf("BatchQueryTagRep -> %s", err)
 		} else {
-			for _, image := range *images {
-				tag.Path = image.Path
+			for _, path := range *images {
+				tag.Path = path
 			}
 		}
 

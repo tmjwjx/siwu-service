@@ -15,10 +15,10 @@ const (
 type Home string
 
 const (
-	User          Home = "user"
-	Article       Home = "article"
-	Tag           Home = "tag"
-	Category      Home = "category"
-	Advertisement Home = "advertisement"
-	Comment       Home = "comment"
+	UserHome          Home = "user"
+	ArticleHome       Home = "article"
+	TagHome           Home = "tag"
+	CategoryHome      Home = "category"
+	AdvertisementHome Home = "advertisement"
+	CommentHome       Home = "comment"
 )

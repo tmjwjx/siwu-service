@@ -12,6 +12,6 @@ type Attachment struct {
 	HomeID     uint         `json:"home_id"` // 图片对应的具体文章或用户的ID
 	Name       string       `json:"name"`    // 文件名
 	Type       string       `json:"type"`    // 文件类型，例如 images/png
-	Size       int          `json:"size"`    // 文件大小（以字节为单位）
+	Size       int64        `json:"size"`    // 文件大小（以字节为单位）
 	Path       string       `json:"path"`    // 文件路径
 }

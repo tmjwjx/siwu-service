@@ -21,7 +21,7 @@ func InsertCommentCtrl(c *gin.Context) {
 	}
 
 	// 逻辑处理
-	err, status := logics.InsertCommentLogic(c, &articleCommentReq, globals.DB)
+	err, status := logics.InsertCommentLogic(&articleCommentReq, globals.DB)
 
 	// 返回响应
 	if err != nil {
