@@ -203,23 +203,3 @@ func GetInfo(c *gin.Context) {
 	}
 	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", info))
 }
-
-// UploadHeadshot 上传用户头像
-func UploadHeadshot(c *gin.Context) {
-	// 获取参数
-	id, err := strconv.Atoi(c.Query("id"))
-	if err != nil {
-		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("UploadHeadshot() err: 数据错误"), nil))
-		return
-	}
-
-	// 业务逻辑
-	userReqContext := logics.NewUserReqContext(globals.DB, c, globals.SendEmailCfg)
-	err = userReqContext.UploadHeadshot(uint(id))
-	if err != nil {
-		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("UploadHeadshot() -> %v", err), nil))
-		return
-	}
-
-	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", nil))
-}

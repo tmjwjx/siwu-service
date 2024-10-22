@@ -4,6 +4,7 @@ import (
 	ApiRouter "forum/internal/api/routes"
 	articleRouter "forum/internal/article/routes"
 	casbinRouter "forum/internal/casbin_r_m_a/routes"
+	bsLoginRouter "forum/internal/backstage/routes"
 	dictRouter "forum/internal/dictManage/routes"
 	imageRouter "forum/internal/image/routes"
 	MenuRouter "forum/internal/menu/routes"
@@ -50,4 +51,7 @@ func SetupRouter() {
 	// casbin权限管理分录由
 	casbinRouter.CasbinRMA(globals.Router)
 
+
+	// 后台登陆分陆游
+	bsLoginRouter.Backstage(globals.Router)
 }

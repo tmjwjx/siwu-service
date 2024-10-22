@@ -9,6 +9,9 @@ import (
 
 // User 用户路由
 func User(e *gin.Engine) {
+	// 跨域
+	e.Use(middlewares.CorsMiddleware())
+
 	// 注册
 	e.POST("/user/register", controllers.Register)
 	// 忘记密码
@@ -21,7 +24,7 @@ func User(e *gin.Engine) {
 	// 分组
 	r := e.Group("/user")
 	// token 校验
-	r.Use(token.AuthMiddleware(), middlewares.CorsMiddleware())
+	r.Use(token.AuthMiddleware())
 
 	// 关注
 	r.POST("/follow", controllers.Follow)
@@ -79,7 +82,9 @@ func User(e *gin.Engine) {
 
 	//message := e.Group("/message")
 	//{
+	// message := e.Group("/message")
+	// {
 	//	message.POST("/like", controllers.LikeMessageCtrl)
-	//}
+	// }
 
 }
