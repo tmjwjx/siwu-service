@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"forum/internal/backstage/repositories"
 	"forum/internal/backstage/requests"
-	imageCtrl "forum/internal/image/controllers"
 	"forum/internal/internalPkg/internalUtils"
 	"forum/internal/internalPkg/sqlUtils"
 	"forum/internal/models"
@@ -66,12 +65,12 @@ func (b *BsManageContext) BsLogin(msg requests.BackstageLoginReq) (*requests.Bac
 
 	// 获取用户头像
 	avatarPath := ""
-	userImgs, err := imageCtrl.GetImagesControllers("user", user.ID)
-	if err != nil { // 数据库中没有该用户的头像，使用默认的头像
-		avatarPath = internalUtils.UserDefaultImage
-	} else {
-		avatarPath = (*userImgs)[0].Path
-	}
+	//userImgs, err := imageCtrl.GetImagesControllers("user", user.ID)
+	//if err != nil { // 数据库中没有该用户的头像，使用默认的头像
+	//	avatarPath = internalUtils.UserDefaultImage
+	//} else {
+	//	avatarPath = (*userImgs)[0].Path
+	//}
 
 	var roleNames = make([]string, 0)
 	sort := math.MaxInt
