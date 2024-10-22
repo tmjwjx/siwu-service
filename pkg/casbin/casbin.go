@@ -2,14 +2,13 @@ package casbin
 
 import (
 	"fmt"
-	"forum/internal/internal_pkg/internal_utils"
+	"forum/internal/internalPkg/internalUtils"
 	"forum/internal/models"
 	"forum/pkg/globals"
 	"github.com/casbin/casbin/v2"
 	"github.com/casbin/casbin/v2/model"
 	gormadapter "github.com/casbin/gorm-adapter/v3"
 	"gorm.io/gorm"
-	"strconv"
 )
 
 // casbin_r_m_a 结构体
@@ -65,7 +64,7 @@ func (c *CasbinService) GetApiPerm(id string) ([]uint, error) {
 	}
 	for _, p := range permissions {
 		obj := p[1] // p[1] 是资源字段
-		apiId, err := internal_utils.ChangeStringToUint(obj)
+		apiId, err := internalUtils.ChangeStringToUint(obj)
 		if err != nil {
 			return nil, fmt.Errorf("GetApiPerm -> 获取当前角色的api权限失败 -> %s", err)
 		}
@@ -74,8 +73,8 @@ func (c *CasbinService) GetApiPerm(id string) ([]uint, error) {
 	return resources, nil
 }
 
-// ModifyRolePolicy 分配(修改)角色权限(策略)
-func (c *CasbinService) ModifyRolePolicy(roleId uint, apiIds []uint) error {
+// ModifyRolePolicy 重置角色权限
+func (c *CasbinService) ModifyRolePolicy(roleId string, apiIds []string) error {
 
 	// 不直接操作数据库，利用enforcer简化操作
 	err := c.Enforcer.LoadPolicy()
@@ -83,11 +82,14 @@ func (c *CasbinService) ModifyRolePolicy(roleId uint, apiIds []uint) error {
 		return fmt.Errorf("ModifyRolePolicy -> 创建角色组权限， 已有的会忽略 -> %s", err)
 	}
 
-	_, err = c.Enforcer.DeletePermissionsForUser(strconv.FormatUint(uint64(roleId), 10))
+	// 将角色的所有api权限全部删除
+	//_, err = c.Enforcer.DeletePermissionsForUser(strconv.FormatUint(uint64(roleId), 10))
+	_, err = c.Enforcer.DeletePermissionsForUser(roleId)
 	if err != nil {
 		return fmt.Errorf("ModifyRolePolicy -> 删除角色组权限失败 -> %s", err)
 	}
 
+	// 为角色分配新的api权限
 	for _, id := range apiIds {
 		_, err = c.Enforcer.AddPolicy(roleId, id)
 		if err != nil {
@@ -95,6 +97,7 @@ func (c *CasbinService) ModifyRolePolicy(roleId uint, apiIds []uint) error {
 		}
 	}
 
+	// 保存策略
 	return c.Enforcer.SavePolicy()
 
 }

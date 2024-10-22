@@ -46,6 +46,10 @@ func InitUserInfoCtrl(c *gin.Context) {
 
 }
 
+// EditSignatureCtrl
+// @Description: 编辑个签
+// @Author wangyulong 2024-10-14 21:18:05
+// @param        c *gin.Context
 func EditSignatureCtrl(c *gin.Context) {
 
 	// 获取参数

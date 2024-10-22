@@ -3,17 +3,14 @@ package repositories
 import (
 	"fmt"
 	"forum/internal/article/requests"
-	"forum/internal/image/controllers"
 	"forum/internal/internalPkg/internalUtils"
-	"forum/internal/image/logics"
 	"forum/internal/models"
 	"forum/pkg/globals"
-	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
 // InsertCommentRep 将评论存入数据库中
-func InsertCommentRep(c *gin.Context, articleCommentReq *requests.ArticleCommentReq, db *gorm.DB) (error, int) {
+func InsertCommentRep(articleCommentReq *requests.ArticleCommentReq, db *gorm.DB) (error, int) {
 
 	// 开启事务
 	tx := db.Begin()
@@ -49,12 +46,13 @@ func InsertCommentRep(c *gin.Context, articleCommentReq *requests.ArticleComment
 	//if err != nil {
 	//	return err, status
 	//}
-	u := &logics.UrlParam{
+	u := &internalUtils.UrlParam{
 		UrlPath: articleCommentReq.Path,
-		Home:    globals.Comment,
+		Home:    globals.CommentHome,
 		HomeID:  articleComment.ID,
+		DB:      db,
 	}
-	err = controllers.StoreUrlCtrl(u)
+	err = internalUtils.StoreUrl(u)
 	if err != nil {
 		return fmt.Errorf("AddTagRep -> 存储图片的相关信息失败 -> %s", err), 500
 	}
@@ -111,8 +109,8 @@ func buildCommentTree(comment *requests.ArticleCommentRes, commentMap map[uint][
 }*/
 
 // GetTopLevelCommentsRep 返回顶级评论
-func GetTopLevelCommentsRep(db *gorm.DB, req *requests.TopCommentsReq) (*[]*requests.TopCommentsRes, error) {
-	var topCommentsRes []*requests.TopCommentsRes
+func GetTopLevelCommentsRep(db *gorm.DB, req *requests.TopCommentsReq) (*requests.TopCommentsRes, error) {
+	var firstCommentsList []*requests.FirstComment
 	var count int64
 	var articleComments []models.ArticleComment
 	var commentId []uint
@@ -126,7 +124,7 @@ func GetTopLevelCommentsRep(db *gorm.DB, req *requests.TopCommentsReq) (*[]*requ
 
 	// 查询用户对该篇文章中的评论的点赞情况
 	err = db.Model(models.ArticleComment{}).Joins("join sw_comment_likes on sw_comment_likes.comment_id = sw_article_comments.id").
-		Where("sw_article_comments.article_id = ? and sw_comment_likes.user_id = ?", req.ArticleID, req.UserID).Find(&commentId).Error
+		Select("sw_article_comments.id").Where("sw_article_comments.article_id = ? and sw_comment_likes.user_id = ?", req.ArticleID, req.UserID).Find(&commentId).Error
 	if err != nil {
 		return nil, fmt.Errorf("GetTopLevelCommentsRep -> 查询用户对该篇文章中的评论的点赞情况失败 -> %s", err)
 	}
@@ -136,7 +134,7 @@ func GetTopLevelCommentsRep(db *gorm.DB, req *requests.TopCommentsReq) (*[]*requ
 		// 转换一下时间格式
 		pastTime := internalUtils.TimeAgo(comment.CreatedAt)
 
-		topComment := &requests.TopCommentsRes{
+		topComment := &requests.FirstComment{
 			ID:           comment.ID,
 			CreateAT:     pastTime,
 			ArticleID:    comment.ArticleID,
@@ -158,13 +156,13 @@ func GetTopLevelCommentsRep(db *gorm.DB, req *requests.TopCommentsReq) (*[]*requ
 		// 2 表示对该评论该用户从没有点过赞
 		topComment.Status = 2
 
-		topCommentsRes = append(topCommentsRes, topComment)
+		firstCommentsList = append(firstCommentsList, topComment)
 	}
 
-	for _, comment := range topCommentsRes {
+	for _, comment := range firstCommentsList {
 
 		// 统计每个顶级评论的回复数量
-		err := db.Model(&models.ArticleComment{}).Where("highest_id = ?", comment.ID).Count(&count).Error
+		err = db.Model(&models.ArticleComment{}).Where("highest_id = ?", comment.ID).Count(&count).Error
 		if err != nil {
 			return nil, fmt.Errorf("GetTopLevelCommentsRep -> %s", err)
 		}
@@ -177,28 +175,32 @@ func GetTopLevelCommentsRep(db *gorm.DB, req *requests.TopCommentsReq) (*[]*requ
 		}
 
 		// 查询用户头像
-		images, err := controllers.GetImagesControllers("用户", comment.ID)
+		images, err := internalUtils.GetImages(db, globals.UserHome, comment.ID)
 		if err != nil {
-			// 数据库中没有该用户的头像图片，直接使用默认的头像图片
-			comment.Path = internalUtils.UserDefaultImage
+			return nil, fmt.Errorf("GetTopLevelCommentsRep -> %s", err)
 		} else {
-			for _, image := range *images {
-				comment.Path = image.Path
+			for _, path := range *images {
+				comment.Path = path
 			}
 		}
 
 		// 用户发的评论中的图片
-		CommentImages, err := controllers.GetImagesControllers("评论", comment.ID)
+		CommentImages, err := internalUtils.GetImages(db, globals.CommentHome, comment.ID)
 		if err != nil {
-			comment.CommentPath = ""
+			return nil, fmt.Errorf("GetTopLevelCommentsRep -> %s", err)
 		} else {
-			for _, image := range *CommentImages {
-				comment.CommentPath = image.Path
+			for _, path := range *CommentImages {
+				comment.CommentPath = path
 			}
 		}
 	}
 
-	return &topCommentsRes, nil
+	topCommentsRes := &requests.TopCommentsRes{
+		FirstCommentsList: firstCommentsList,
+		CommentsTotal:     len(firstCommentsList),
+	}
+
+	return topCommentsRes, nil
 
 }
 
@@ -232,8 +234,8 @@ func GetRepliesRep(req *requests.RepliesReq) (*[]models.ArticleComment, error) {
 }*/
 
 // GetRepliesRep2Rep 返回评论回复
-func GetRepliesRep2Rep(db *gorm.DB, req *requests.RepliesReq2) (*[]*requests.RepliesRes, error) {
-	var repliesRes []*requests.RepliesRes
+func GetRepliesRep2Rep(db *gorm.DB, req *requests.RepliesReq2) (*requests.RepliesRes, error) {
+	var secondCommentsList []*requests.SecondComment
 	var articleComments []models.ArticleComment
 	var commentId []uint
 
@@ -254,7 +256,7 @@ func GetRepliesRep2Rep(db *gorm.DB, req *requests.RepliesReq2) (*[]*requests.Rep
 		// 转换一下时间格式
 		pastTime := internalUtils.TimeAgo(comment.CreatedAt)
 
-		replies := &requests.RepliesRes{
+		replies := &requests.SecondComment{
 			ID:           comment.ID,
 			CreateAT:     pastTime,
 			ArticleID:    comment.ArticleID,
@@ -277,10 +279,10 @@ func GetRepliesRep2Rep(db *gorm.DB, req *requests.RepliesReq2) (*[]*requests.Rep
 		// 2 表示对该评论该用户从没有点过赞
 		replies.Status = 2
 
-		repliesRes = append(repliesRes, replies)
+		secondCommentsList = append(secondCommentsList, replies)
 	}
 
-	for _, comment := range repliesRes {
+	for _, comment := range secondCommentsList {
 
 		// 查询用户名字
 		err := db.Model(&models.User{}).Select("Nickname").Where("id = ?", comment.UserID).First(&comment.Nickname).Error
@@ -289,13 +291,12 @@ func GetRepliesRep2Rep(db *gorm.DB, req *requests.RepliesReq2) (*[]*requests.Rep
 		}
 
 		// 查询用户头像
-		images, err := controllers.GetImagesControllers("用户", comment.ID)
+		images, err := internalUtils.GetImages(db, globals.UserHome, comment.ID)
 		if err != nil {
-			// 数据库中没有该用户的头像图片，直接使用默认的头像图片
-			comment.Path = internalUtils.UserDefaultImage
+			return nil, fmt.Errorf("GetRepliesRep2Rep -> %s", err)
 		} else {
-			for _, image := range *images {
-				comment.Path = image.Path
+			for _, path := range *images {
+				comment.Path = path
 			}
 		}
 
@@ -306,28 +307,31 @@ func GetRepliesRep2Rep(db *gorm.DB, req *requests.RepliesReq2) (*[]*requests.Rep
 		}
 
 		// 查询用户回复对象的头像
-		images2, err := controllers.GetImagesControllers("用户", *comment.ParentUserID)
+		images2, err := internalUtils.GetImages(db, globals.UserHome, *comment.ParentUserID)
 		if err != nil {
-			// 数据库中没有该用户回复对象的头像图片，直接使用默认的头像图片
-			comment.ParentPath = internalUtils.UserDefaultImage
+			return nil, fmt.Errorf("GetRepliesRep2Rep -> %s", err)
 		} else {
-			for _, image := range *images2 {
-				comment.ParentPath = image.Path
+			for _, path := range *images2 {
+				comment.ParentPath = path
 			}
 		}
 
 		// 用户发的评论中的图片
-		CommentImages, err := controllers.GetImagesControllers("评论", comment.ID)
+		CommentImages, err := internalUtils.GetImages(db, globals.CommentHome, comment.ID)
 		if err != nil {
-			comment.CommentPath = ""
+			return nil, fmt.Errorf("GetRepliesRep2Rep -> %s", err)
 		} else {
-			for _, image := range *CommentImages {
-				comment.CommentPath = image.Path
+			for _, path := range *CommentImages {
+				comment.CommentPath = path
 			}
 		}
 	}
 
-	return &repliesRes, nil
+	repliesRes := &requests.RepliesRes{
+		SecondCommentsList: secondCommentsList,
+	}
+
+	return repliesRes, nil
 
 }
 

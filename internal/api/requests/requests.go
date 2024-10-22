@@ -11,6 +11,27 @@ type ApiInitRes struct {
 	RequestMethod     string `json:"request_method"`     // 请求方式
 }
 
+// GetAllApiRes
+// @Description: 获取所有api列表
+// @Author wangyulong 2024-10-14 22:26:30
+type GetAllApiRes struct {
+	ApiList []*List `json:"api_list"`
+}
+
+type List struct {
+	GroupID   uint        `json:"group_id"`
+	GroupName string      `json:"group_name"`
+	Children  []*Children `json:"children"`
+}
+
+type Children struct {
+	ApiID   uint   `json:"api_id"`
+	ApiName string `json:"api_name"`
+}
+
+type Result struct {
+}
+
 // ApiDetailsRes 获取当前api详情
 type ApiDetailsRes struct {
 	ID                uint   `json:"id"`                 // api的ID
@@ -78,11 +99,11 @@ type SearchApiListReq struct {
 type SearchApiRes struct {
 	ID                uint   `json:"id"`                 // api的ID
 	Path              string `json:"path"`               // API路径
-	GroupingId        uint   `json:"grouping_id"`        // API分组ID
-	Grouping          string `json:"grouping"`           // API分组
 	BriefIntroduction string `json:"brief_introduction"` // API简介
+	GroupId           uint   `json:"grouping_id"`        // API分组ID
+	GroupName         string `json:"grouping"`           // API分组
 	RequestMethodId   uint   `json:"request_method_id"`  //请求方式Id
-	RequestMethod     string `json:"request_method"`     // 请求方式
+	RequestMethodName string `json:"request_method"`     // 请求方式
 }
 
 // SearchApiListRes 检索api列表响应结构体

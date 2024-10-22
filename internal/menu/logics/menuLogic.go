@@ -41,3 +41,14 @@ func GetMenuDetailLogic(db *gorm.DB, id string) (*requests.GetMenuDetailRes, err
 	res, err := repositories.GetMenuDetailRep(db, id)
 	return res, err
 }
+
+// GetSpecificMenuLogic
+// @Description: 查询所有type为1和2的菜单
+// @Author wangyulong 2024-10-15 11:25:24
+// @param        db *gorm.DB
+// @return       *requests.GetSpecificMenuRes
+// @return       error
+func GetSpecificMenuLogic(db *gorm.DB) (*requests.GetSpecificMenuRes, error) {
+	res, err := repositories.GetSpecificMenuRep(db)
+	return res, err
+}

@@ -81,3 +81,22 @@ type BsBatchQueTagReq struct {
 	Offset int `json:"offset"` // 分页查询的起始位置
 	Limit  int `json:"limit"`  // 分页查询返回的记录条数
 }
+
+// StorageTagReq
+// @Description: 存储新用户选择的标签
+// @Author wangyulong 2024-10-14 21:27:22
+type StorageTagReq struct {
+	TagIDs []uint `json:"tagIds"`
+}
+
+// GetAllTagRes
+// @Description: 获取所有标签的id和name
+// @Author wangyulong 2024-10-14 21:54:59
+type GetAllTagRes struct {
+	Tags []T `json:"tags"`
+}
+
+type T struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}

@@ -2,7 +2,6 @@ package logics
 
 import (
 	"fmt"
-	"forum/internal/image/controllers"
 	"forum/internal/internalPkg/internalUtils"
 	"forum/internal/internalPkg/sqlUtils"
 	"forum/internal/models"
@@ -152,12 +151,12 @@ func (u *UserReqContext) List(req requests.ListReq) ([]*requests.ListRes, int, e
 	for _, v := range users {
 		// 查询用户的头像路径
 		avatarPath := ""
-		userImgs, err := controllers.GetImagesControllers("用户", v.ID)
-		if err != nil { // 数据库中没有该用户的头像，使用默认的头像
-			avatarPath = internalUtils.UserDefaultImage
-		} else {
-			avatarPath = (*userImgs)[0].Path
-		}
+		//userImgs, err := controllers.GetImagesControllers("用户", v.ID)
+		//if err != nil { // 数据库中没有该用户的头像，使用默认的头像
+		//	avatarPath = internalUtils.UserDefaultImage
+		//} else {
+		//	avatarPath = (*userImgs)[0].Path
+		//}
 
 		// 查询这个用户的全部角色id
 		roleIds := repositories.QueryAdminRoleByUserId(u.DB, v.ID)
@@ -569,12 +568,12 @@ func (u *UserReqContext) GetInfo(id uint) (*requests.GetInfoRes, error) {
 
 	// 查询用户的头像路径
 	avatarPath := ""
-	userImgs, err := controllers.GetImagesControllers("用户", user.ID)
-	if err != nil { // 数据库中没有该用户的头像，使用默认的头像
-		avatarPath = internalUtils.UserDefaultImage
-	} else {
-		avatarPath = (*userImgs)[0].Path
-	}
+	//userImgs, err := controllers.GetImagesControllers("用户", user.ID)
+	//if err != nil { // 数据库中没有该用户的头像，使用默认的头像
+	//	avatarPath = internalUtils.UserDefaultImage
+	//} else {
+	//	avatarPath = (*userImgs)[0].Path
+	//}
 
 	// 查询这个用户的全部角色
 	roleIds := repositories.QueryAdminRoleByUserId(u.DB, user.ID)

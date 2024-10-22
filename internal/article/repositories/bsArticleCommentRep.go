@@ -3,8 +3,6 @@ package repositories
 import (
 	"fmt"
 	"forum/internal/article/requests"
-	"forum/internal/image/controllers"
-	"forum/internal/image/logics"
 	"forum/internal/internalPkg/internalUtils"
 	"forum/internal/models"
 	"forum/pkg/globals"
@@ -42,6 +40,10 @@ func BatchReviewRep(db *gorm.DB, req *requests.BatchReviewReq) (*requests.BatchR
 // ShowCommentsListRep 展示评论列表(获取评论列表)
 func ShowCommentsListRep(db *gorm.DB, req *requests.CommentsListReq) (*requests.CommentsListRes, error) {
 
+	if req.Limit == 0 {
+		return nil, fmt.Errorf("ShowCommentsListRep -> Limit的值不能为0")
+	}
+
 	var commentsListRes *requests.CommentsListRes
 	var comments []models.ArticleComment
 	var comList []*requests.ComList
@@ -65,25 +67,35 @@ func ShowCommentsListRep(db *gorm.DB, req *requests.CommentsListReq) (*requests.
 	// 添加查询条件
 	if req.Email != "" {
 		query = query.Where("sw_user.email = ?", req.Email)
-	} else if req.Nickname != "" {
+	}
+	if req.Nickname != "" {
 		query = query.Where("sw_user.nickname", req.Nickname)
-	} else if req.Title != "" {
+	}
+	if req.Title != "" {
 		query = query.Where("sw_article.title", req.Title)
-	} else if req.ParentEmail != "" {
+	}
+	if req.ParentEmail != "" {
 		query = query.Where("sw_article_comment.parent_email = ?", req.ParentEmail)
-	} else {
-		// 查询评论信息
-		err := db.Where("examine = ?", examine).Limit(req.Limit).Offset(req.Offset).Find(&comments).Error
-		if err != nil {
-			return nil, fmt.Errorf("ShowCommentsListRep -> 查询评论信息失败 -> %s", err)
-		}
 	}
 
-	if req.Email != "" || req.Nickname != "" || req.Title != "" || req.ParentEmail != "" {
-		err := query.Where("examine = ?", examine).Limit(req.Limit).Offset(req.Offset).Find(&comments).Error
-		if err != nil {
-			return nil, fmt.Errorf("ShowCommentsListRep -> 查询评论信息失败 -> %s", err)
-		}
+	//else {
+	//	// 查询评论信息
+	//	err := db.Where("examine = ?", examine).Limit(req.Limit).Offset(req.Offset).Find(&comments).Error
+	//	if err != nil {
+	//		return nil, fmt.Errorf("ShowCommentsListRep -> 查询评论信息失败 -> %s", err)
+	//	}
+	//}
+
+	//if req.Email != "" || req.Nickname != "" || req.Title != "" || req.ParentEmail != "" {
+	//	err := query.Where("examine = ?", examine).Limit(req.Limit).Offset(req.Offset).Find(&comments).Error
+	//	if err != nil {
+	//		return nil, fmt.Errorf("ShowCommentsListRep -> 查询评论信息失败 -> %s", err)
+	//	}
+	//}
+
+	err := query.Where("examine = ?", examine).Limit(req.Limit).Offset(req.Offset).Find(&comments).Error
+	if err != nil {
+		return nil, fmt.Errorf("ShowCommentsListRep -> 查询评论信息失败 -> %s", err)
 	}
 
 	// 获取返回评论的总数目
@@ -131,22 +143,22 @@ func ShowCommentsListRep(db *gorm.DB, req *requests.CommentsListReq) (*requests.
 		commentRes.ParentNickname = user.Nickname
 
 		// 查询用户头像
-		images, err := controllers.GetImagesControllers("用户", comment.UserID)
+		images, err := internalUtils.GetImages(db, globals.UserHome, comment.UserID)
 		if err != nil {
-			commentRes.Path = internalUtils.UserDefaultImage
+			return nil, fmt.Errorf("ShowCommentsListRep -> %s", err)
 		} else {
-			for _, image := range *images {
-				commentRes.Path = image.Path
+			for _, path := range *images {
+				commentRes.Path = path
 			}
 		}
 
 		// 查询用户发的评论图片
-		images2, err := controllers.GetImagesControllers("评论", comment.ID)
+		images2, err := internalUtils.GetImages(db, globals.CommentHome, comment.ID)
 		if err != nil {
-			commentRes.CommentPath = ""
+			return nil, fmt.Errorf("ShowCommentsListRep -> %s", err)
 		} else {
-			for _, image := range *images2 {
-				commentRes.CommentPath = image.Path
+			for _, path := range *images2 {
+				commentRes.CommentPath = path
 			}
 		}
 
@@ -202,12 +214,13 @@ func AddCommentRep(c *gin.Context, db *gorm.DB, req *requests.AddCommentReq) (er
 	//	return err, status
 	//}
 
-	u := &logics.UrlParam{
+	u := &internalUtils.UrlParam{
 		UrlPath: req.CommentPath,
-		Home:    globals.Comment,
+		Home:    globals.CommentHome,
 		HomeID:  comment.ID,
+		DB:      db,
 	}
-	err = controllers.StoreUrlCtrl(u)
+	err = internalUtils.StoreUrl(u)
 	if err != nil {
 		return fmt.Errorf("AddTagRep -> 存储图片的相关信息失败 -> %s", err), 500
 	}
@@ -315,12 +328,13 @@ func UpdateCommentRep(c *gin.Context, db *gorm.DB, req *requests.UpdateCommentRe
 	//if err != nil {
 	//	return fmt.Errorf("UpdateCommentRep -> 更新评论图片失败 -> %s", err), status
 	//}
-	u := &logics.UrlParam{
+	u := &internalUtils.UrlParam{
 		UrlPath: req.CommentPath,
-		Home:    globals.Comment,
+		Home:    globals.CommentHome,
 		HomeID:  req.ID,
+		DB:      db,
 	}
-	err = controllers.StoreUrlCtrl(u)
+	err = internalUtils.StoreUrl(u)
 	if err != nil {
 		return fmt.Errorf("AddTagRep -> 存储图片的相关信息失败 -> %s", err), 500
 	}
@@ -390,22 +404,22 @@ func QueryCommentRep(db *gorm.DB, req *requests.QueryCommentReq) (*[]*requests.Q
 		commentRes.ParentNickname = user.Nickname
 
 		// 查询用户头像
-		images, err := controllers.GetImagesControllers("用户", comment.UserID)
+		images, err := internalUtils.GetImages(db, globals.UserHome, comment.UserID)
 		if err != nil {
-			commentRes.Path = internalUtils.UserDefaultImage
+			return nil, fmt.Errorf("QueryCommentRep -> %s", err)
 		} else {
-			for _, image := range *images {
-				commentRes.Path = image.Path
+			for _, path := range *images {
+				commentRes.Path = path
 			}
 		}
 
 		// 查询用户发的评论图片
-		images2, err := controllers.GetImagesControllers("评论", comment.ID)
+		images2, err := internalUtils.GetImages(db, globals.CommentHome, comment.ID)
 		if err != nil {
-			commentRes.CommentPath = ""
+			return nil, fmt.Errorf("QueryCommentRep -> %s", err)
 		} else {
-			for _, image := range *images2 {
-				commentRes.CommentPath = image.Path
+			for _, path := range *images2 {
+				commentRes.CommentPath = path
 			}
 		}
 

@@ -52,8 +52,8 @@ type ComList struct {
 type AddCommentReq struct {
 	ArticleID    uint     `json:"article_id" form:"article_id"`         // 所属文章ID，外键
 	UserID       uint     `json:"user_id" form:"user_id"`               // 作者ID
-	HighestID    *uint    `json:"highest_id" form:"highest_id"`         // 最上层一级评论
-	ParentID     *uint    `json:"parent_id" form:"parent_id"`           // 上一条评论ID , 允许为 null，表示顶级评论
+	HighestID    *uint    `json:"highest_id" form:"highest_id"`         // 最上层一级评论(顶级评论)
+	ParentID     *uint    `json:"parent_id" form:"parent_id"`           // 被回复评论ID , 允许为 null，表示顶级评论
 	ParentUserID *uint    `json:"parent_user_id" form:"parent_user_id"` // 上一条评论的发布用户ID
 	Content      string   `json:"content" form:"content"`               // 评论内容
 	CommentPath  []string `json:"comment_path" form:"comment_path"`     // 用户发的评论中的图片

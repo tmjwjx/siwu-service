@@ -2,8 +2,6 @@ package repositories
 
 import (
 	"fmt"
-	"forum/internal/image/controllers"
-	"forum/internal/image/logics"
 	"forum/internal/internalPkg/internalUtils"
 	"forum/internal/models"
 	"forum/internal/user/requests"
@@ -113,12 +111,13 @@ func UserDataRequest(userDataReq *requests.UserDataReq, db *gorm.DB) error {
 		}
 	}
 
-	u := &logics.UrlParam{
+	u := &internalUtils.UrlParam{
 		UrlPath: userDataReq.Path,
-		Home:    globals.User,
+		Home:    globals.UserHome,
 		HomeID:  userDataReq.ID,
+		DB:      db,
 	}
-	err = controllers.StoreUrlCtrl(u)
+	err = internalUtils.StoreUrl(u)
 	if err != nil {
 		return fmt.Errorf("UserDataRequest -> 存储图片的相关信息失败 -> %s", err)
 	}
@@ -283,11 +282,11 @@ func UserDataResponse(userID uint, db *gorm.DB) (*requests.UserDataRes, error) {
 
 	// 将 uint64 类型转换为 uint
 	uintValue := uint(value)*/
-	images, err := controllers.GetImagesControllers("用户", userID)
+	images, err := internalUtils.GetImages(db, globals.UserHome, userID)
 	if err == nil {
 		// 获取图片路径
-		for _, image := range *images {
-			userDataRes.Path = image.Path
+		for _, path := range *images {
+			userDataRes.Path = path
 		}
 	} else {
 		userDataRes.Path = internalUtils.UserDefaultImage

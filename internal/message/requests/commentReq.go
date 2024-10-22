@@ -17,19 +17,24 @@ type CommentObj struct {
 	Comment    string `json:"comment"`     // 被评论评论(若评论为二级评论)
 	CreatedAt  string `json:"created_at"`  // 创建时间
 	LikesCount int    `json:"likes_count"` // 点赞数量
-	ID         uint   `json:"id"`          // 被回复的评论的ID
+	UserID     uint   `json:"user_id"`     // 被回复的评论的ID
 	Status     int    `json:"status"`      // 用于判断该用户对该评论的点赞状态(0: 未点赞 , 1: 点赞)
+
+	CommentID uint `json:"comment_id"`
+	ArticleID uint `json:"article_id"`
 }
 
 type Result1 struct {
 	Nickname   string    `json:"nickname"`    // 评论者昵称
 	UserID     uint      `json:"user_id"`     // 评论者ID (用于查询用户用户头像)
 	Title      string    `json:"title"`       // 被评论文章
-	ID         uint      `json:"id"`          // 回复的id
+	CommentID  uint      `json:"comment_id"`  // 回复的id
 	Content    string    `json:"content"`     // 评论内容
 	ParentID   *uint     `json:"parent_id"`   // 上一条评论ID , 允许为 null，表示顶级评论(用于查询被回复的评论的id和content)
 	CreatedAt  time.Time `json:"created_at"`  // 创建时间
 	LikesCount int       `json:"likes_count"` // 点赞数量
+
+	ArticleID uint `json:"article_id"`
 }
 
 type Result2 struct {

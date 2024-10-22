@@ -2,8 +2,6 @@ package logics
 
 import (
 	"fmt"
-	"forum/internal/image/controllers"
-	"forum/internal/internalPkg/internalUtils"
 	"forum/internal/internalPkg/sqlUtils"
 	"forum/internal/models"
 	"forum/internal/user/repositories"
@@ -121,13 +119,13 @@ func (u *UserReqContext) UserRank(id uint, msg requests.UserRankReq) ([]*request
 		}
 
 		// 查询用户的头像路径
-		userImgs, err := controllers.GetImagesControllers("用户", v.ID)
-		if err != nil {
-			// 数据库中没有该用户的头像，使用默认的头像
-			userRankReqSli[i].AvatarPath = internalUtils.UserDefaultImage
-		} else {
-			userRankReqSli[i].AvatarPath = (*userImgs)[0].Path
-		}
+		//userImgs, err := controllers.GetImagesControllers("用户", v.ID)
+		//if err != nil {
+		//	// 数据库中没有该用户的头像，使用默认的头像
+		//	userRankReqSli[i].AvatarPath = internalUtils.UserDefaultImage
+		//} else {
+		//	userRankReqSli[i].AvatarPath = (*userImgs)[0].Path
+		//}
 
 		// 未关注：0，已关注：1，这个用户是自己：2
 		if v.ID == id {

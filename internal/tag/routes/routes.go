@@ -15,6 +15,12 @@ func Tag(e *gin.Engine) {
 	// 刷新前端标签页
 	r.GET("/article_count", controllers.UpdateTag)
 
+	// 存储新用户选择的标签
+	r.POST("/random_tag", controllers.StorageTagCtrl)
+
+	// 获取所有标签的id和name
+	r.GET("/get_all_tags", controllers.GetAllTagCtrl)
+
 	// 后台分组
 	r2 := e.Group("/backstage_tag")
 

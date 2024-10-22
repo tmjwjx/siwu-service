@@ -74,6 +74,9 @@ func User(e *gin.Engine) {
 	// 初始化用户信息(会员中心)
 	e.GET("/init_userinfo", controllers.InitUserInfoCtrl)
 
+	// 编辑个签
+	e.POST("/edit_signature", controllers.EditSignatureCtrl)
+
 	//message := e.Group("/message")
 	//{
 	//	message.POST("/like", controllers.LikeMessageCtrl)
