@@ -188,7 +188,7 @@ func (u *UserReqContext) SendEmail(to string, subject string, body string) error
 }
 
 // Login 登录
-func (u *UserReqContext) Login(logicMsg requests.LogicReq) error {
+func (u *UserReqContext) Login(logicMsg requests.LogicReq) (*requests.LogicRes, error) {
 	// 判断邮箱和密码是否匹配
 	email := logicMsg.Email
 	password := logicMsg.Password
@@ -196,20 +196,25 @@ func (u *UserReqContext) Login(logicMsg requests.LogicReq) error {
 	// 根据邮箱查用户
 	user := repositories.QueryUserByEmail(u.DB, email)
 	if user == nil {
-		return fmt.Errorf("UserReqContext.Login() err: 不存在该邮箱用户")
+		return nil, fmt.Errorf("UserReqContext.Login() err: 不存在该邮箱用户")
 	}
 
 	// 比较加密密码
 	encryptedPassword := user.Password
 	if !internalUtils.CheckPasswordHash(password, encryptedPassword) {
-		return fmt.Errorf("UserReqContext.Login() err: 密码错误")
+		return nil, fmt.Errorf("UserReqContext.Login() err: 密码错误")
 	}
 
 	// 改变 LastLoginTime
 	now := time.Now() // 获取当前时间
 	if err := sqlUtils.UpdateObjects(u.DB, &models.User{Model: gorm.Model{ID: user.ID}}, map[string]interface{}{"last_login_time": now}); err != nil {
-		return fmt.Errorf("UserReqContext.Login() -> %v", err)
+		return nil, fmt.Errorf("UserReqContext.Login() -> %v", err)
 	}
 
-	return nil
+	// 获取登陆响应
+	logicRes := &requests.LogicRes{
+		Id:       user.ID,
+		Nickname: user.Nickname,
+	}
+	return logicRes, nil
 }

@@ -1,9 +1,6 @@
 package routes
 
 import (
-	"forum/internal/backstage/controllers"
-	"forum/internal/backstage/middlewares"
-	"forum/pkg/token"
 	"github.com/gin-gonic/gin"
 )
 
@@ -13,17 +10,16 @@ import (
 // @param        e *gin.Engine
 func Backstage(e *gin.Engine) {
 	// 跨域
-	e.Use(middlewares.CorsMiddleware())
+	// e.Use(middlewares.CorsMiddleware())
 
 	// 后台登陆
-	e.POST("/backstage/login", controllers.BsLogin)
+	// e.POST("/backstage/login", controllers.BsLogin)
 
-	// 分组
-	r := e.Group("/backstage")
-	// token 校验
-	r.Use(token.AuthMiddleware())
-
-	// 后台登出
-	r.POST("/logout", controllers.BsLogout)
-
+	// // 分组
+	// r := e.Group("/backstage")
+	// // token 校验
+	// r.Use(token.AuthMiddleware())
+	//
+	// // 后台登出
+	// r.POST("/logout", controllers.BsLogout)
 }
