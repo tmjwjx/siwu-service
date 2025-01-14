@@ -2,7 +2,6 @@ package routes
 
 import (
 	"forum/internal/user/controllers"
-	"forum/pkg/crossMW"
 	"forum/pkg/token"
 	"github.com/gin-gonic/gin"
 )
@@ -10,7 +9,7 @@ import (
 // User 用户路由
 func User(e *gin.Engine) {
 	// 跨域
-	e.Use(crossMW.CorsMiddleware())
+	// e.Use(crossMW.CorsMiddleware())
 
 	// 注册
 	e.POST("/user/register", controllers.Register)

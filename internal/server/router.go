@@ -18,6 +18,9 @@ import (
 // SetupRouter 启动处理函数
 func SetupRouter() {
 
+	// 处理公共中间件
+	HandlePublicMW(globals.Router)
+
 	// 用户分路由
 	userRouter.User(globals.Router)
 
