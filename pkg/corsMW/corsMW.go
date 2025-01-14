@@ -1,4 +1,4 @@
-package crossMW
+package corsMW
 
 import (
 	"github.com/gin-contrib/cors"
