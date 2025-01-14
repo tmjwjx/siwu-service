@@ -8,9 +8,6 @@ import (
 
 // User 用户路由
 func User(e *gin.Engine) {
-	// 跨域
-	// e.Use(crossMW.CorsMiddleware())
-
 	// 注册
 	e.POST("/user/register", controllers.Register)
 	// 忘记密码
