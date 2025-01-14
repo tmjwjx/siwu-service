@@ -2,7 +2,6 @@ package routes
 
 import (
 	"forum/internal/user/controllers"
-	"forum/internal/user/middlewares"
 	"forum/pkg/token"
 	"github.com/gin-gonic/gin"
 )
@@ -10,7 +9,7 @@ import (
 // User 用户路由
 func User(e *gin.Engine) {
 	// 跨域
-	e.Use(middlewares.CorsMiddleware())
+	// e.Use(crossMW.CorsMiddleware())
 
 	// 注册
 	e.POST("/user/register", controllers.Register)
@@ -71,8 +70,8 @@ func User(e *gin.Engine) {
 	r.GET("/download_template", controllers.DownloadTemplate)
 	// 获取当前用户基本信息
 	r.GET("/getInfo", controllers.GetInfo)
-	//// 上传用户头像
-	//r.POST("/upload/headshot", controllers.UploadHeadshot)
+	// // 上传用户头像
+	// r.POST("/upload/headshot", controllers.UploadHeadshot)
 
 	// 初始化用户信息(会员中心)
 	e.GET("/init_userinfo", controllers.InitUserInfoCtrl)
@@ -80,8 +79,8 @@ func User(e *gin.Engine) {
 	// 编辑个签
 	e.POST("/edit_signature", controllers.EditSignatureCtrl)
 
-	//message := e.Group("/message")
-	//{
+	// message := e.Group("/message")
+	// {
 	// message := e.Group("/message")
 	// {
 	//	message.POST("/like", controllers.LikeMessageCtrl)
