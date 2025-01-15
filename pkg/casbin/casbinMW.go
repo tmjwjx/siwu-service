@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func NewCasbinAuth(cbs *CasbinService) gin.HandlerFunc {
+func CasbinAuth(cbs *CasbinService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// 加载策略文件
 		err := cbs.Enforcer.LoadPolicy()
@@ -31,13 +31,15 @@ func NewCasbinAuth(cbs *CasbinService) gin.HandlerFunc {
 
 		// 获取apiId
 		apiId, err := SelApiId(c.Request.URL.Path)
-		if err != nil || apiId == 0 {
+		if err != nil {
 			e := response.NewAppErr(globals.StatusBadRequest, err, nil)
 			response.Failed(c, 400, e)
 			c.Abort()
 			return
 		}
-		ok, err := cbs.Enforcer.Enforce(id, apiId)
+		//ok, err := cbs.Enforcer.Enforce(id, apiId)
+		ok, err := cbs.Enforcer.Enforce(fmt.Sprintf("%v", id), fmt.Sprintf("%v", apiId))
+
 		if err != nil {
 			e := response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("NewCasbinAuth -> 权限验证失败"), nil)
 			response.Failed(c, 500, e)
