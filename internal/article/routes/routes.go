@@ -59,6 +59,8 @@ func Workplace(e *gin.Engine) {
 		workplaceGroup.GET("/article_sum", controllers.GetTwoWeeksArticleSumCtrl)
 		// 查询前五篇热门文章数据
 		workplaceGroup.GET("/hot_articles", controllers.GetHotArticleCtrl)
+		// 前五个热门标签的文章量
+		workplaceGroup.GET("/pielist", controllers.GetHotTagsCtrl)
 
 	}
 

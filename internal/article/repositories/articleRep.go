@@ -13,6 +13,69 @@ import (
 	"time"
 )
 
+// GetHotTagsRep
+// @Description: 查询前 n 的热门标签
+// @param        db *gorm.DB
+// @param        n int
+// @return       tags
+// @return       err
+// @Author tianjiajie 2025-01-15 20:36:55
+func GetHotTagsRep(db *gorm.DB, n int) (data interface{}, err error) {
+	// 查询热门标签
+	var hotTags []struct {
+		ID    uint   `json:"id"`    // 标签ID
+		Name  string `json:"name"`  // 标签名称
+		Count int    `json:"count"` // 文章数量
+	}
+	err = db.Model(&models.Tag{}).
+		Select("sw_tags.id, sw_tags.name, COUNT(sw_article_tags.article_id) AS count").
+		Joins("LEFT JOIN sw_article_tags ON sw_tags.id = sw_article_tags.tag_id").
+		Group("sw_tags.id").
+		Order("count DESC").
+		Limit(n).
+		Scan(&hotTags).Error // 执行查询并将结果存入 hotTags 切片
+	if err != nil {
+		return nil, err
+	}
+
+	// 所有tag下的文章总数
+	var total int64
+	err = db.Table("sw_article_tags").
+		Select("COUNT(DISTINCT article_id, tag_id) AS total_count"). // 计算不同的 article_id 和 tag_id 组合
+		Scan(&total).Error
+	if err != nil {
+		return nil, err
+	}
+
+	var hotTagsRes []struct {
+		Type  string `json:"type"`  // 标签名称
+		Value string `json:"value"` // 占比
+	}
+
+	other := 100.00
+	// 将查询结果存入 tags 切片
+	for _, tag := range hotTags {
+		// 计算占比
+		temp := float64(tag.Count) / float64(total) * 100
+		other -= temp
+		value := fmt.Sprintf("%.2f%%", temp)
+		hotTagsRes = append(hotTagsRes, struct {
+			Type  string `json:"type"`
+			Value string `json:"value"`
+		}{tag.Name, value})
+	}
+
+	value := fmt.Sprintf("%.2f%%", other)
+	hotTagsRes = append(hotTagsRes, struct {
+		Type  string `json:"type"`
+		Value string `json:"value"`
+	}{"其他", value})
+
+	data = hotTagsRes
+
+	return
+}
+
 // GetHotArticleRep
 // @Description: 查询前 n 篇热门文章数据
 // @param        db *gorm.DB
@@ -31,7 +94,8 @@ func GetHotArticleRep(db *gorm.DB, n int) (articleList []requests.HotArticleRes,
 	}
 	// 查询前n篇文章数据
 	err = db.Table("sw_articles a").
-		Select("a.id, a.title, a.likes_count, IF(a.likes_count > 0, IFNULL(COUNT(b.article_id), 0) / a.likes_count, 0) AS increase," +
+		Select("a.id, a.title, a.likes_count, " +
+			"IF(a.likes_count > 0, IFNULL(COUNT(b.article_id), 0) / a.likes_count, 0) AS increase," +
 			"IFNULL(COUNT(b.article_id), 0) AS today_likes_count").
 		Joins("LEFT JOIN sw_article_likes b ON a.id = b.article_id AND b.deleted_at IS NULL AND DATE(b.updated_at) = CURDATE()").
 		Group("a.id").
@@ -55,7 +119,7 @@ func GetHotArticleRep(db *gorm.DB, n int) (articleList []requests.HotArticleRes,
 		}
 
 		// 处理点赞涨幅格式
-		increase := fmt.Sprintf("%d%%", int(article.Increase*100))
+		increase := fmt.Sprintf("%.2f%%", article.Increase*100)
 
 		// 将处理后的数据存入 articleList
 		articleList = append(articleList, requests.HotArticleRes{
