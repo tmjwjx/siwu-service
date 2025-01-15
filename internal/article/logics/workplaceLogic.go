@@ -7,6 +7,19 @@ import (
 	"time"
 )
 
+func GetHotTagsLogic(db *gorm.DB) (date interface{}, err error) {
+
+	// 查询热门标签
+	tags, err := repositories.GetHotTagsRep(db, 5)
+	if err != nil {
+		return nil, err
+	}
+
+	date = gin.H{"pie_list": tags}
+
+	return
+}
+
 // GetHotArticleLogic
 // @Description: 查询前五篇热门文章数据
 // @param        db *gorm.DB
