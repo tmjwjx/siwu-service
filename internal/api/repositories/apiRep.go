@@ -466,6 +466,7 @@ func SearchApiListRep(db *gorm.DB, req *requests.SearchApiListReq) (*requests.Se
 	if req.BriefIntroduction != "" {
 		query = query.Where("sw_apis.brief_introduction = ?", req.BriefIntroduction)
 	}
+
 	//else {
 	//	return nil, fmt.Errorf("SearchApiListRep -> 查询条件不能全部为空")
 	//}
@@ -477,7 +478,7 @@ func SearchApiListRep(db *gorm.DB, req *requests.SearchApiListReq) (*requests.Se
 
 	err := query.Limit(req.Limit).Offset(req.Page).Scan(&searchApiRes).Error
 	if err != nil {
-		return nil, fmt.Errorf("SearchApiListRep -> 不存在该api -> %s", err)
+		return nil, fmt.Errorf("SearchApiListRep -> 查询api异常 -> %s", err)
 	}
 	if len(searchApiRes) == 0 {
 		return nil, fmt.Errorf("SearchApiListRep -> 不存在该api")

@@ -108,10 +108,10 @@ func SelApiId(requestUrl string) (uint, error) {
 	// 根据请求中的路由接口,查询apiId
 	err := globals.DB.Model(models.Api{}).Select("ID").Where("path = ?", requestUrl).Scan(&apiId).Error
 	if err != nil {
-		return 0, fmt.Errorf("SelApiId -> 根据请求路径，获取apiID失败 -> %s", err)
+		return 0, fmt.Errorf("SelApiId -> 根据请求路径，获取apiID失败，该用户没有该权限 -> %s", err)
 	}
 	if err == nil && apiId == 0 {
-		return 0, fmt.Errorf("SelApiId -> 该api不存在")
+		return 0, fmt.Errorf("SelApiId -> 该api不存在，该用户没有该权限")
 	}
 	return apiId, nil
 }
