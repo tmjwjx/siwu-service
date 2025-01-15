@@ -29,4 +29,7 @@ func init() {
 	// 初始化路由配置
 	RouterInit()
 
+	// 初始化静态文件映射配置
+	StaticInit()
+
 }

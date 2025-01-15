@@ -5,6 +5,8 @@ import (
 	"forum/internal/models"
 	"forum/internal/roleManage/repositories"
 	"forum/internal/roleManage/requests"
+	"forum/pkg/casbin"
+	"forum/pkg/globals"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -159,26 +161,48 @@ func (r *RoleReqContext) DispatchRole(dispatchRole requests.DispatchRoleReq) err
 		return fmt.Errorf("RoleReqContext.DispatchRoleReq() err = 没有查询到id为 %v 的用户", dispatchRole.UserId)
 	}
 
-	adminRoleSli := make([]*models.AdminRole, 0)
+	// adminRoleSli := make([]*models.AdminRole, 0)
+	// userId := dispatchRole.UserId
+	// for _, id := range dispatchRole.Ids {
+	// 	// 判断角色Id是否存在
+	// 	role := repositories.QueryRoleById(r.DB, id)
+	// 	if role == nil {
+	// 		return fmt.Errorf("RoleReqContext.DispatchRoleReq err = 没有查询到id为 %v 的角色", id)
+	// 	}
+	//
+	// 	// 添加的切片里
+	// 	adminRoleSli = append(adminRoleSli, &models.AdminRole{
+	// 		AdminId: userId,
+	// 		RoleId:  id,
+	// 	})
+	// }
+	//
+	// // 插入数据
+	// err := repositories.InsertObjects(r.DB, adminRoleSli)
+	// if err != nil {
+	// 	return fmt.Errorf("RoleReqContext.DispatchRoleReq() -> %v", err)
+	// }
+	// return nil
+
+	// 筛选数据
 	userId := dispatchRole.UserId
+	ids := make([]uint, 0) // 要添加的角色
 	for _, id := range dispatchRole.Ids {
 		// 判断角色Id是否存在
 		role := repositories.QueryRoleById(r.DB, id)
 		if role == nil {
 			return fmt.Errorf("RoleReqContext.DispatchRoleReq err = 没有查询到id为 %v 的角色", id)
 		}
-
-		// 添加的切片里
-		adminRoleSli = append(adminRoleSli, &models.AdminRole{
-			AdminId: userId,
-			RoleId:  id,
-		})
+		ids = append(ids, id)
 	}
 
-	// 插入数据
-	err := repositories.InsertObjects(r.DB, adminRoleSli)
+	// 调用 casbin 方法
+	casbinService, err := casbin.NewCasbinService(globals.DB)
 	if err != nil {
-		return fmt.Errorf("RoleReqContext.DispatchRoleReq() -> %v", err)
+		fmt.Println("Api(e *gin.Engine) -> 创建 casbinService 失败, err = ", err)
+	}
+	if err = casbinService.AssignRolesForUser(userId, ids); err != nil {
+		return err
 	}
 	return nil
 }
