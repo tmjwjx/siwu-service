@@ -109,5 +109,8 @@ func SelApiId(requestUrl string) (uint, error) {
 	if err != nil {
 		return 0, fmt.Errorf("SelApiId -> 根据请求路径，获取apiID失败 -> %s", err)
 	}
+	if err == nil && apiId == 0 {
+		return 0, fmt.Errorf("SelApiId -> 该api不存在")
+	}
 	return apiId, nil
 }
