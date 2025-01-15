@@ -30,6 +30,9 @@ func SetupRouter() {
 	// 文章分路由
 	articleRouter.Article(globals.Router)
 
+	// 后台工作台分路由
+	articleRouter.Workplace(globals.Router)
+
 	// 标签分路由
 	tagRouter.Tag(globals.Router)
 
