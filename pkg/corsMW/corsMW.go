@@ -1,4 +1,4 @@
-package middlewares
+package corsMW
 
 import (
 	"github.com/gin-contrib/cors"

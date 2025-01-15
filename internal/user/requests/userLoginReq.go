@@ -14,6 +14,12 @@ type LogicReq struct {
 	Password string `json:"password"` // 密码
 }
 
+// LogicRes 登录响应
+type LogicRes struct {
+	Id       uint   `json:"id"`
+	Nickname string `json:"nickname"`
+}
+
 // // VerifyCodeReq 验证码消息请求
 // type VerifyCodeReq struct {
 // 	Email string `json:"email" form:"email"` // 邮箱

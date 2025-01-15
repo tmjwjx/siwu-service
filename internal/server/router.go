@@ -18,6 +18,9 @@ import (
 // SetupRouter 启动处理函数
 func SetupRouter() {
 
+	// 处理公共中间件
+	HandlePublicMW(globals.Router)
+
 	// 用户分路由
 	userRouter.User(globals.Router)
 
@@ -51,6 +54,6 @@ func SetupRouter() {
 	// casbin权限管理分录由
 	casbinRouter.CasbinRMA(globals.Router)
 
-	// 后台登陆分陆游
+	// 后台登陆分路由
 	bsLoginRouter.Backstage(globals.Router)
 }
