@@ -40,7 +40,7 @@ func Register(c *gin.Context) {
 
 	// 检验密码是否合法
 	if !internalUtils.IsValidPassword(registerMsg.Password) {
-		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("Register() : 密码过于简单"), nil))
+		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("Register() : 密码必须要同时包含字母、数字、特殊字符，长度在8到16位之间"), nil))
 		return
 	}
 
@@ -98,7 +98,7 @@ func Login(c *gin.Context) {
 	}
 	// 检验密码是否合法
 	if !internalUtils.IsValidPassword(logicMsg.Password) {
-		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("Login() : 密码不合法"), nil))
+		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("Login() : 密码必须要同时包含字母、数字、特殊字符，长度在8到16位之间"), nil))
 		return
 	}
 
