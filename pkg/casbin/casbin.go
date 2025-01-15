@@ -130,22 +130,42 @@ func (c *CasbinService) AssignRolesForUser(userId uint, ids []uint) error {
 		return fmt.Errorf("ModifyRolePolicy -> 创建角色组权限， 已有的会忽略 -> %s", err)
 	}
 
-	var tempId string
-	var tempIDS []string
+	// 遍历要分配的角色
 	for _, id := range ids {
-		tempId = fmt.Sprintf("%v", id)
-		tempIDS = append(tempIDS, tempId)
+		role := fmt.Sprintf("%v", id)
+
+		// 为用户添加单个角色
+		ok, err := c.Enforcer.AddRoleForUser(fmt.Sprintf("%v", userId), role)
+		if err != nil {
+			return fmt.Errorf("(c *CasbinService) AssignRolesForUser -> 为用户分配角色失败: %s", err)
+		}
+		if !ok {
+
+		}
 	}
 
-	ok, err := c.Enforcer.AddRolesForUser(fmt.Sprintf("%v", userId), tempIDS)
-	if err != nil {
-		return fmt.Errorf("(c *CasbinService) AssignRolesForUser -> 为用户分配角色失败 %s", err)
-	}
-	if !ok {
-		return fmt.Errorf("(c *CasbinService) AssignRolesForUser -> 该用户已经拥有该角色")
+	// 如果需要持久化到数据库
+	if err := c.Enforcer.SavePolicy(); err != nil {
+		return fmt.Errorf("(c *CasbinService) AssignRolesForUser -> 保存策略失败: %s", err)
 	}
 
-	// 保存策略(保存到存储)
-	return c.Enforcer.SavePolicy()
+	return nil
+
+	//var tempId string
+	//var tempIDS []string
+	//for _, id := range ids {
+	//	tempId = fmt.Sprintf("%v", id)
+	//	tempIDS = append(tempIDS, tempId)
+	//}
+	//
+	//ok, err := c.Enforcer.AddRolesForUser(fmt.Sprintf("%v", userId), tempIDS)
+	//if err != nil {
+	//	return fmt.Errorf("(c *CasbinService) AssignRolesForUser -> 为用户分配角色失败 %s", err)
+	//}
+	//if !ok {
+	//	return fmt.Errorf("(c *CasbinService) AssignRolesForUser -> 该用户已经拥有该角色")
+	//}
+	//// 保存策略(保存到存储)
+	//return c.Enforcer.SavePolicy()
 
 }
