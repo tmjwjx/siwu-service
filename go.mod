@@ -4,9 +4,6 @@ go 1.22.5
 
 require (
 	github.com/asaskevich/EventBus v0.0.0-20200907212545-49d423059eef
-	github.com/casbin/casbin/v2 v2.99.0
-	github.com/casbin/gorm-adapter/v3 v3.28.0
-	github.com/asaskevich/EventBus v0.0.0-20200907212545-49d423059eef
 	github.com/casbin/casbin/v2 v2.100.0
 	github.com/casbin/gorm-adapter/v3 v3.32.0
 	github.com/disintegration/imaging v1.6.2
