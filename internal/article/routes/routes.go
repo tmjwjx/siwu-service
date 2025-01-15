@@ -46,6 +46,24 @@ func Article(e *gin.Engine) {
 
 }
 
+// Workplace
+// @Description: 工作台路由
+// @param        e *gin.Engine
+// @Author tianjiajie 2025-01-15 09:11:06
+func Workplace(e *gin.Engine) {
+	workplaceGroup := e.Group("/workplace")
+	// token 校验
+	workplaceGroup.Use(token.AuthMiddleware())
+	{
+		// 查询近两周文章发布数量
+		workplaceGroup.GET("/article_sum", controllers.GetTwoWeeksArticleSumCtrl)
+		// 查询前五篇热门文章数据
+		workplaceGroup.GET("/hot_articles", controllers.GetHotArticleCtrl)
+
+	}
+
+}
+
 // Comment 评论
 func Comment(e *gin.Engine) {
 

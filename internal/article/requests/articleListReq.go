@@ -55,3 +55,10 @@ type GetArticleByTagReq struct {
 	Page  int `json:"page" form:"page"`   // 分页页码
 	Limit int `json:"limit" form:"limit"` // 每页条数
 }
+
+type HotArticleRes struct {
+	ID         uint   `json:"id"`          // 文章ID
+	Title      string `json:"title"`       // 文章标题
+	LikesCount string `json:"likes_count"` // 点赞数
+	Increase   string `json:"increases"`   // 点赞涨幅
+}
