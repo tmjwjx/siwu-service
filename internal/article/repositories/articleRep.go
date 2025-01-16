@@ -498,6 +498,20 @@ func ArticleLikeQueryReq(db *gorm.DB, articleId int, userId int) (bool, error) {
 	return true, nil
 }
 
+// AddArticleClickRep
+// @Description: 增加文章点击量
+// @param        db *gorm.DB
+// @param        articleId string
+// @return       error
+// @Author tianjiajie 2025-01-16 08:46:29
+func AddArticleClickRep(db *gorm.DB, articleId string) error {
+	// 增加文章点击量
+	if err := db.Model(&models.Article{}).Where("id = ?", articleId).Update("views_count", gorm.Expr("views_count + ?", 1)).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
 // AboutArticleRep
 // @Description: 获取相关推荐
 // @param        db *gorm.DB

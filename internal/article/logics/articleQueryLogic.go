@@ -44,6 +44,13 @@ func ArticleDetailLogic(db *gorm.DB, articleId string, userId uint) (data interf
 		return nil, err
 	}
 
+	// 增加点击量
+	err = repositories.AddArticleClickRep(db, articleId)
+	if err != nil {
+		globals.Log.Errorf("err = %s", err)
+		return nil, err
+	}
+
 	data = gin.H{"article": article, "about": about}
 	return data, nil
 
