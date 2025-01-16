@@ -83,7 +83,7 @@ func (u *UserReqContext) Register(registerMsg requests.RegisterReq) error {
 	}
 
 	// 向 user 表中添加该用户
-	if err = sqlUtils.InsertObject(u.DB, &models.User{Nickname: nickName, Email: email, Password: encryptedPassword, LastLoginTime: time.Time{}}); err != nil {
+	if err = sqlUtils.InsertObject(u.DB, &models.User{Nickname: nickName, Email: email, Password: encryptedPassword, LastLoginTime: time.Now()}); err != nil {
 		return fmt.Errorf("UserReqContext.Register() err: %v", err)
 	}
 
