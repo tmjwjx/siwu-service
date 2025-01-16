@@ -83,7 +83,7 @@ func (u *UserReqContext) Register(registerMsg requests.RegisterReq) error {
 	}
 
 	// 向 user 表中添加该用户
-	if err = sqlUtils.InsertObject(u.DB, &models.User{Nickname: nickName, Email: email, Password: encryptedPassword}); err != nil {
+	if err = sqlUtils.InsertObject(u.DB, &models.User{Nickname: nickName, Email: email, Password: encryptedPassword, LastLoginTime: time.Now()}); err != nil {
 		return fmt.Errorf("UserReqContext.Register() err: %v", err)
 	}
 
@@ -172,7 +172,7 @@ func (u *UserReqContext) Login(logicMsg requests.LogicReq) (*requests.LogicRes, 
 		return nil, fmt.Errorf("UserReqContext.Login() err: 密码错误")
 	}
 
-	// 改变 LastLoginTime
+	// 修改 LastLoginTime
 	now := time.Now() // 获取当前时间
 	if err := sqlUtils.UpdateObjects(u.DB, &models.User{Model: gorm.Model{ID: user.ID}}, map[string]interface{}{"last_login_time": now}); err != nil {
 		return nil, fmt.Errorf("UserReqContext.Login() -> %v", err)
@@ -186,6 +186,7 @@ func (u *UserReqContext) Login(logicMsg requests.LogicReq) (*requests.LogicRes, 
 	return logicRes, nil
 }
 
+// ForgotPassword 忘记密码
 func (u *UserReqContext) ForgotPassword(forgotPasswordMsg requests.ForgotPasswordReq) error {
 	email := forgotPasswordMsg.Email
 	verifyCode := forgotPasswordMsg.VerifyCode
