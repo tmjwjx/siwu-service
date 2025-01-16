@@ -45,7 +45,6 @@ type UserAccountRes struct {
 
 // UserPrivateSettingsReq 用户私信设置更新
 type UserPrivateSettingsReq struct {
-	ID              uint   `json:"id"`
 	PrivateSettings string `json:"private_settings"`
 }
 

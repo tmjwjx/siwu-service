@@ -61,8 +61,8 @@ func UserAccountResponseLogic(userID uint, db *gorm.DB) (*requests.UserAccountRe
 }
 
 // UserPrivateSetRequestLogic 更新用户私信设置
-func UserPrivateSetRequestLogic(userPrivateSetReq *requests.UserPrivateSettingsReq, db *gorm.DB) error {
-	err := repositories.UserPrivateSetRequest(userPrivateSetReq, db)
+func UserPrivateSetRequestLogic(userID uint, userPrivateSetReq *requests.UserPrivateSettingsReq, db *gorm.DB) error {
+	err := repositories.UserPrivateSetRequest(userID, userPrivateSetReq, db)
 	if err != nil {
 		return err
 	}

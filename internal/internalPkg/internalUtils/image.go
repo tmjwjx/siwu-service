@@ -10,6 +10,32 @@ import (
 	"strings"
 )
 
+/*
+以下是取图片路径和存图片路径的示例(以用户头像图片为例)
+
+//查询用户的头像路径
+userImages, err := internalUtils.GetImages(u.DB, globals.UserHome, id)
+if err != nil {
+	return nil, fmt.Errorf("UserReqContext.GetInfo() %v", err)
+}
+// 没有图片
+if userImages == nil {
+	return nil, fmt.Errorf("UserReqContext.GetInfo() err = 无法找到id为%d的用户图片", id)
+}
+avatarPath := (*userImages)[0]
+
+// 存储用户头像路径
+if err := internalUtils.StoreUrl(&internalUtils.UrlParam{
+	UrlPath: []string{req.AvatarPath},
+	Home:    globals.UserHome,
+	HomeID:  req.UserId,
+	DB:      u.DB,
+}); err != nil {
+	return fmt.Errorf("UserReqContext.Edit() -> %v", err)
+}
+
+*/
+
 // GetImages
 // @Description: 从数据库中将图片路径取出
 // @Author wangyulong 2024-10-17 16:20:39
