@@ -7,6 +7,7 @@ import (
 	"forum/internal/models"
 	"forum/internal/user/repositories"
 	"forum/internal/user/requests"
+	"forum/pkg/globals"
 	"github.com/xuri/excelize/v2"
 	"gorm.io/gorm"
 	"mime/multipart"
@@ -127,10 +128,15 @@ func (u *UserReqContext) Edit(req requests.EditReq) error {
 		return fmt.Errorf("UserReqContext.Edit() -> %v", err)
 	}
 
-	// 插入用户头像路径
-	// if err := imageCtrl.StoreUrlCtrl(&imageLogics.UrlParam{UrlPath: []string{req.AvatarPath}, Home: globals.User, HomeID: req.UserId}); err != nil {
-	//	return fmt.Errorf("UserReqContext.Edit() err: %v", err)
-	// }
+	// 存储用户头像路径
+	if err := internalUtils.StoreUrl(&internalUtils.UrlParam{
+		UrlPath: []string{req.AvatarPath},
+		Home:    globals.UserHome,
+		HomeID:  req.UserId,
+		DB:      u.DB,
+	}); err != nil {
+		return fmt.Errorf("UserReqContext.Edit() -> %v", err)
+	}
 
 	return nil
 }
@@ -160,13 +166,15 @@ func (u *UserReqContext) List(req requests.ListReq) ([]*requests.ListRes, int, e
 	var listRes = make([]*requests.ListRes, 0)
 	for _, v := range users {
 		// 查询用户的头像路径
-		avatarPath := ""
-		// userImgs, err := controllers.GetImagesControllers("用户", v.ID)
-		// if err != nil { // 数据库中没有该用户的头像，使用默认的头像
-		//	avatarPath = internalUtils.UserDefaultImage
-		// } else {
-		//	avatarPath = (*userImgs)[0].Path
-		// }
+		userImages, err := internalUtils.GetImages(u.DB, globals.UserHome, v.ID)
+		if err != nil {
+			return nil, 0, fmt.Errorf("UserReqContext.List() %v", err)
+		}
+		// 没有图片
+		if userImages == nil {
+			return nil, 0, fmt.Errorf("UserReqContext.List() err = 无法找到id为%d的用户图片", v.ID)
+		}
+		avatarPath := (*userImages)[0]
 
 		// 查询这个用户的全部角色id
 		roleIds := repositories.QueryAdminRoleByUserId(u.DB, v.ID)
@@ -347,13 +355,15 @@ func (u *UserReqContext) GetInfo(id uint) (*requests.GetInfoRes, error) {
 	}
 
 	// 查询用户的头像路径
-	avatarPath := ""
-	// userImgs, err := controllers.GetImagesControllers("user", user.ID)
-	// if err != nil { // 数据库中没有该用户的头像，使用默认的头像
-	//	avatarPath = internalUtils.UserDefaultImage
-	// } else {
-	//	avatarPath = (*userImgs)[0].Path
-	// }
+	userImages, err := internalUtils.GetImages(u.DB, globals.UserHome, id)
+	if err != nil {
+		return nil, fmt.Errorf("UserReqContext.GetInfo() %v", err)
+	}
+	// 没有图片
+	if userImages == nil {
+		return nil, fmt.Errorf("UserReqContext.GetInfo() err = 无法找到id为%d的用户图片", id)
+	}
+	avatarPath := (*userImages)[0]
 
 	// 查询这个用户的全部角色
 	roleIds := repositories.QueryAdminRoleByUserId(u.DB, user.ID)
