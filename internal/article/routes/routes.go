@@ -1,7 +1,10 @@
 package routes
 
 import (
+	"fmt"
 	"forum/internal/article/controllers"
+	"forum/pkg/casbin"
+	"forum/pkg/globals"
 	"forum/pkg/token"
 	"github.com/gin-gonic/gin"
 )
@@ -49,6 +52,11 @@ func Article(e *gin.Engine) {
 // Comment 评论
 func Comment(e *gin.Engine) {
 
+	casbinService, err := casbin.NewCasbinService(globals.DB)
+	if err != nil {
+		fmt.Println("Api(e *gin.Engine) -> 创建 casbinService 失败, err = ", err)
+	}
+
 	// 前台
 	r := e.Group("/comment")
 
@@ -68,7 +76,7 @@ func Comment(e *gin.Engine) {
 	r.POST("/praise", controllers.UpdatePraiseCountCtrl)
 
 	// 后台
-	r2 := e.Group("/backstage_comment")
+	r2 := e.Group("/backstage_comment").Use(casbin.CasbinAuth(casbinService))
 
 	// 展示评论列表
 	r2.GET("/list", controllers.ShowCommentsListCtrl)
@@ -82,10 +90,13 @@ func Comment(e *gin.Engine) {
 	// 批量删除评论
 	r2.DELETE("/batch_delete", controllers.BatchDelTagCtrl)
 
+	// 批量审核
+	r2.POST("/query", controllers.BatchReviewCtrl)
+
 	// 更新评论
 	r2.POST("/update", controllers.UpdateCommentCtrl)
 
 	// 查询某个用户的全部评论
-	r2.GET("/query", controllers.QueryCommentCtrl)
+	//r2.GET("/query", controllers.QueryCommentCtrl)
 
 }

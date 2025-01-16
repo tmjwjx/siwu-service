@@ -20,6 +20,9 @@ func BatchReviewRep(db *gorm.DB, req *requests.BatchReviewReq) (*requests.BatchR
 	if err != nil {
 		return nil, fmt.Errorf("BatchReviewRep -> 批量审核查询对应评论失败 -> %s", err)
 	}
+	if len(comments) == 0 {
+		return nil, fmt.Errorf("BatchReviewRep -> 该评论不存在 -> %s", err)
+	}
 
 	// 改变查到的评论的审核状态
 	for _, comment := range comments {
@@ -29,9 +32,8 @@ func BatchReviewRep(db *gorm.DB, req *requests.BatchReviewReq) (*requests.BatchR
 		}
 	}
 
-	res := &requests.BatchReviewRes{
-		ComList2: struct{}{},
-	}
+	res := &requests.BatchReviewRes{}
+	res.ComList2 = append(res.ComList2, struct{}{})
 
 	return res, nil
 
@@ -51,8 +53,8 @@ func ShowCommentsListRep(db *gorm.DB, req *requests.CommentsListReq) (*requests.
 	var article models.Article
 	var examine int
 
-	query := db.Model(&models.ArticleComment{}).Joins("join sw_user on sw_user.id = sw_article_comment.user_id").
-		Joins("join sw_article on sw_article.id = sw_article_comment.article_id")
+	query := db.Model(&models.ArticleComment{}).Joins("join sw_users on sw_users.id = sw_article_comments.user_id").
+		Joins("join sw_articles on sw_articles.id = sw_article_comments.article_id")
 
 	if req.Type == 1 {
 		// 不做任何处理
