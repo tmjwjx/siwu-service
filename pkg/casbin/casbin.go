@@ -28,7 +28,6 @@ func NewCasbinService(db *gorm.DB) (*CasbinService, error) {
 [request_definition]
 r = sub, obj
 
-
 [policy_definition]
 p = sub, obj
 
@@ -202,4 +201,64 @@ func (c *CasbinService) GetRolesForUser(userId uint) ([]uint, error) {
 	}
 
 	return ids, nil
+}
+
+func (c *CasbinService) DeleteRoleForUser(userId uint, roleIds []uint) error {
+	// 确保最新的策略数据
+	err := c.Enforcer.LoadPolicy()
+	if err != nil {
+		return fmt.Errorf("(c *CasbinService) DeleteRoleForUser -> 策略加载失败， 已有的会忽略 -> %s", err)
+	}
+
+	for _, roleId := range roleIds {
+		ok, err := c.Enforcer.DeleteRoleForUser(fmt.Sprintf("%v", userId), fmt.Sprintf("%v", roleId))
+		if err != nil {
+			return fmt.Errorf("c *CasbinService) DeleteRoleForUser -> 删除用户对应的角色异常 -> %s", err)
+		}
+		if !ok {
+			return fmt.Errorf("c *CasbinService) DeleteRoleForUser -> 删除用户对应的角色失败 -> %s", err)
+		}
+	}
+
+	// 如果需要持久化到数据库
+	if err := c.Enforcer.SavePolicy(); err != nil {
+		return fmt.Errorf("(c *CasbinService) DeleteRoleForUser -> 保存策略失败: %s", err)
+	}
+
+	return nil
+}
+
+func (c *CasbinService) UpdateRoleForUser(userId uint, ids []uint) error {
+	// 确保最新的策略数据
+	err := c.Enforcer.LoadPolicy()
+	if err != nil {
+		return fmt.Errorf("(c *CasbinService) UpdateRoleForUser -> 策略加载失败， 已有的会忽略 -> %s", err)
+	}
+
+	// 删除用户所有对应的角色
+	_, err = c.Enforcer.DeleteRolesForUser(fmt.Sprintf("%v", userId))
+	if err != nil {
+		return fmt.Errorf("c *CasbinService) UpdateRoleForUser -> 删除用户所有对应的角色异常 -> %s", err)
+	}
+
+	// 遍历要分配的角色
+	for _, id := range ids {
+		role := fmt.Sprintf("%v", id)
+
+		// 为用户添加单个角色
+		ok, err := c.Enforcer.AddRoleForUser(fmt.Sprintf("%v", userId), role)
+		if err != nil {
+			return fmt.Errorf("(c *CasbinService) UpdateRoleForUser -> 为用户分配角色失败: %s", err)
+		}
+		if !ok {
+
+		}
+	}
+
+	// 如果需要持久化到数据库
+	if err := c.Enforcer.SavePolicy(); err != nil {
+		return fmt.Errorf("(c *CasbinService) UpdateRoleForUser -> 保存策略失败: %s", err)
+	}
+
+	return nil
 }
