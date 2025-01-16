@@ -201,7 +201,7 @@ func UserAccountRequest(userAccountReq *requests.UserAccountReq, db *gorm.DB) er
 }
 
 // UserPrivateSetRequest 更新用户私信设置
-func UserPrivateSetRequest(userPrivateSetReq *requests.UserPrivateSettingsReq, db *gorm.DB) error {
+func UserPrivateSetRequest(userID uint, userPrivateSetReq *requests.UserPrivateSettingsReq, db *gorm.DB) error {
 
 	// 开启事务
 	tx := db.Begin()
@@ -211,11 +211,11 @@ func UserPrivateSetRequest(userPrivateSetReq *requests.UserPrivateSettingsReq, d
 
 	var user models.User
 	// 查询该用户是否存在
-	err := tx.Model(&models.User{}).Where("id = ?", userPrivateSetReq.ID).First(&user).Error
+	err := tx.Model(&models.User{}).Where("id = ?", userID).First(&user).Error
 	if err != nil {
 		// return fmt.Errorf("UserPrivateSetRequest -> %s", err)
 		// 数据库表中还没有该用户的数据，直接插入即可
-		user.ID = userPrivateSetReq.ID
+		user.ID = userID
 		user.PrivateSettings = userPrivateSetReq.PrivateSettings
 		err := tx.Create(&user).Error
 		if err != nil {

@@ -32,19 +32,19 @@ func User(e *gin.Engine) {
 	r.POST("/form_personal_data", controllers.UserDataRequestCtrl)
 
 	// 前端获取用户个人资料
-	r.GET("/form_personal_data/:id", controllers.UserDataResponseCtrl)
+	r.GET("/form_personal_data", controllers.UserDataResponseCtrl)
 
 	// 上传用户账号设置
 	r.POST("/account_settings", controllers.UserAccountRequestCtrl)
 
 	// 前端获取用户账号设置数据
-	r.GET("/account_settings/:id", controllers.UserAccountResponseCtrl)
+	r.GET("/account_settings", controllers.UserAccountResponseCtrl)
 
 	// 上传用户私信设置
 	r.POST("/private_settings", controllers.UserPrivateSetRequestCtrl)
 
 	// 前端获取用户私信设置数据
-	r.GET("/private_settings/:id", controllers.UserPrivateSetResponseCtrl)
+	r.GET("/private_settings", controllers.UserPrivateSetResponseCtrl)
 
 	// 铃铛消息
 	// e.GET("/event", controllers.MessagePushCtrl)
