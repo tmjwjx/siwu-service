@@ -30,6 +30,7 @@ func RedisInit() {
 	_, err := globals.RDB.Ping(ctx).Result()
 	if err != nil {
 		globals.Log.Panicf("Redis连接失败: %v", err)
-
+	} else {
+		globals.Log.Infof("Redis连接成功")
 	}
 }

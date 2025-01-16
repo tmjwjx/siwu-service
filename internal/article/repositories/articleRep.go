@@ -1,9 +1,11 @@
 package repositories
 
 import (
+	"context"
 	"fmt"
 	"forum/internal/article/requests"
 	"forum/internal/internalPkg/internalUtils"
+	"forum/internal/internalPkg/redisUtils"
 	"forum/internal/models"
 	"forum/pkg/globals"
 	"github.com/gin-gonic/gin"
@@ -12,6 +14,76 @@ import (
 	"strconv"
 	"time"
 )
+
+// GetTodayViewsRep
+// @Description: 获取今日浏览量
+// @param        db *gorm.DB
+// @return       todayViews
+// @return       err
+// @Author tianjiajie 2025-01-16 15:10:42
+func GetTodayViewsRep(db *gorm.DB) (todayViews int64, err error) {
+
+	rdb := globals.RDB
+	ctx := context.Background()
+	// 查询今日浏览量
+	nowTime := string(time.Now().Format("2006-01-02"))
+	todayViewsStr, err := redisUtils.HGet(rdb, ctx, "todayViews", nowTime)
+	if err != nil {
+		return 0, err
+	}
+	todayViews, _ = strconv.ParseInt(todayViewsStr, 10, 64)
+
+	return todayViews, nil
+}
+
+// GetTodayCommentsRep
+// @Description: 获取今日评论数量
+// @param        db *gorm.DB
+// @return       todayComments
+// @return       err
+// @Author tianjiajie 2025-01-16 15:00:59
+func GetTodayCommentsRep(db *gorm.DB) (todayComments int64, err error) {
+
+	// 查询今日评论数量
+	if err = db.Model(&models.ArticleComment{}).
+		Where("DATE(created_at) = ?", time.Now().Format("2006-01-02")).
+		Count(&todayComments).Error; err != nil {
+		return 0, err
+	}
+	return todayComments, nil
+}
+
+// GetNewAddArticleRep
+// @Description: 获取今日新增文章数量
+// @param        db *gorm.DB
+// @return       newArticle
+// @return       err
+// @Author tianjiajie 2025-01-16 14:58:07
+func GetNewAddArticleRep(db *gorm.DB) (newArticle int64, err error) {
+
+	// 查询今日文章数量
+	if err = db.Model(&models.Article{}).
+		Where("DATE(created_at) = ?", time.Now().Format("2006-01-02")).
+		Count(&newArticle).Error; err != nil {
+		return 0, err
+	}
+	return newArticle, nil
+
+}
+
+// GetArticleCountRep
+// @Description: 获取文章数量
+// @param        db *gorm.DB
+// @return       articleCount
+// @return       err
+// @Author tianjiajie 2025-01-16 14:49:16
+func GetArticleCountRep(db *gorm.DB) (articleCount int64, err error) {
+	// 查询文章数量
+	if err = db.Model(&models.Article{}).Count(&articleCount).Error; err != nil {
+		return 0, err
+	}
+	return articleCount, nil
+}
 
 // GetHotTagsRep
 // @Description: 查询前 n 的热门标签

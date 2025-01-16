@@ -49,16 +49,12 @@ type SearchArticleListRes struct {
 //	Name string `json:"name"` // 标签名称
 //}
 
+// GetArticleByTagReq
+// @Description: 获取标签下的文章请求
+// @Author tianjiajie 2025-01-16 14:38:01
 type GetArticleByTagReq struct {
 	Id    int `json:"id" form:"id"`       // 标签ID
 	Kind  int `json:"kind" form:"kind"`   // 类型
 	Page  int `json:"page" form:"page"`   // 分页页码
 	Limit int `json:"limit" form:"limit"` // 每页条数
-}
-
-type HotArticleRes struct {
-	ID         uint   `json:"id"`          // 文章ID
-	Title      string `json:"title"`       // 文章标题
-	LikesCount string `json:"likes_count"` // 点赞数
-	Increase   string `json:"increases"`   // 点赞涨幅
 }
