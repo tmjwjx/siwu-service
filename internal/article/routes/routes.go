@@ -64,7 +64,8 @@ func Workplace(e *gin.Engine) {
 		workplaceGroup.GET("/hot_articles", controllers.GetHotArticleCtrl)
 		// 前五个热门标签的文章量
 		workplaceGroup.GET("/pielist", controllers.GetHotTagsCtrl)
-
+		// 获取工作台首页计算数据
+		//workplaceGroup.GET("data", controllers.GetWorkplaceIndexCtrl)
 	}
 
 }
