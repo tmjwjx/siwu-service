@@ -91,7 +91,7 @@ func (r *RoleReqContext) UpdateRole(role requests.RoleReq) error {
 	// 判断该角色id是否存在
 	role2 := repositories.QueryRoleById(r.DB, role.Id)
 	if role2 == nil {
-		return fmt.Errorf("RoleReqContext.UpdateRole err = 没有查询到id为 %v 的角色", role.Id)
+		return fmt.Errorf("RoleReqContext.UpdateRole err = 不存在id为 %v 的角色", role.Id)
 	}
 
 	m := map[string]interface{}{
@@ -136,7 +136,7 @@ func (r *RoleReqContext) GetDetail(id uint) (*requests.SearchRoleRes, error) {
 	// 查询
 	role := repositories.QueryRoleById(r.DB, id)
 	if role == nil {
-		return nil, fmt.Errorf("RoleReqContext.GetDetail err = 没有查询到id为 %v 的角色", id)
+		return nil, fmt.Errorf("RoleReqContext.GetDetail err = 不存在id为 %v 的角色", id)
 	}
 
 	// 选择需要的数据
@@ -158,7 +158,7 @@ func (r *RoleReqContext) DispatchRole(dispatchRole requests.DispatchRoleReq) err
 	// 判断userId是否存在
 	user := repositories.QueryUserById(r.DB, dispatchRole.UserId)
 	if user == nil {
-		return fmt.Errorf("RoleReqContext.DispatchRoleReq() err = 没有查询到id为 %v 的用户", dispatchRole.UserId)
+		return fmt.Errorf("RoleReqContext.DispatchRoleReq() err = 不存在id为 %v 的用户", dispatchRole.UserId)
 	}
 
 	// adminRoleSli := make([]*models.AdminRole, 0)
@@ -191,7 +191,7 @@ func (r *RoleReqContext) DispatchRole(dispatchRole requests.DispatchRoleReq) err
 		// 判断角色Id是否存在
 		role := repositories.QueryRoleById(r.DB, id)
 		if role == nil {
-			return fmt.Errorf("RoleReqContext.DispatchRoleReq err = 没有查询到id为 %v 的角色", id)
+			return fmt.Errorf("RoleReqContext.DispatchRoleReq err = 不存在id为 %v 的角色", id)
 		}
 		ids = append(ids, id)
 	}
