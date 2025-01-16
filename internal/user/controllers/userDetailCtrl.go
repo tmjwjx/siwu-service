@@ -178,7 +178,19 @@ func UserPrivateSetRequestCtrl(c *gin.Context) {
 		e := response.NewAppErr(globals.StatusBadRequest, err, nil)
 		response.Failed(c, 400, e)
 	}
-	err = logics.UserPrivateSetRequestLogic(userPrivateSetReq, globals.DB)
+
+	// 获取参数
+	userID := c.Param("id")
+
+	// 使用 strconv.ParseUint 将字符串解析为 uint64 类型
+	uintValue, err := ChangeStrToUint(userID)
+	if err != nil {
+		// 返回错误响应
+		e := response.NewAppErr(globals.StatusInternalServerError, err, nil)
+		response.Failed(c, 500, e)
+	}
+
+	err = logics.UserPrivateSetRequestLogic(uintValue, userPrivateSetReq, globals.DB)
 	if err != nil {
 		// 返回错误响应
 		e := response.NewAppErr(globals.StatusInternalServerError, err, nil)
