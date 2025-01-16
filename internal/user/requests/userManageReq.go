@@ -46,7 +46,7 @@ type ListReq struct {
 
 // ListRes 获取所有用户列表响应
 type ListRes struct {
-	Id            uint
+	Id            uint   `json:"id"`
 	AvatarPath    string `json:"avatar_path"` // 头像路径
 	NickName      string `json:"nickname"`
 	Email         string `json:"email"`
@@ -60,7 +60,7 @@ type ListRes struct {
 
 // GetInfoRes 获取当前用户基本信息响应
 type GetInfoRes struct {
-	Id         uint
+	Id         uint   `json:"id"`
 	AvatarPath string `json:"avatar_path"` // 头像路径
 	NickName   string `json:"nickname"`
 	Email      string `json:"email"`

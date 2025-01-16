@@ -124,3 +124,43 @@ func Login(c *gin.Context) {
 	}
 	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", gin.H{"token": tok, "userinfo": userInfo}))
 }
+
+// ForgotPassword 忘记密码
+func ForgotPassword(c *gin.Context) {
+	// 绑定数据
+	var forgotPasswordMsg requests.ForgotPasswordReq
+	if err := c.ShouldBind(&forgotPasswordMsg); err != nil {
+		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("Register() err: %v", err), nil))
+		return
+	}
+
+	// 判断数据是否合法
+
+	// 检验邮箱是否合法
+	if !internalUtils.IsValidEmail(forgotPasswordMsg.Email) {
+		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("Register() : 邮箱不合法"), nil))
+		return
+	}
+
+	// 核对两次输入的密码
+	if forgotPasswordMsg.Password != forgotPasswordMsg.RePassword {
+		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("Register() : 两次输入的密码不相同"), nil))
+		return
+	}
+
+	// 检验密码是否合法
+	if !internalUtils.IsValidPassword(forgotPasswordMsg.Password) {
+		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("Register() : 密码必须要同时包含字母、数字、特殊字符，长度在8到16位之间"), nil))
+		return
+	}
+
+	// 业务逻辑
+	userReqContext := logics.NewUserReqContext(globals.DB, c, globals.SendEmailCfg)
+	if err := userReqContext.ForgotPassword(forgotPasswordMsg); err != nil {
+		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("Register() -> %v", err), nil))
+		return
+	}
+
+	// 成功
+	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", nil))
+}
