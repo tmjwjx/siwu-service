@@ -5,6 +5,9 @@ import (
 	"forum/internal/internalPkg/internalUtils"
 	"forum/internal/internalPkg/sqlUtils"
 	"forum/internal/internalPkg/templates"
+	"strings"
+
+	// "forum/internal/internalPkg/templates"
 	"forum/internal/models"
 	"forum/internal/user/repositories"
 	"forum/internal/user/requests"
@@ -12,7 +15,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"gopkg.in/gomail.v2"
 	"gorm.io/gorm"
-	"strings"
 	"time"
 )
 
@@ -40,21 +42,22 @@ func NewUserReqContext(db *gorm.DB, c *gin.Context, sendEmailCfg *globals.SendEm
 
 // Register 注册
 func (u *UserReqContext) Register(registerMsg requests.RegisterReq) error {
-	// 在数据库中完善数据（用户获取验证码时已在数据库中创建了User，UserVerifyCode数据）
 	email := registerMsg.Email
 	verifyCode := registerMsg.VerifyCode
 	password := registerMsg.Password
-	user := repositories.QueryUserByEmail(u.DB, email)
-	if user == nil {
-		return fmt.Errorf("UserReqContext.Register() : 不存在该邮箱为%s的用户", email)
-	}
-	userID := user.ID
 
-	// 验证码核对（不区分大小写）
-	userVerifyCode, err := repositories.QueryLastUserVerifyCodeByUserID(u.DB, userID)
+	// 判断是否已经注册过
+	user := repositories.QueryUserByEmail(u.DB, email)
+	if user != nil {
+		return fmt.Errorf("UserReqContext.Register() : 邮箱为%s的用户已经注册过", email)
+	}
+
+	// 根据 email 查询该用户的最后一条验证码
+	userVerifyCode, err := repositories.QueryLastUserVerifyCodeByEmail(u.DB, email)
 	if err != nil {
 		return fmt.Errorf("UserReqContext.Register() -> %v", err)
 	}
+
 	// 判断该验证码是否使用过（判断DeletedAt是否有值）
 	if userVerifyCode.DeletedAt.Valid {
 		return fmt.Errorf("UserReqContext.Register() : 验证码%s已失效", verifyCode)
@@ -70,21 +73,22 @@ func (u *UserReqContext) Register(registerMsg requests.RegisterReq) error {
 		return fmt.Errorf("UserReqContext.Register() : 验证码%s已过期", verifyCode)
 	}
 
+	// 随机生成用户名
+	nickName := internalUtils.RandomGenerateStrings(internalUtils.UserNameLen)
+
 	// 密码加密
 	encryptedPassword, err := internalUtils.HashPassword(password)
 	if err != nil {
 		return fmt.Errorf("UserReqContext.Register() : 密码%s加密失败", password)
 	}
 
-	// 更新用户密码
-	// err = repositories.UpdateObjects(u.DB, &models.User{}, map[string]interface{}{"id": userID, "email": email}, map[string]interface{}{"password": encryptedPassword})
-	err = sqlUtils.UpdateObjects(u.DB, &models.User{Model: gorm.Model{ID: userID}, Email: email}, map[string]interface{}{"password": encryptedPassword})
-	if err != nil {
+	// 向 user 表中添加该用户
+	if err = sqlUtils.InsertObject(u.DB, &models.User{Nickname: nickName, Email: email, Password: encryptedPassword}); err != nil {
 		return fmt.Errorf("UserReqContext.Register() err: %v", err)
 	}
 
 	// 删除该用户对应的全部验证码
-	_, err = sqlUtils.DeleteObjectsByModel(u.DB, &models.UserVerifyCode{}, map[string]interface{}{"user_id": userID})
+	_, err = sqlUtils.DeleteObjectsByModel(u.DB, &models.UserVerifyCode{}, map[string]interface{}{"email": email})
 	if err != nil {
 		return fmt.Errorf("UserReqContext.Register() err: %v", err)
 	}
@@ -96,47 +100,10 @@ func (u *UserReqContext) ReqVerifyCode(email string) error {
 	// 随机生成验证码
 	verifyCode := internalUtils.RandomGenerateStrings(internalUtils.VerifyCodeLen)
 
-	// 存储数据
-
-	// 判断该email是否已经有用户使用过
-	user := repositories.QueryUserByEmail(u.DB, email)
-	// 如果没有用户使用过这个email，向user表中插入用户，并向UserVerifyCode表中插入验证码
-	if user == nil {
-		// 随机生成用户名
-		name := internalUtils.RandomGenerateStrings(internalUtils.UserNameLen)
-		// 给用户生成一个默认密码
-		password := internalUtils.RandomGenerateStrings(12)
-		encryptedPassword, err := internalUtils.HashPassword(password)
-		if err != nil {
-			return fmt.Errorf("UserReqContext.VerifyCodeReq() : 密码%s加密失败", password)
-		}
-		lastLogintime := time.Now()
-		// 使用InsertObject()方法向user表中插入新数据，model参数必须是指针类型
-		if err := sqlUtils.InsertObject(u.DB, &models.User{Nickname: name, Email: email, Password: encryptedPassword, LastLoginTime: lastLogintime}); err != nil {
-			return fmt.Errorf("UserReqContext.VerifyCodeReq() -> %v", err)
-		}
-
-		// 查询该email对应的id
-		us := repositories.QueryUserByEmail(u.DB, email)
-		// 向 UserDetail 用户详情表中插入数据
-		if err := sqlUtils.InsertObject(u.DB, &models.UserDetail{UserID: us.ID}); err != nil {
-			return fmt.Errorf("UserReqContext.VerifyCodeReq() -> %v", err)
-		}
-
-		// 获取用户id
-		user = repositories.QueryUserByEmail(u.DB, email)
-		// 将验证码插入到 UserVerifyCode表
-		if err := sqlUtils.InsertObject(u.DB, &models.UserVerifyCode{UserID: user.ID, VerifyCode: verifyCode}); err != nil {
-			return fmt.Errorf("UserReqContext.VerifyCodeReq() -> %v", err)
-		}
-
-	} else { // 如果已经有用户使用，而且发送验证码的冷却时间到了，插入一条数据
-		userVerifyCode, err := repositories.QueryLastUserVerifyCodeByUserID(u.DB, user.ID)
-		if err != nil {
-			return fmt.Errorf("UserReqContext.VerifyCodeReq() -> 没有找到验证码: %v", err)
-		}
-
-		// 判断冷却时间
+	// 查找最后一条验证码（如何能够查询到验证码，要判断一下冷却时间；如果不能够查询到验证码，就直接发送）
+	userVerifyCode, _ := repositories.QueryLastUserVerifyCodeByEmail(u.DB, email)
+	// 如何查询到了验证码，判断冷却时间是否到
+	if userVerifyCode != nil {
 		// 当前时间
 		now := time.Now()
 		// 计算更新时间和当前时间的差异
@@ -145,11 +112,11 @@ func (u *UserReqContext) ReqVerifyCode(email string) error {
 		if duration < internalUtils.VerifyCodeCoolTime {
 			return fmt.Errorf("UserReqContext.VerifyCodeReq() err: 发送验证码正在冷却时间中")
 		}
+	}
 
-		// 插入一条新的验证码数据
-		if err = sqlUtils.InsertObject(u.DB, &models.UserVerifyCode{UserID: user.ID, VerifyCode: verifyCode}); err != nil {
-			return fmt.Errorf("UserReqContext.VerifyCodeReq() -> %v", err)
-		}
+	// 插入一条新的验证码数据
+	if err := sqlUtils.InsertObject(u.DB, &models.UserVerifyCode{Email: email, VerifyCode: verifyCode}); err != nil {
+		return fmt.Errorf("UserReqContext.VerifyCodeReq() -> %v", err)
 	}
 
 	// 给用户发送验证码
@@ -217,4 +184,56 @@ func (u *UserReqContext) Login(logicMsg requests.LogicReq) (*requests.LogicRes, 
 		Nickname: user.Nickname,
 	}
 	return logicRes, nil
+}
+
+func (u *UserReqContext) ForgotPassword(forgotPasswordMsg requests.ForgotPasswordReq) error {
+	email := forgotPasswordMsg.Email
+	verifyCode := forgotPasswordMsg.VerifyCode
+	password := forgotPasswordMsg.Password
+
+	// 判断是否已经注册过
+	user := repositories.QueryUserByEmail(u.DB, email)
+	// 必须已经注册过该用户
+	if user == nil {
+		return fmt.Errorf("UserReqContext.Register() : 邮箱为%s的用户没有注册过", email)
+	}
+
+	// 根据 email 查询该用户的最后一条验证码
+	userVerifyCode, err := repositories.QueryLastUserVerifyCodeByEmail(u.DB, email)
+	if err != nil {
+		return fmt.Errorf("UserReqContext.Register() -> %v", err)
+	}
+
+	// 判断该验证码是否使用过（判断DeletedAt是否有值）
+	if userVerifyCode.DeletedAt.Valid {
+		return fmt.Errorf("UserReqContext.Register() : 验证码%s已失效", verifyCode)
+	}
+	// 检验验证码是否正确（不区分大小写）
+	if !strings.EqualFold(verifyCode, userVerifyCode.VerifyCode) {
+		return fmt.Errorf("UserReqContext.Register() : 验证码%s输入错误", verifyCode)
+	}
+	// 判断验证码是否已经超时
+	now := time.Now()
+	duration := now.Sub(userVerifyCode.UpdatedAt)
+	if duration > internalUtils.VerifyCodeEffectiveDuration {
+		return fmt.Errorf("UserReqContext.Register() : 验证码%s已过期", verifyCode)
+	}
+
+	// 密码加密
+	encryptedPassword, err := internalUtils.HashPassword(password)
+	if err != nil {
+		return fmt.Errorf("UserReqContext.Register() : 密码%s加密失败", password)
+	}
+
+	// 更新密码
+	if err = sqlUtils.UpdateObjects(u.DB, &models.User{Email: email}, map[string]interface{}{"password": encryptedPassword}); err != nil {
+		return fmt.Errorf("UserReqContext.Register() err: %v", err)
+	}
+
+	// 删除该用户对应的全部验证码
+	_, err = sqlUtils.DeleteObjectsByModel(u.DB, &models.UserVerifyCode{}, map[string]interface{}{"email": email})
+	if err != nil {
+		return fmt.Errorf("UserReqContext.Register() err: %v", err)
+	}
+	return nil
 }
