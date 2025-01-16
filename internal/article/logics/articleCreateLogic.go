@@ -11,7 +11,7 @@ import (
 func ArticleCreateLogic(db *gorm.DB, req requests.ReqPublish, userId uint) (data interface{}, err error) {
 	id, err := repositories.InsertArticlesRep(db, req, userId)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 	data = gin.H{"id": id}
 	return data, nil

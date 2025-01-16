@@ -13,13 +13,151 @@ import (
 	"time"
 )
 
+// GetHotTagsRep
+// @Description: 查询前 n 的热门标签
+// @param        db *gorm.DB
+// @param        n int
+// @return       tags
+// @return       err
+// @Author tianjiajie 2025-01-15 20:36:55
+func GetHotTagsRep(db *gorm.DB, n int) (data interface{}, err error) {
+	// 查询热门标签
+	var hotTags []struct {
+		ID    uint   `json:"id"`    // 标签ID
+		Name  string `json:"name"`  // 标签名称
+		Count int    `json:"count"` // 文章数量
+	}
+	err = db.Model(&models.Tag{}).
+		Select("sw_tags.id, sw_tags.name, COUNT(sw_article_tags.article_id) AS count").
+		Joins("LEFT JOIN sw_article_tags ON sw_tags.id = sw_article_tags.tag_id").
+		Group("sw_tags.id").
+		Order("count DESC").
+		Limit(n).
+		Scan(&hotTags).Error // 执行查询并将结果存入 hotTags 切片
+	if err != nil {
+		return nil, err
+	}
+
+	// 所有tag下的文章总数
+	var total int64
+	err = db.Table("sw_article_tags").
+		Select("COUNT(DISTINCT article_id, tag_id) AS total_count"). // 计算不同的 article_id 和 tag_id 组合
+		Scan(&total).Error
+	if err != nil {
+		return nil, err
+	}
+
+	var hotTagsRes []struct {
+		Type  string `json:"type"`  // 标签名称
+		Value string `json:"value"` // 占比
+	}
+
+	other := 100.00
+	// 将查询结果存入 tags 切片
+	for _, tag := range hotTags {
+		// 计算占比
+		temp := float64(tag.Count) / float64(total) * 100
+		other -= temp
+		value := fmt.Sprintf("%.2f%%", temp)
+		hotTagsRes = append(hotTagsRes, struct {
+			Type  string `json:"type"`
+			Value string `json:"value"`
+		}{tag.Name, value})
+	}
+
+	value := fmt.Sprintf("%.2f%%", other)
+	hotTagsRes = append(hotTagsRes, struct {
+		Type  string `json:"type"`
+		Value string `json:"value"`
+	}{"其他", value})
+
+	data = hotTagsRes
+
+	return
+}
+
+// GetHotArticleRep
+// @Description: 查询前 n 篇热门文章数据
+// @param        db *gorm.DB
+// @param        limit int
+// @return       articleList
+// @return       err
+// @Author tianjiajie 2025-01-15 14:54:37
+func GetHotArticleRep(db *gorm.DB, n int) (articleList []requests.HotArticleRes, err error) {
+
+	var articles []struct {
+		ID              uint    `json:"id"`                // 文章ID
+		Title           string  `json:"title"`             // 文章标题
+		LikesCount      int     `json:"likes_count"`       // 点赞数
+		Increase        float64 `json:"increase"`          // 点赞涨幅
+		TodayLikesCount int     `json:"today_likes_count"` // 今日点赞数
+	}
+	// 查询前n篇文章数据
+	err = db.Table("sw_articles a").
+		Select("a.id, a.title, a.likes_count, " +
+			"IF(a.likes_count > 0, IFNULL(COUNT(b.article_id), 0) / a.likes_count, 0) AS increase," +
+			"IFNULL(COUNT(b.article_id), 0) AS today_likes_count").
+		Joins("LEFT JOIN sw_article_likes b ON a.id = b.article_id AND b.deleted_at IS NULL AND DATE(b.updated_at) = CURDATE()").
+		Group("a.id").
+		Order("a.heat DESC").
+		Limit(n).
+		//Debug().              // 添加这一行
+		Scan(&articles).Error // 执行查询并将结果存入 articles 切片
+	if err != nil {
+		return nil, err
+	}
+	// 将查询结果存入 articleList 切片
+	for _, article := range articles {
+		// 处理点赞量格式
+		var likesCount string
+		if article.LikesCount >= 10000 {
+			likesCount = fmt.Sprintf("%.2fw", float64(article.LikesCount)/10000)
+		} else if article.LikesCount >= 1000 {
+			likesCount = fmt.Sprintf("%.2fk", float64(article.LikesCount)/1000)
+		} else {
+			likesCount = strconv.Itoa(article.LikesCount)
+		}
+
+		// 处理点赞涨幅格式
+		increase := fmt.Sprintf("%.2f%%", article.Increase*100)
+
+		// 将处理后的数据存入 articleList
+		articleList = append(articleList, requests.HotArticleRes{
+			ID:         article.ID,
+			Title:      article.Title,
+			LikesCount: likesCount,
+			Increase:   increase,
+		})
+	}
+	return
+}
+
+// GetArticleNumRep
+// @Description: 查询 某天发布的文章
+// @param        db *gorm.DB
+// @param        now time.Time
+// @param        ago time.Time
+// @return       articleSum
+// @return       err
+// @Author tianjiajie 2025-01-15 09:48:50
+func GetArticleNumRep(db *gorm.DB, date time.Time) (articleCount int64, err error) {
+	// 查询指定日期发布的文章数量
+	if err = db.Model(&models.Article{}).
+		Where("DATE(published_at) = ?", date.Format("2006-01-02")).
+		Count(&articleCount).Error; err != nil {
+		return 0, err
+	}
+
+	return articleCount, nil
+}
+
 // InsertArticlesRep
 // @Description: 新建文章
 // @param        db *gorm.DB
 // @param        req requests.ReqPublish
 // @return       int
 // @return       error
-func InsertArticlesRep(db *gorm.DB, req requests.ReqPublish, userId uint) (int, error) {
+func InsertArticlesRep(db *gorm.DB, req requests.ReqPublish, userId uint) (id int, err error) {
 
 	newArticle := models.Article{
 		// UserID:     req.UserId,
@@ -30,17 +168,31 @@ func InsertArticlesRep(db *gorm.DB, req requests.ReqPublish, userId uint) (int, 
 		// Content:    req.Content,
 		// ImageUrl:   req.ImageUrl,
 	}
+	fmt.Println("我进来了")
 
 	// 设置文章ID
 	if req.ArticleId != 0 {
 		if userId != req.UserId {
-			return 0, nil // 如果当前用户不是文章作者
+			// 如果当前用户不是文章作者
+			return 0, errors.New("当前用户不是文章作者")
 		}
 		newArticle.ID = uint(req.ArticleId)
 
-		// 获取数据库文章记录
-		db.Find(&newArticle)
+		//// 获取数据库文章记录
+		//db.Find(&newArticle)
+		//fmt.Println("我进来了")
+
+		if err = db.First(&newArticle, req.ArticleId).Error; err != nil {
+			return 0, fmt.Errorf("未找到指定文章: %w", err)
+		}
+
+		// 更新文章的标签关联
+		// 手动清空当前文章的标签关联，确保旧数据被清除
+		if err = db.Model(&newArticle).Association("Tags").Clear(); err != nil {
+			return 0, err // 如果清除失败，返回错误
+		}
 	}
+
 	{
 		newArticle.UserID = req.UserId
 		newArticle.Title = req.Title
@@ -51,21 +203,19 @@ func InsertArticlesRep(db *gorm.DB, req requests.ReqPublish, userId uint) (int, 
 		newArticle.ImageUrl = req.ImageUrl
 	}
 
+	fmt.Println("newArticle", newArticle)
+
 	// 设置标签
 	// 查找传递过来的所有标签
 	var tags []models.Tag
 	if err := db.Where("id IN ?", req.Tags).Find(&tags).Error; err != nil {
 		return 0, err // 如果标签不存在，返回错误
 	}
-	// 更新文章的标签关联
-	// 手动清空当前文章的标签关联，确保旧数据被清除
-	if err := db.Model(&newArticle).Association("Tags").Clear(); err != nil {
-		return 0, err // 如果清除失败，返回错误
-	}
+
 	newArticle.Tags = tags
 
 	// 设置发布时间
-	if req.Status == "public" {
+	if req.Status == "public" && newArticle.PublishedAt == nil {
 		now := time.Now()
 		newArticle.PublishedAt = &now
 	}
@@ -74,7 +224,7 @@ func InsertArticlesRep(db *gorm.DB, req requests.ReqPublish, userId uint) (int, 
 		globals.Log.Fatal("创建文章失败:", result.Error)
 		return 0, result.Error
 	}
-	id := int(newArticle.ID)
+	id = int(newArticle.ID)
 
 	return id, nil
 }
@@ -441,9 +591,11 @@ func UpdateLikeRep(db *gorm.DB, req requests.ArticleLikeReq, userId uint) (err e
 		}
 
 	} else if req.LikeStatus == false {
-		// 查询用户是否点赞 如果点赞了 删除点赞记录
-		if err = db.Where("article_id = ? AND user_id = ?", req.ArticleId, userId).First(&like).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-			return err
+		if err = db.Where("article_id = ? AND user_id = ?", req.ArticleId, userId).First(&like).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return nil // 用户本来就没有点赞，直接返回
+			}
+			return err // 其他错误，返回
 		}
 		// 删除点赞记录
 		if err = db.Delete(&like).Error; err != nil {
