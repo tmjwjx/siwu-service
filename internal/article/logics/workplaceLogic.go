@@ -29,7 +29,7 @@ func GetWorkplaceDataLogic(db *gorm.DB) (data interface{}, err error) {
 		return nil, err
 	}
 	// 今天新增文章的比例
-	newAdd := fmt.Sprintf("%.2f%%", float64(newArticle)/float64(articleTotal))
+	newAdd := fmt.Sprintf("%.2f%%", float64(newArticle)*100/float64(articleTotal))
 
 	// 今天所有文章的访问量之和
 	todayViews, err := repositories.GetTodayViewsRep(db)
@@ -44,13 +44,13 @@ func GetWorkplaceDataLogic(db *gorm.DB) (data interface{}, err error) {
 	}
 
 	// 封装数据
-	workspaceData := requests.WorkspaceData{
+	totalData := requests.TotalData{
 		ArticleTotal:  strconv.FormatInt(articleTotal, 10),
 		NewAdd:        newAdd,
 		TodayViews:    todayViews,
 		TodayComments: todayComments,
 	}
-	data = gin.H{"workspace_data": workspaceData}
+	data = gin.H{"total_data": totalData}
 	return
 }
 
