@@ -21,7 +21,7 @@ func CollectionRep(db *gorm.DB, req requests.MessageReq, id uint) (res []request
 		// 这里是 right join 不是 left join
 		Joins("right join sw_article_collections on sw_article_collections.article_id = sw_articles.id").
 		Joins("left join sw_users on sw_users.id = sw_article_collections.user_id").
-		Where("sw_articles.user_id = ?", id).
+		Where("sw_articles.user_id = ? AND sw_article_collections.deleted_at IS NULL", id).
 		Limit(req.Limit).
 		Offset((req.Page - 1) * req.Limit).
 		Order("sw_article_collections.created_at DESC")
