@@ -116,6 +116,28 @@ func HDel(rdb *redis.Client, ctx context.Context, hash, key string) error {
 	return nil
 }
 
+// IncrementHash 增加哈希表中字段的值
+func IncrementHash(rdb *redis.Client, ctx context.Context, hash, field string, increment int64) (int64, error) {
+	// 使用 HIncrBy 增加哈希表字段的值
+	newValue, err := rdb.HIncrBy(ctx, hash, field, increment).Result()
+	if err != nil {
+		globals.Log.Errorf("增加 Redis 哈希表 %s 字段 %s 的值时出错: %v", hash, field, err)
+		return 0, err
+	}
+	return newValue, nil
+}
+
+// DecrementHash 减少哈希表中字段的值
+func DecrementHash(rdb *redis.Client, ctx context.Context, hash, field string, decrement int64) (int64, error) {
+	// 使用 HIncrBy 减少哈希表字段的值（传递负数）
+	newValue, err := rdb.HIncrBy(ctx, hash, field, -decrement).Result()
+	if err != nil {
+		globals.Log.Errorf("减少 Redis 哈希表 %s 字段 %s 的值时出错: %v", hash, field, err)
+		return 0, err
+	}
+	return newValue, nil
+}
+
 // LPush 向列表左侧推送数据
 func LPush(rdb *redis.Client, ctx context.Context, key string, values ...interface{}) error {
 	// 向列表左侧推送元素
