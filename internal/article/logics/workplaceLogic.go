@@ -1,12 +1,65 @@
 package logics
 
 import (
+	"fmt"
 	"forum/internal/article/repositories"
+	"forum/internal/article/requests"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"strconv"
 	"time"
 )
 
+// GetWorkplaceDataLogic
+// @Description: 获取工作台数据
+// @param        db *gorm.DB
+// @return       date
+// @return       err
+// @Author tianjiajie 2025-01-16 14:43:51
+func GetWorkplaceDataLogic(db *gorm.DB) (data interface{}, err error) {
+	// 所有文章的数量
+	articleTotal, err := repositories.GetArticleCountRep(db)
+	if err != nil {
+		return nil, err
+	}
+
+	// 今天新增文章的数量
+	newArticle, err := repositories.GetNewAddArticleRep(db)
+	if err != nil {
+		return nil, err
+	}
+	// 今天新增文章的比例
+	newAdd := fmt.Sprintf("%.2f%%", float64(newArticle)*100/float64(articleTotal))
+
+	// 今天所有文章的访问量之和
+	todayViews, err := repositories.GetTodayViewsRep(db)
+	if err != nil {
+		return nil, err
+	}
+
+	// 今天发布评论数之和
+	todayComments, err := repositories.GetTodayCommentsRep(db)
+	if err != nil {
+		return nil, err
+	}
+
+	// 封装数据
+	totalData := requests.TotalData{
+		ArticleTotal:  strconv.FormatInt(articleTotal, 10),
+		NewAdd:        newAdd,
+		TodayViews:    todayViews,
+		TodayComments: todayComments,
+	}
+	data = gin.H{"total_data": totalData}
+	return
+}
+
+// GetHotTagsLogic
+// @Description: 查询热门标签
+// @param        db *gorm.DB
+// @return       date
+// @return       err
+// @Author tianjiajie 2025-01-16 14:34:42
 func GetHotTagsLogic(db *gorm.DB) (date interface{}, err error) {
 
 	// 查询热门标签

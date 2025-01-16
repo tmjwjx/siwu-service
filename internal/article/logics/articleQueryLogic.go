@@ -1,11 +1,14 @@
 package logics
 
 import (
+	"context"
 	"forum/internal/article/repositories"
 	"forum/internal/article/requests"
+	"forum/internal/internalPkg/redisUtils"
 	"forum/pkg/globals"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"time"
 )
 
 // ArticleSearchLogic 搜索文章
@@ -41,6 +44,22 @@ func ArticleDetailLogic(db *gorm.DB, articleId string, userId uint) (data interf
 	about, err := repositories.AboutArticleRep(db, articleId, userId)
 	if err != nil {
 		globals.Log.Errorf("err = %s", err)
+		return nil, err
+	}
+
+	// 增加点击量
+	err = repositories.AddArticleClickRep(db, articleId)
+	if err != nil {
+		globals.Log.Errorf("err = %s", err)
+		return nil, err
+	}
+
+	// 增加当天的访问量
+	rdb := globals.RDB
+	ctx := context.Background()
+	nowTime := string(time.Now().Format("2006-01-02"))
+	_, err = redisUtils.IncrementHash(rdb, ctx, "todayViews", nowTime, 1)
+	if err != nil {
 		return nil, err
 	}
 

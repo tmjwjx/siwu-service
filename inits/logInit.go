@@ -31,7 +31,7 @@ func LogInit() {
 	// 修改部分：合并控制台输出和文件输出
 	core := zapcore.NewTee(consoleCore, fileCore)
 
-	logger := zap.New(core, zap.AddCaller())
+	log := zap.New(core, zap.AddCaller())
 
-	globals.Log = logger.Sugar()
+	globals.Log = log.Sugar()
 }

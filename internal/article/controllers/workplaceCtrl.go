@@ -8,8 +8,36 @@ import (
 	"net/http"
 )
 
-func GetHotTagsCtrl(c *gin.Context) {
+// GetWorkplaceDataCtrl
+// @Description: 获取工作台数据
+// @param        e *gin.Engine
+// @Author tianjiajie 2025-01-16 14:32:40
+func GetWorkplaceDataCtrl(c *gin.Context) {
+	// 初始化需要的变量
+	db := globals.DB
 
+	// 绑定查询参数到 req 变量，如果绑定失败，返回错误信息
+	// 无需绑定
+
+	// 进入业务层
+	totalData, err := logics.GetWorkplaceDataLogic(db)
+	if err != nil {
+		globals.Log.Errorf("查询失败 err = %s", err)
+		data := response.NewAppErr(globals.StatusInternalServerError, err, nil)
+		response.Failed(c, http.StatusInternalServerError, data)
+		return
+	}
+
+	// 获取文章列表
+	data := response.NewAppData(globals.StatusOK, "成功", totalData)
+	response.Success(c, http.StatusOK, data)
+}
+
+// GetHotTagsCtrl
+// @Description: 查询热门标签
+// @param        c *gin.Context
+// @Author tianjiajie 2025-01-16 14:32:19
+func GetHotTagsCtrl(c *gin.Context) {
 	// 初始化需要的变量
 	db := globals.DB
 
