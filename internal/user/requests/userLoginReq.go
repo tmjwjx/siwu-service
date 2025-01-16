@@ -20,6 +20,14 @@ type LogicRes struct {
 	Nickname string `json:"nickname"`
 }
 
+// ForgotPasswordReq 忘记验证码请求
+type ForgotPasswordReq struct {
+	Email      string `json:"email"`       // 邮箱
+	VerifyCode string `json:"verify_code"` // 验证码
+	Password   string `json:"password"`    // 密码
+	RePassword string `json:"re_password"` // 重复密码
+}
+
 // // VerifyCodeReq 验证码消息请求
 // type VerifyCodeReq struct {
 // 	Email string `json:"email" form:"email"` // 邮箱

@@ -45,7 +45,7 @@ type ApiDetailsRes struct {
 
 // ApiGroupRes 获取所有api分组列表
 type ApiGroupRes struct {
-	Groups []*ApiGroup
+	Groups []*ApiGroup `json:"groups"`
 }
 
 type ApiGroup struct {
@@ -55,7 +55,7 @@ type ApiGroup struct {
 
 // ApiReqMethodRes 获取所有请求方法
 type ApiReqMethodRes struct {
-	Methods []*ApiReqMethod
+	Methods []*ApiReqMethod `json:"methods"`
 }
 
 type ApiReqMethod struct {
@@ -108,5 +108,6 @@ type SearchApiRes struct {
 
 // SearchApiListRes 检索api列表响应结构体
 type SearchApiListRes struct {
-	Api []*SearchApiRes
+	Api   []*SearchApiRes `json:"api"`
+	Total int             `json:"total"`
 }

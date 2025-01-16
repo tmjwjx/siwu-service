@@ -59,7 +59,7 @@ func AddTagRep(c *gin.Context, db *gorm.DB, req *requests.BsAddTagReq) (error, i
 		UrlPath: req.Path,
 		Home:    globals.TagHome,
 		HomeID:  tag.ID,
-		DB:      tx,
+		DB:      db,
 	}
 	err = internalUtils.StoreUrl(u)
 	if err != nil {

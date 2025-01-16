@@ -7,7 +7,7 @@ type BatchReviewReq struct {
 
 // BatchReviewRes 批量审核响应
 type BatchReviewRes struct {
-	ComList2 ComList2
+	ComList2 []ComList2
 }
 
 type ComList2 struct {

@@ -11,7 +11,8 @@ func User(e *gin.Engine) {
 	// 注册
 	e.POST("/user/register", controllers.Register)
 	// 忘记密码
-	e.POST("/user/forgot_password", controllers.Register)
+	e.POST("/user/forgot_password", controllers.ForgotPassword)
+
 	// 用户请求验证码
 	e.GET("/user/req_verify_code", controllers.ReqVerifyCode)
 	// 登录

@@ -486,6 +486,7 @@ func SearchApiListRep(db *gorm.DB, req *requests.SearchApiListReq) (*requests.Se
 
 	for _, searchApi := range searchApiRes {
 		res.Api = append(res.Api, &searchApi)
+		res.Total += 1
 	}
 
 	return &res, nil
