@@ -8,7 +8,7 @@ import (
 
 // LikeRep
 // @Description: 点赞消息
-// @param        db *gorm.DB
+// @param        db *gorm.DB22
 // @param        req requests.MessageReq
 // @param        id uint
 // @return       rep
@@ -20,7 +20,7 @@ func LikeRep(db *gorm.DB, req requests.MessageReq, id uint) (res []requests.Like
 		// 这里是 right join 不是 left join
 		Joins("right join sw_article_likes on sw_article_likes.article_id = sw_articles.id").
 		Joins("left join sw_users on sw_users.id = sw_article_likes.user_id").
-		Where("sw_articles.user_id = ?", id).
+		Where("sw_articles.user_id = ? AND sw_article_likes.deleted_at IS NULL", id).
 		Limit(req.Limit).
 		Offset((req.Page - 1) * req.Limit).
 		Order("sw_article_likes.created_at DESC")

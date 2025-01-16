@@ -17,6 +17,12 @@ func Message(e *gin.Engine) {
 		messageGroup.GET("/like", controllers.LikeMessageCtrl)
 		// 收藏消息
 		messageGroup.GET("/collection", controllers.CollectionMessageCtrl)
+
+		// 关注消息
+		messageGroup.GET("/follow", controllers.FollowMessageCtrl)
+
+		// 评论消息
+		//messageGroup.GET("/comment", controllers.CommentMesCtrl)
 	}
 
 }
