@@ -29,7 +29,7 @@ func GetWorkplaceDataLogic(db *gorm.DB) (data interface{}, err error) {
 		return nil, err
 	}
 	// 今天新增文章的比例
-	newAdd := fmt.Sprintf("%.2f%%", float64(newArticle)*100/float64(articleTotal))
+	newAdd := fmt.Sprintf("%.2f", float64(newArticle)*100/float64(articleTotal))
 
 	// 今天所有文章的访问量之和
 	todayViews, err := repositories.GetTodayViewsRep(db)

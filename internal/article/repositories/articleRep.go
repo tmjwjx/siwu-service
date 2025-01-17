@@ -130,14 +130,14 @@ func GetHotTagsRep(db *gorm.DB, n int) (data interface{}, err error) {
 		// 计算占比
 		temp := float64(tag.Count) / float64(total) * 100
 		other -= temp
-		value := fmt.Sprintf("%.2f%%", temp)
+		value := fmt.Sprintf("%.2f", temp)
 		hotTagsRes = append(hotTagsRes, struct {
 			Type  string `json:"type"`
 			Value string `json:"value"`
 		}{tag.Name, value})
 	}
 
-	value := fmt.Sprintf("%.2f%%", other)
+	value := fmt.Sprintf("%.2f", other)
 	hotTagsRes = append(hotTagsRes, struct {
 		Type  string `json:"type"`
 		Value string `json:"value"`
@@ -191,7 +191,7 @@ func GetHotArticleRep(db *gorm.DB, n int) (articleList []requests.HotArticleRes,
 		}
 
 		// 处理点赞涨幅格式
-		increase := fmt.Sprintf("%.2f%%", article.Increase*100)
+		increase := fmt.Sprintf("%.2f", article.Increase*100)
 
 		// 将处理后的数据存入 articleList
 		articleList = append(articleList, requests.HotArticleRes{
