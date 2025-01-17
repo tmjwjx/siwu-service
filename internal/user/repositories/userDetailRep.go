@@ -120,17 +120,6 @@ func UserDataRequest(userDataReq *requests.UserDataReq, db *gorm.DB) error {
 		}
 	}
 
-	u := &internalUtils.UrlParam{
-		UrlPath: []string{userDataReq.Path},
-		Home:    globals.UserHome,
-		HomeID:  userDataReq.ID,
-		DB:      db,
-	}
-	err = internalUtils.StoreUrl(u)
-	if err != nil {
-		return fmt.Errorf("UserDataRequest -> 存储图片的相关信息失败 -> %s", err)
-	}
-
 	// 提交事务
 	err = tx.Commit().Error
 	if err != nil {

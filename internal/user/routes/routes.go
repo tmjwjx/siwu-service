@@ -29,6 +29,8 @@ func User(e *gin.Engine) {
 	r.GET("/rank", controllers.UserRank)
 	// Attention 搜索用户关注的人
 	r.GET("/attention", controllers.Attention)
+	// GetBasicInfo 通过用户id获取到用户简略信息
+	r.GET("/get_basic_information", controllers.GetBasicInfo)
 
 	// 上传用户个人资料
 	r.POST("/form_personal_data", controllers.UserDataRequestCtrl)

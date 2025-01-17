@@ -142,6 +142,27 @@ func Attention(c *gin.Context) {
 	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", gin.H{"ids": ids}))
 }
 
+// GetBasicInfo 通过用户id获取到用户简略信息
+func GetBasicInfo(c *gin.Context) {
+	// 绑定数据
+	id, err := strconv.Atoi(c.Query("id"))
+	if err != nil {
+		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("GetBasicInfo() err = 数据类型转换错误"), nil))
+		return
+	}
+
+	// 业务逻辑
+	userReqContext := logics.NewUserReqContext(globals.DB, c, globals.SendEmailCfg)
+	userInfo, err := userReqContext.GetBasicInfo(uint(id))
+	if err != nil {
+		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("Attention() -> %v", err), nil))
+		return
+	}
+
+	// 成功
+	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", gin.H{"user_info": userInfo}))
+}
+
 // GetUserArticleCtrl
 // @Description: 获取用户文章
 // @param        c *gin.Context
