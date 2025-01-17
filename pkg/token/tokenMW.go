@@ -19,6 +19,13 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
+		// 授权标头的长度不足
+		if len(tokenString) <= len("Bearer ") {
+			response.Failed(c, http.StatusUnauthorized, response.NewAppErr(globals.StatusUnauthorized, fmt.Errorf("AuthMiddleware() : 请检查授权标头 Authorization"), nil))
+			c.Abort()
+			return
+		}
+
 		// 提取 Token 部分，去掉 "Bearer " 前缀
 		tokenString = tokenString[len("Bearer "):]
 
