@@ -440,8 +440,8 @@ func SearchArticlesListRep(db *gorm.DB, req *requests.ArticleListReq) (data inte
 	// Joins("LEFT JOIN sw_article_tags ON sw_article_tags.article_id = sw_articles.id").
 	// Joins("LEFT JOIN sw_tags ON sw_tags.id = sw_article_tags.tag_id")
 
-	// 状态 0全部1公开2封禁
-	if req.ArticleCondition != 0 {
+	// 状态 0公开1全部2封禁
+	if req.ArticleCondition != 1 {
 		query = query.Where("article_condition = ?", req.ArticleCondition)
 	}
 
@@ -780,7 +780,7 @@ func GetArticlesByTagRep(db *gorm.DB, req *requests.GetArticleByTagReq) (article
 	}
 
 	// 只获取公开文章
-	query = query.Where("sw_articles.status = ?", "public").Where("sw_articles.article_condition = ?", 1)
+	query = query.Where("sw_articles.status = ?", "public").Where("sw_articles.article_condition = ?", 0)
 
 	// 执行查询
 	if err = query.Find(&articles).Error; err != nil {
@@ -805,9 +805,9 @@ func GetUserArticleOrCollectionRep(db *gorm.DB, req *requests.UserArticleOrColle
 
 	query := db.Model(&models.Article{}).Preload("Tags").
 		Select("sw_articles.*, sw_users.nickname").
-		Joins("LEFT JOIN sw_users ON sw_users.id = sw_articles.user_id").
-		// 获取未封禁的文章
-		Where("sw_articles.article_condition = ?", 1).Debug()
+		Joins("LEFT JOIN sw_users ON sw_users.id = sw_articles.user_id")
+	// 获取未封禁的文章
+	//Where("sw_articles.article_condition = ?", 0)
 
 	// 判断是发布的文章还是收藏的文章
 	switch req.Type {
@@ -834,7 +834,8 @@ func GetUserArticleOrCollectionRep(db *gorm.DB, req *requests.UserArticleOrColle
 
 	// 只获取公开文章
 	if req.Id != id {
-		query = query.Where("sw_articles.status = ?", "public")
+		query = query.Where("sw_articles.status = ?", "public").
+			Where("sw_articles.article_condition = ?", 0)
 	}
 
 	// 查询数量
