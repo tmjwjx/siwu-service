@@ -1,5 +1,9 @@
 package requests
 
+import (
+	"time"
+)
+
 // ClickAttentionReq 点击关注和点击取消关注请求
 type ClickAttentionReq struct {
 	FollowerId uint `json:"follower_id"`
@@ -32,4 +36,19 @@ type AttentionReq struct {
 // AttentionRes 搜索用户关注的人响应
 type AttentionRes struct {
 	Ids []uint `json:"ids"`
+}
+
+// GetBasicInfoReq 通过用户id获取到用户简略信息
+type GetBasicInfoReq struct {
+	ID              uint      `json:"id"`               // id
+	CreatedAt       time.Time `json:"created_at"`       // 创建时间
+	UpdatedAt       time.Time `json:"updated_at"`       // 更新时间
+	Nickname        string    `json:"nickname"`         // 昵称
+	Email           string    `json:"email"`            // 邮箱，唯一
+	Heat            int       `json:"heat"`             // 个人热度
+	AttentionCount  uint      `json:"attention_count"`  // 关注了多少人数
+	FansCount       int       `json:"fans_count"`       // 粉丝数
+	PrivateSettings string    `json:"private_settings"` // 私信设置
+	Status          int       `json:"status"`           // 用户状态：0全部 1正常 2封禁
+	LastLoginTime   time.Time `json:"last_login_time"`  // 最后一次的登录时间。设置默认值为零值。
 }

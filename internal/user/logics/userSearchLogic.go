@@ -173,3 +173,29 @@ func (u *UserReqContext) Attention(req requests.AttentionReq) (*requests.Attenti
 
 	return res, nil
 }
+
+// GetBasicInfo 通过用户id获取到用户简略信息
+func (u *UserReqContext) GetBasicInfo(id uint) (*requests.GetBasicInfoReq, error) {
+	// 查找该用户
+	user := repositories.QueryUserById(u.DB, id)
+	if user == nil {
+		return nil, fmt.Errorf("GetBasicInfo.Attention() : id为%d的用户不存在", id)
+	}
+
+	// 获取信息
+	req := &requests.GetBasicInfoReq{
+		ID:              user.ID,
+		CreatedAt:       user.CreatedAt,
+		UpdatedAt:       user.UpdatedAt,
+		Nickname:        user.Nickname,
+		Email:           user.Email,
+		Heat:            user.Heat,
+		AttentionCount:  user.AttentionCount,
+		FansCount:       user.FansCount,
+		PrivateSettings: user.PrivateSettings,
+		Status:          user.Status,
+		LastLoginTime:   user.LastLoginTime,
+	}
+
+	return req, nil
+}
