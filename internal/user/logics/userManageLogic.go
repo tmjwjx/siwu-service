@@ -12,6 +12,7 @@ import (
 	"github.com/xuri/excelize/v2"
 	"gorm.io/gorm"
 	"mime/multipart"
+	"time"
 )
 
 // Reset 重置用户密码
@@ -278,16 +279,15 @@ func (u *UserReqContext) Import(file *multipart.FileHeader) error {
 		encryptedPassword := ""
 		// 判断密码是否合法，并加密
 		if password == "" { // 如果密码是空，就选择默认密码，默认密码为用户邮箱
-			defaultPassword := email
-			// 加密
-			encryptedPassword, err = internalUtils.HashPassword(defaultPassword)
-			if err != nil {
-				return fmt.Errorf("UserReqContext.Import() err: 密码%s加密失败", defaultPassword)
-			}
+			password = email
 		} else if !internalUtils.IsValidPassword(password) { // 如果不为空，就判断是否合法
 			return fmt.Errorf("UserReqContext.Import() err: password为 %v 不合法", password)
 		}
-
+		// 加密
+		encryptedPassword, err = internalUtils.HashPassword(password)
+		if err != nil {
+			return fmt.Errorf("UserReqContext.Import() err: 密码%s加密失败", password)
+		}
 		// 检查Status，Status只能是1或者2
 		if status != 1 && status != 2 {
 			return fmt.Errorf("UserReqContext.Import() err: status为 %v 不合法", status)
@@ -295,14 +295,25 @@ func (u *UserReqContext) Import(file *multipart.FileHeader) error {
 
 		// 将数据存储到数据库中
 		user := &models.User{
-			Nickname: nickname,
-			Email:    email,
-			Password: encryptedPassword,
-			Status:   status,
+			Nickname:      nickname,
+			Email:         email,
+			Password:      encryptedPassword,
+			Status:        status,
+			LastLoginTime: time.Now(),
 		}
-		// 保存到数据库
+
+		// 保存到 User 表中
 		if err = sqlUtils.InsertObject(u.DB, user); err != nil {
-			return fmt.Errorf("UserReqContext.Import() err: Failed to save user to database")
+			return fmt.Errorf("UserReqContext.Import() err: 没有将邮箱为%v的用户存储在User表中", email)
+		}
+		// 查询该 user 的id，并 添加到 UserDetail 表中
+		user = repositories.QueryUserByEmail(u.DB, email)
+		if user == nil {
+			return fmt.Errorf("UserReqContext.Import() err: 没有将邮箱为%v的用户存储在User表中", email)
+		}
+		// 保存到 UserDetail 表中
+		if err = sqlUtils.InsertObject(u.DB, &models.UserDetail{UserID: user.ID}); err != nil {
+			return fmt.Errorf("UserReqContext.Import() err: 没有将邮箱为%v的用户存储在Userdetail表中", email)
 		}
 	}
 

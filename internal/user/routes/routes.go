@@ -24,7 +24,7 @@ func User(e *gin.Engine) {
 	r.Use(token.AuthMiddleware())
 
 	// 关注
-	r.POST("/follow", controllers.Follow)
+	r.POST("/click_attention", controllers.ClickAttention)
 	// 用户排行
 	r.GET("/rank", controllers.UserRank)
 
