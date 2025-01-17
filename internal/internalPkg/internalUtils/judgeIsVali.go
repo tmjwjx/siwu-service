@@ -22,30 +22,25 @@ func IsValidEmail(email string) bool {
 	return re.MatchString(email)
 }
 
-// IsValidPassword 判断密码是否合法。密码必须要同时包含字母、数字、特殊字符，长度在8到16位之间。
+// IsValidPassword 判断密码是否合法。密码必须包含英文字母、数字、特殊字符，长度在8到16位之间，不限制中文字符。
 func IsValidPassword(password string) bool {
-	pattern := "^[a-zA-Z0-9!@#$%^&*()_+\\-={}|\\[\\]:\";'<>?,./]{8,16}$"
-	regex := regexp.MustCompile(pattern)
-	if !regex.MatchString(password) {
+	// 密码长度在8到16位之间
+	if len(password) < 8 || len(password) > 16 {
 		return false
 	}
 
-	// 密码必须要包含字母、数字、特殊字符。
-	hasLetter := false
-	hasDigit := false
-	hasSpecialChar := false
+	hasDigit := false         // 英文字母
+	hasSpecialChar := false   // 数字
+	hasEnglishLetter := false // 符号（运算符、特殊字符）
+	// 遍历密码中的每个字符
 	for _, char := range password {
-		if unicode.IsLetter(char) {
-			hasLetter = true
-		} else if unicode.IsDigit(char) {
+		if unicode.Is(unicode.Latin, char) { // 确保是英文字符
+			hasEnglishLetter = true
+		} else if unicode.IsDigit(char) { // 确保是数字
 			hasDigit = true
-		} else if unicode.IsPunct(char) || unicode.IsSymbol(char) {
+		} else if unicode.IsPunct(char) || unicode.IsSymbol(char) { // unicode.IsPunct：是否是标点符号。unicode.IsSymbol：是否是符号。
 			hasSpecialChar = true
 		}
-		// 提前退出
-		if hasLetter && hasDigit && hasSpecialChar {
-			return true
-		}
 	}
-	return hasLetter && hasDigit && hasSpecialChar
+	return hasEnglishLetter && hasDigit && hasSpecialChar
 }

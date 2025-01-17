@@ -2,55 +2,56 @@ package repositories
 
 import (
 	"fmt"
-	"forum/internal/internalPkg/sqlUtils"
 	"forum/internal/models"
+	"forum/pkg/casbin"
+	"forum/pkg/globals"
 	"github.com/samber/lo"
 	"gorm.io/gorm"
 	"time"
 )
 
-// UpdateAdminRoles 更新用户的角色（要确保 userId 存在）
-func UpdateAdminRoles(db *gorm.DB, userId uint, newRoleIds []uint) error {
-	// 查询当前 userId 拥有的 RoleIds
-	var currentRoleIds []uint
-	err := db.Model(&models.AdminRole{}).Select("role_id").Where("admin_id = ?", userId).Find(&currentRoleIds).Error
-	if err != nil {
-		return fmt.Errorf("UpdateAdminRoles() err: %v", err)
-	}
-
-	var deleteRoleIds []uint // 要删除的role_id
-	var addRoleIds []uint    // 要添加的role_id
-
-	// 找出 userId 需要删除的 RoleIds (当前有的，但不在新列表中)
-	for _, v := range currentRoleIds {
-		if !lo.Contains(newRoleIds, v) {
-			deleteRoleIds = append(deleteRoleIds, v)
-		}
-	}
-	// 找出 userId 需要增加的 RoleIds (新列表中有的，但当前没有)
-	for _, v := range newRoleIds {
-		if !lo.Contains(currentRoleIds, v) {
-			addRoleIds = append(addRoleIds, v)
-		}
-	}
-
-	// 删除
-	for _, v := range deleteRoleIds {
-		_, err := sqlUtils.DeleteObjectsByModel(db, &models.AdminRole{}, map[string]interface{}{"admin_id": userId, "role_id": v})
-		if err != nil {
-			return fmt.Errorf("UpdateAdminRoles() err: %v", err)
-		}
-	}
-	// 插入
-	for _, v := range addRoleIds {
-		err = sqlUtils.InsertObject(db, &models.AdminRole{AdminId: userId, RoleId: v})
-		if err != nil {
-			return fmt.Errorf("UpdateAdminRoles() err: %v", err)
-		}
-	}
-
-	return nil
-}
+// // UpdateAdminRoles 更新用户的角色（要确保 userId 存在）
+// func UpdateAdminRoles(db *gorm.DB, userId uint, newRoleIds []uint) error {
+// 	// 查询当前 userId 拥有的 RoleIds
+// 	var currentRoleIds []uint
+// 	err := db.Model(&models.AdminRole{}).Select("role_id").Where("admin_id = ?", userId).Find(&currentRoleIds).Error
+// 	if err != nil {
+// 		return fmt.Errorf("UpdateAdminRoles() err: %v", err)
+// 	}
+//
+// 	var deleteRoleIds []uint // 要删除的role_id
+// 	var addRoleIds []uint    // 要添加的role_id
+//
+// 	// 找出 userId 需要删除的 RoleIds (当前有的，但不在新列表中)
+// 	for _, v := range currentRoleIds {
+// 		if !lo.Contains(newRoleIds, v) {
+// 			deleteRoleIds = append(deleteRoleIds, v)
+// 		}
+// 	}
+// 	// 找出 userId 需要增加的 RoleIds (新列表中有的，但当前没有)
+// 	for _, v := range newRoleIds {
+// 		if !lo.Contains(currentRoleIds, v) {
+// 			addRoleIds = append(addRoleIds, v)
+// 		}
+// 	}
+//
+// 	// 删除
+// 	for _, v := range deleteRoleIds {
+// 		_, err := sqlUtils.DeleteObjectsByModel(db, &models.AdminRole{}, map[string]interface{}{"admin_id": userId, "role_id": v})
+// 		if err != nil {
+// 			return fmt.Errorf("UpdateAdminRoles() err: %v", err)
+// 		}
+// 	}
+// 	// 插入
+// 	for _, v := range addRoleIds {
+// 		err = sqlUtils.InsertObject(db, &models.AdminRole{AdminId: userId, RoleId: v})
+// 		if err != nil {
+// 			return fmt.Errorf("UpdateAdminRoles() err: %v", err)
+// 		}
+// 	}
+//
+// 	return nil
+// }
 
 // QueryRoleById 通过角色id查询该角色的信息
 func QueryRoleById(db *gorm.DB, id uint) *models.Role {
@@ -122,9 +123,15 @@ func QueryUserListByPage(db *gorm.DB, conditions map[string]interface{}, page in
 	var filteredUsers []*models.User // 最终的结果
 	for _, user := range users {
 		var userRoleIds []uint
-		// 查询 AdminRole 表中对应的 RoleId
-		if err := db.Model(&models.AdminRole{}).Where("admin_id = ?", user.ID).Pluck("role_id", &userRoleIds).Error; err != nil {
-			return nil, 0, fmt.Errorf("QueryUserListByPage() err: 查询用户 %d 的角色ID出错", user.ID)
+
+		// 获取该用户对应的全部角色id
+		casbinService, err := casbin.NewCasbinService(globals.DB)
+		if err != nil {
+			return nil, 0, fmt.Errorf("QueryUserListByPage() %v", err)
+		}
+		userRoleIds, err = casbinService.GetRolesForUser(user.ID)
+		if err != nil {
+			return nil, 0, fmt.Errorf("QueryUserListByPage() %v", err)
 		}
 
 		// 判断 userRoleIds 是否包含传入的 roleIds
@@ -146,12 +153,12 @@ func QueryUserListByPage(db *gorm.DB, conditions map[string]interface{}, page in
 	return []*models.User{}, len(filteredUsers), nil
 }
 
-// QueryAdminRoleByUserId 查询用户拥有的角色id
-func QueryAdminRoleByUserId(db *gorm.DB, userId uint) []uint {
-	var roleIds []uint
-	db.Model(&models.AdminRole{}).Where("admin_id = ?", userId).Select("role_id").Scan(&roleIds)
-	return roleIds
-}
+// // QueryAdminRoleByUserId 查询用户拥有的角色id
+// func QueryAdminRoleByUserId(db *gorm.DB, userId uint) []uint {
+// 	var roleIds []uint
+// 	db.Model(&models.AdminRole{}).Where("admin_id = ?", userId).Select("role_id").Scan(&roleIds)
+// 	return roleIds
+// }
 
 // QueryAllUser 查询所有用户
 func QueryAllUser(db *gorm.DB) ([]models.User, error) {

@@ -2,10 +2,12 @@ package logics
 
 import (
 	"fmt"
+	"forum/internal/internalPkg/internalUtils"
 	"forum/internal/internalPkg/sqlUtils"
 	"forum/internal/models"
 	"forum/internal/user/repositories"
 	"forum/internal/user/requests"
+	"forum/pkg/globals"
 	"github.com/samber/lo"
 	"gorm.io/gorm"
 )
@@ -119,13 +121,15 @@ func (u *UserReqContext) UserRank(id uint, msg requests.UserRankReq) ([]*request
 		}
 
 		// 查询用户的头像路径
-		//userImgs, err := controllers.GetImagesControllers("用户", v.ID)
-		//if err != nil {
-		//	// 数据库中没有该用户的头像，使用默认的头像
-		//	userRankReqSli[i].AvatarPath = internalUtils.UserDefaultImage
-		//} else {
-		//	userRankReqSli[i].AvatarPath = (*userImgs)[0].Path
-		//}
+		userImages, err := internalUtils.GetImages(u.DB, globals.UserHome, v.ID)
+		if err != nil {
+			return nil, fmt.Errorf("UserReqContext.UserRank() %v", err)
+		}
+		// 没有图片
+		if userImages == nil {
+			return nil, fmt.Errorf("UserReqContext.UserRank() err: 无法找到id为%d的用户头像图片", v.ID)
+		}
+		userRankReqSli[i].AvatarPath = (*userImages)[0]
 
 		// 未关注：0，已关注：1，这个用户是自己：2
 		if v.ID == id {
