@@ -7,6 +7,7 @@ import (
 	"forum/internal/models"
 	"forum/internal/user/repositories"
 	"forum/internal/user/requests"
+	"forum/pkg/casbin"
 	"forum/pkg/globals"
 	"github.com/xuri/excelize/v2"
 	"gorm.io/gorm"
@@ -15,8 +16,10 @@ import (
 
 // Reset 重置用户密码
 func (u *UserReqContext) Reset(msg requests.ReseatReq) error {
-	// 将默认密码加密
-	defaultPassword := "abc123"
+	// 根据id查询到用户email
+	user := repositories.QueryUserById(u.DB, msg.Id)
+	// 默认密码为用户邮箱，将默认密码加密
+	defaultPassword := user.Email
 	encryptedPassword, err := internalUtils.HashPassword(defaultPassword)
 	if err != nil {
 		return fmt.Errorf("UserReqContext.Reset() : 密码%s加密失败", defaultPassword)
@@ -32,8 +35,8 @@ func (u *UserReqContext) Reset(msg requests.ReseatReq) error {
 
 // Add 添加用户
 func (u *UserReqContext) Add(req requests.AddReq) (uint, error) {
-	// 将默认密码加密
-	defaultPassword := "abc123"
+	// 默认密码为用户邮箱，将默认密码加密
+	defaultPassword := req.Email
 	encryptedPassword, err := internalUtils.HashPassword(defaultPassword)
 	if err != nil {
 		return 0, fmt.Errorf("UserReqContext.Add() : 密码%s加密失败", defaultPassword)
@@ -66,17 +69,24 @@ func (u *UserReqContext) Add(req requests.AddReq) (uint, error) {
 		return 0, fmt.Errorf("UserReqContext.Add() err: %v", err)
 	}
 
-	// 插入 AdminRole 表（插入用户对应的角色）
-	for _, v := range req.RoleIds {
-		if err = sqlUtils.InsertObject(u.DB, &models.AdminRole{AdminId: user.ID, RoleId: v}); err != nil {
-			return 0, fmt.Errorf("UserReqContext.Add() err: %v", err)
-		}
+	// 给用户分配角色id，调用 casbin 方法
+	casbinService, err := casbin.NewCasbinService(globals.DB)
+	if err != nil {
+		return 0, fmt.Errorf("UserReqContext.Add() err: %v", err)
+	}
+	if err = casbinService.AssignRolesForUser(user.ID, req.RoleIds); err != nil {
+		return 0, fmt.Errorf("UserReqContext.Add() err: %v", err)
 	}
 
-	// 插入用户头像路径
-	// if err = imageCtrl.StoreUrlCtrl(&imageLogics.UrlParam{UrlPath: []string{req.AvatarPath}, Home: globals.User, HomeID: user.ID}); err != nil {
-	//	return 0, fmt.Errorf("UserReqContext.Add() err: %v", err)
-	// }
+	// 存储用户头像路径
+	if err = internalUtils.StoreUrl(&internalUtils.UrlParam{
+		UrlPath: []string{req.AvatarPath},
+		Home:    globals.UserHome,
+		HomeID:  user.ID,
+		DB:      u.DB,
+	}); err != nil {
+		return 0, fmt.Errorf("UserReqContext.Add() err: %v", err)
+	}
 
 	return user.ID, nil
 }
@@ -93,12 +103,21 @@ func (u *UserReqContext) Delete(req requests.DeleteReq) error {
 		num += int(n)
 
 		// 删除用户对应的角色id
-		if _, err = sqlUtils.DeleteObjectsByModel(u.DB, &models.AdminRole{}, map[string]interface{}{"admin_id": v}); err != nil {
+		casbinService, err := casbin.NewCasbinService(globals.DB)
+		if err != nil {
+			return fmt.Errorf("UserReqContext.Delete() err: %v", err)
+		}
+		// 获取该用户对应的全部id
+		roleIds, err := casbinService.GetRolesForUser(v)
+		if err != nil {
+			return fmt.Errorf("UserReqContext.Delete() err: %v", err)
+		}
+		// 根据用户 id 删除 roleIds
+		if err = casbinService.DeleteRoleForUser(v, roleIds); err != nil {
 			return fmt.Errorf("UserReqContext.Delete() err: %v", err)
 		}
 	}
 	fmt.Printf("应该删除 %d 条数据，实际删除 %v 条数据\n", len(req.Ids), num)
-
 	return nil
 }
 
@@ -124,12 +143,16 @@ func (u *UserReqContext) Edit(req requests.EditReq) error {
 		return fmt.Errorf("UserReqContext.Edit() -> %v", err)
 	}
 	// 更改用户对应的 role_id
-	if err := repositories.UpdateAdminRoles(u.DB, req.UserId, req.RoleIds); err != nil {
-		return fmt.Errorf("UserReqContext.Edit() -> %v", err)
+	casbinService, err := casbin.NewCasbinService(globals.DB)
+	if err != nil {
+		return fmt.Errorf("UserReqContext.Delete() err: %v", err)
+	}
+	if err = casbinService.UpdateRoleForUser(req.UserId, req.RoleIds); err != nil {
+		return fmt.Errorf("UserReqContext.Delete() err: %v", err)
 	}
 
 	// 存储用户头像路径
-	if err := internalUtils.StoreUrl(&internalUtils.UrlParam{
+	if err = internalUtils.StoreUrl(&internalUtils.UrlParam{
 		UrlPath: []string{req.AvatarPath},
 		Home:    globals.UserHome,
 		HomeID:  req.UserId,
@@ -172,12 +195,19 @@ func (u *UserReqContext) List(req requests.ListReq) ([]*requests.ListRes, int, e
 		}
 		// 没有图片
 		if userImages == nil {
-			return nil, 0, fmt.Errorf("UserReqContext.List() err = 无法找到id为%d的用户图片", v.ID)
+			return nil, 0, fmt.Errorf("UserReqContext.List() err = 无法找到id为%d的用户头像图片", v.ID)
 		}
 		avatarPath := (*userImages)[0]
 
-		// 查询这个用户的全部角色id
-		roleIds := repositories.QueryAdminRoleByUserId(u.DB, v.ID)
+		// 获取该用户对应的全部角色id
+		casbinService, err := casbin.NewCasbinService(globals.DB)
+		if err != nil {
+			return nil, 0, fmt.Errorf("UserReqContext.List() %v", err)
+		}
+		roleIds, err := casbinService.GetRolesForUser(v.ID)
+		if err != nil {
+			return nil, 0, fmt.Errorf("UserReqContext.List() %v", err)
+		}
 
 		listRes = append(listRes, &requests.ListRes{
 			Id:         v.ID,
@@ -245,14 +275,19 @@ func (u *UserReqContext) Import(file *multipart.FileHeader) error {
 		if user := repositories.QueryUserByEmail(u.DB, email); user != nil {
 			return fmt.Errorf("UserReqContext.Import() err: email为 %v 已经被使用", email)
 		}
-		// 密码是否合法，加密
-		if !internalUtils.IsValidPassword(password) {
+		encryptedPassword := ""
+		// 判断密码是否合法，并加密
+		if password == "" { // 如果密码是空，就选择默认密码，默认密码为用户邮箱
+			defaultPassword := email
+			// 加密
+			encryptedPassword, err = internalUtils.HashPassword(defaultPassword)
+			if err != nil {
+				return fmt.Errorf("UserReqContext.Import() err: 密码%s加密失败", defaultPassword)
+			}
+		} else if !internalUtils.IsValidPassword(password) { // 如果不为空，就判断是否合法
 			return fmt.Errorf("UserReqContext.Import() err: password为 %v 不合法", password)
 		}
-		password, err = internalUtils.HashPassword(password)
-		if err != nil {
-			return fmt.Errorf("UserReqContext.Import() err: password为 %v 加密失败", password)
-		}
+
 		// 检查Status，Status只能是1或者2
 		if status != 1 && status != 2 {
 			return fmt.Errorf("UserReqContext.Import() err: status为 %v 不合法", status)
@@ -262,7 +297,7 @@ func (u *UserReqContext) Import(file *multipart.FileHeader) error {
 		user := &models.User{
 			Nickname: nickname,
 			Email:    email,
-			Password: password,
+			Password: encryptedPassword,
 			Status:   status,
 		}
 		// 保存到数据库
@@ -361,12 +396,19 @@ func (u *UserReqContext) GetInfo(id uint) (*requests.GetInfoRes, error) {
 	}
 	// 没有图片
 	if userImages == nil {
-		return nil, fmt.Errorf("UserReqContext.GetInfo() err = 无法找到id为%d的用户图片", id)
+		return nil, fmt.Errorf("UserReqContext.GetInfo() err = 无法找到id为%d的用户头像图片", id)
 	}
 	avatarPath := (*userImages)[0]
 
-	// 查询这个用户的全部角色
-	roleIds := repositories.QueryAdminRoleByUserId(u.DB, user.ID)
+	// 获取该用户对应的全部角色id
+	casbinService, err := casbin.NewCasbinService(globals.DB)
+	if err != nil {
+		return nil, fmt.Errorf("UserReqContext.GetInfo() %v", err)
+	}
+	roleIds, err := casbinService.GetRolesForUser(user.ID)
+	if err != nil {
+		return nil, fmt.Errorf("UserReqContext.GetInfo() %v", err)
+	}
 
 	var getInfoRes = &requests.GetInfoRes{
 		Id:         user.ID,
