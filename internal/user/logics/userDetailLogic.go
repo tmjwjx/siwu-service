@@ -5,6 +5,7 @@ import (
 	"forum/internal/internalPkg/internalUtils"
 	"forum/internal/user/repositories"
 	"forum/internal/user/requests"
+	"forum/pkg/globals"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -20,13 +21,13 @@ func PersonalDataLogic(userDataReq *requests.UserDataReq, c *gin.Context, db *go
 	// 将图片文件的路径相关信息存入数据库和文件系统
 	u := &internalUtils.UrlParam{
 		UrlPath: []string{userDataReq.Path},
-		Home:    "用户",
+		Home:    globals.UserHome,
 		HomeID:  userDataReq.ID,
 		DB:      db,
 	}
 	err = internalUtils.StoreUrl(u)
 	if err != nil {
-		return err, 500
+		return fmt.Errorf("UserDataRequest -> 存储图片的相关信息失败 -> %s", err), 500
 	}
 	return nil, 200
 }

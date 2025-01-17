@@ -37,16 +37,16 @@ func PartPathPrefixInit() {
 	internalUtils.UserDefaultImage = path + "user_default_head_image.png"
 
 	// ArticleDefaultImage 默认文章图片路径
-	internalUtils.ArticleDefaultImage = path + "/images/article_default_image.png"
+	internalUtils.ArticleDefaultImage = path + "article_default_image.jpg"
 
 	// TagDefaultImage 默认标签图片
-	internalUtils.TagDefaultImage = path + "/images/tag_default_image.png"
+	internalUtils.TagDefaultImage = path + "tag_default_image.jpg"
 
 	// AdvertisementDefaultImage 默认广告图片
-	internalUtils.AdvertisementDefaultImage = path + "/images/advertisement_default_image.png"
+	internalUtils.AdvertisementDefaultImage = path + "advertisement_default_image.jpg"
 
 	// CommentDefaultImage 默认评论图片
-	internalUtils.CommentDefaultImage = path + ""
+	internalUtils.CommentDefaultImage = path + "comment_default_image.jpg"
 
 	// CategoryDefaultImage 默认类目图片
 	internalUtils.CategoryDefaultImage = path + ""
