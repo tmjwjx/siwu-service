@@ -19,7 +19,7 @@ func PersonalDataLogic(userDataReq *requests.UserDataReq, c *gin.Context, db *go
 
 	// 将图片文件的路径相关信息存入数据库和文件系统
 	u := &internalUtils.UrlParam{
-		UrlPath: userDataReq.Path,
+		UrlPath: []string{userDataReq.Path},
 		Home:    "用户",
 		HomeID:  userDataReq.ID,
 		DB:      db,

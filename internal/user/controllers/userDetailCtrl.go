@@ -8,7 +8,6 @@ import (
 	"forum/pkg/globals"
 	"forum/pkg/response"
 	"github.com/gin-gonic/gin"
-	"strconv"
 )
 
 // UserDataRequestCtrl 更新用户个人资料
@@ -60,14 +59,20 @@ func UserDataRequestCtrl(c *gin.Context) {
 func UserDataResponseCtrl(c *gin.Context) {
 
 	// 获取参数
-	userID := c.Param("id")
+	userID, exists := c.Get("id")
+	if !exists {
+		// 返回错误响应
+		e := response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("UserDataResponseCtrl -> 从token中获取用户ID失败"), nil)
+		response.Failed(c, 500, e)
+		return
+	}
 
-	// 使用 strconv.ParseUint 将字符串解析为 uint64 类型
-	uintValue, err := ChangeStrToUint(userID)
+	uintValue, err := internalUtils.ChangeAnyToUint(userID)
 	if err != nil {
 		// 返回错误响应
 		e := response.NewAppErr(globals.StatusInternalServerError, err, nil)
 		response.Failed(c, 500, e)
+		return
 	}
 
 	// 业务处理
@@ -140,14 +145,20 @@ func UserAccountRequestCtrl(c *gin.Context) {
 func UserAccountResponseCtrl(c *gin.Context) {
 
 	// 获取参数
-	userID := c.Param("id")
+	userID, exists := c.Get("id")
+	if !exists {
+		// 返回错误响应
+		e := response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("UserAccountResponseCtrl -> 从token中获取用户ID失败"), nil)
+		response.Failed(c, 500, e)
+		return
+	}
 
-	// 使用 strconv.ParseUint 将字符串解析为 uint64 类型
-	uintValue, err := ChangeStrToUint(userID)
+	uintValue, err := internalUtils.ChangeAnyToUint(userID)
 	if err != nil {
 		// 返回错误响应
 		e := response.NewAppErr(globals.StatusInternalServerError, err, nil)
 		response.Failed(c, 500, e)
+		return
 	}
 
 	// 逻辑处理
@@ -177,13 +188,19 @@ func UserPrivateSetRequestCtrl(c *gin.Context) {
 		// 处理绑定错误
 		e := response.NewAppErr(globals.StatusBadRequest, err, nil)
 		response.Failed(c, 400, e)
+		return
 	}
 
 	// 获取参数
-	userID := c.Param("id")
+	userID, exists := c.Get("id")
+	if !exists {
+		// 返回错误响应
+		e := response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("UserPrivateSetRequestCtrl -> 从token中获取用户ID失败"), nil)
+		response.Failed(c, 500, e)
+		return
+	}
 
-	// 使用 strconv.ParseUint 将字符串解析为 uint64 类型
-	uintValue, err := ChangeStrToUint(userID)
+	uintValue, err := internalUtils.ChangeAnyToUint(userID)
 	if err != nil {
 		// 返回错误响应
 		e := response.NewAppErr(globals.StatusInternalServerError, err, nil)
@@ -206,14 +223,20 @@ func UserPrivateSetRequestCtrl(c *gin.Context) {
 func UserPrivateSetResponseCtrl(c *gin.Context) {
 
 	// 获取参数
-	userID := c.Param("id")
+	userID, exists := c.Get("id")
+	if !exists {
+		// 返回错误响应
+		e := response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("UserPrivateSetResponseCtrl -> 从token中获取用户ID失败"), nil)
+		response.Failed(c, 500, e)
+		return
+	}
 
-	// 使用 strconv.ParseUint 将字符串解析为 uint64 类型
-	uintValue, err := ChangeStrToUint(userID)
+	uintValue, err := internalUtils.ChangeAnyToUint(userID)
 	if err != nil {
 		// 返回错误响应
 		e := response.NewAppErr(globals.StatusInternalServerError, err, nil)
 		response.Failed(c, 500, e)
+		return
 	}
 
 	// 逻辑处理
@@ -229,17 +252,4 @@ func UserPrivateSetResponseCtrl(c *gin.Context) {
 		d := response.NewAppData(globals.StatusOK, "用户私信设置数据响应成功", userPrivateSetRes)
 		response.Success(c, 200, d)
 	}
-}
-
-// ChangeStrToUint 使用 strconv.ParseUint 将字符串解析为 uint64 类型
-func ChangeStrToUint(userID string) (uint, error) {
-
-	value, err := strconv.ParseUint(userID, 10, 32)
-	if err != nil {
-		return 0, fmt.Errorf("ChangeStrToUint -> %s", err)
-	}
-
-	// 将 uint64 类型转换为 uint
-	uintValue := uint(value)
-	return uintValue, nil
 }
