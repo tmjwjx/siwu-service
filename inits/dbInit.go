@@ -79,7 +79,6 @@ func TableInit() {
 
 		// 角色管理模块
 		&models.Role{},
-		&models.AdminRole{},
 		&models.RoleMenu{},
 
 		// 字典管理模块

@@ -86,6 +86,15 @@ func (u *UserReqContext) Register(registerMsg requests.RegisterReq) error {
 	if err = sqlUtils.InsertObject(u.DB, &models.User{Nickname: nickName, Email: email, Password: encryptedPassword, LastLoginTime: time.Now()}); err != nil {
 		return fmt.Errorf("UserReqContext.Register() err: %v", err)
 	}
+	// 查询该用户的id
+	user = repositories.QueryUserByEmail(u.DB, email)
+	if user == nil {
+		return fmt.Errorf("UserReqContext.Register() : 未查询到邮箱为%v的用户", email)
+	}
+	// 向 UserDetail 表中添加该用户
+	if err = sqlUtils.InsertObject(u.DB, &models.UserDetail{UserID: user.ID}); err != nil {
+		return fmt.Errorf("UserReqContext.Register() err: %v", err)
+	}
 
 	// 删除该用户对应的全部验证码
 	_, err = sqlUtils.DeleteObjectsByModel(u.DB, &models.UserVerifyCode{}, map[string]interface{}{"email": email})
@@ -114,14 +123,15 @@ func (u *UserReqContext) ReqVerifyCode(email string) error {
 		}
 	}
 
-	// 插入一条新的验证码数据
-	if err := sqlUtils.InsertObject(u.DB, &models.UserVerifyCode{Email: email, VerifyCode: verifyCode}); err != nil {
-		return fmt.Errorf("UserReqContext.VerifyCodeReq() -> %v", err)
-	}
-
+	// 先发送验证码，后插入到表中，避免发送验证码失败
 	// 给用户发送验证码
 	body := fmt.Sprintf(templates.GetEmailFormatTemplate(), verifyCode, int(internalUtils.VerifyCodeEffectiveDuration.Minutes()))
 	if err := u.SendEmail(email, internalUtils.VerifyCodeSubject, body); err != nil {
+		return fmt.Errorf("UserReqContext.VerifyCodeReq() -> 发送验证码错误，可能不存在 %s 邮箱，%v", email, err)
+	}
+
+	// 插入一条新的验证码数据
+	if err := sqlUtils.InsertObject(u.DB, &models.UserVerifyCode{Email: email, VerifyCode: verifyCode}); err != nil {
 		return fmt.Errorf("UserReqContext.VerifyCodeReq() -> %v", err)
 	}
 
