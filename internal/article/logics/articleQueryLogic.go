@@ -79,9 +79,9 @@ func ArticleDetailLogic(db *gorm.DB, articleId string, userId uint) (data interf
 func ArticleListLogic(db *gorm.DB, req *requests.ArticleListReq) (data interface{}, err error) {
 
 	data, err = repositories.SearchArticlesListRep(db, req)
-	//if err != nil {
-	//	return nil, err
-	//}
+	if err != nil {
+		return nil, err
+	}
 	return data, nil
 }
 
