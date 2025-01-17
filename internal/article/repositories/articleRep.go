@@ -396,7 +396,7 @@ func SearchArticlesRep(db *gorm.DB, req *requests.ArticleSearchReq) (articles []
 	}
 
 	// 查询公开文章
-	query = query.Where("status = ?", "public")
+	query = query.Where("sw_articles.status = ?", "public")
 
 	// 执行查询
 	if err = query.Find(&articles).Error; err != nil {
