@@ -16,7 +16,7 @@ func UserDataRequestCtrl(c *gin.Context) {
 	// 获取参数
 	var userDataReq requests.UserDataReq
 	// 绑定 JSON 数据到结构体
-	err := c.ShouldBindJSON(&userDataReq)
+	err := c.ShouldBind(&userDataReq)
 	if err != nil {
 		// 处理绑定错误
 		e := response.NewAppErr(globals.StatusBadRequest, err, nil)
