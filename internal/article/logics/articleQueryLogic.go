@@ -12,13 +12,16 @@ import (
 )
 
 // ArticleSearchLogic 搜索文章
-func ArticleSearchLogic(db *gorm.DB, req *requests.ArticleSearchReq) ([]requests.SearchArticleListRes, error) {
+func ArticleSearchLogic(db *gorm.DB, req *requests.ArticleSearchReq) (data interface{}, err error) {
 
 	articles, err := repositories.SearchArticlesRep(db, req)
 	if err != nil {
 		return nil, err
 	}
-	return articles, nil
+
+	data = gin.H{"selectedList": articles}
+
+	return data, nil
 }
 
 // ArticleDetailLogic
@@ -76,9 +79,9 @@ func ArticleDetailLogic(db *gorm.DB, articleId string, userId uint) (data interf
 func ArticleListLogic(db *gorm.DB, req *requests.ArticleListReq) (data interface{}, err error) {
 
 	data, err = repositories.SearchArticlesListRep(db, req)
-	//if err != nil {
-	//	return nil, err
-	//}
+	if err != nil {
+		return nil, err
+	}
 	return data, nil
 }
 

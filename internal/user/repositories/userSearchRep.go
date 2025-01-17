@@ -31,3 +31,49 @@ func QueryUserRank(db *gorm.DB, page int, limit int) ([]*models.User, error) {
 
 	return users, nil
 }
+
+// QueryAttentionByPage
+// @Description: 搜索用户关注的人。
+// @Author lizhuang 2025-01-17 14:15:42
+// @param        db *gorm.DB
+// @param        keyword string 模糊查询昵称
+// @param        page
+// @param        limit int
+func QueryAttentionByPage(db *gorm.DB, followerId uint, keyword string, page, limit int) ([]uint, error) {
+	var ids []uint
+
+	// 构造查询
+	query := db.Model(&models.UserFollow{}).
+		Scopes(sqlUtils.Paginate(page, limit)). // 分页
+		Where("follower_id = ?", followerId).   // 根据关注者id查询
+		Pluck("followed_id", &ids)              // 查询被关注者
+
+	// 执行查询
+	if err := query.Error; err != nil {
+		return nil, fmt.Errorf("QueryAttentionByPage() err: %v", err)
+	}
+
+	// 模糊查询来筛选 nickname
+	newIds, err := QueryUserIdsByNickname(db, ids, keyword)
+	if err != nil {
+		return nil, fmt.Errorf("QueryAttentionByPage() -> %v", err)
+	}
+
+	return newIds, nil
+}
+
+// QueryUserIdsByNickname 使用模糊查询来查询 nickname 字段里面包含 keyword 的内容。
+func QueryUserIdsByNickname(db *gorm.DB, ids []uint, keyword string) ([]uint, error) {
+	var userIds []uint
+
+	// 执行查询：根据id在给定的ids切片中，并且nickname字段包含keyword
+	err := db.Model(&models.User{}).
+		Where("id IN (?)", ids).                   // 查询指定id的用户
+		Where("nickname LIKE ?", "%"+keyword+"%"). // 使用LIKE进行模糊查询
+		Pluck("id", &userIds).Error                // 只查询并返回用户id字段
+
+	if err != nil {
+		return nil, fmt.Errorf("QueryUserIdsByNickname() err: %v", err)
+	}
+	return userIds, nil
+}

@@ -58,7 +58,7 @@ func (u *UserReqContext) Add(req requests.AddReq) (uint, error) {
 	}
 
 	// 插入User表
-	if err = sqlUtils.InsertObject(u.DB, &models.User{Nickname: req.NickName, Email: req.Email, Password: encryptedPassword, Status: req.UserStatus}); err != nil {
+	if err = sqlUtils.InsertObject(u.DB, &models.User{Nickname: req.NickName, Email: req.Email, Password: encryptedPassword, Status: req.UserStatus, LastLoginTime: time.Now()}); err != nil {
 		return 0, fmt.Errorf("UserReqContext.Add() err: %v", err)
 	}
 
@@ -94,21 +94,23 @@ func (u *UserReqContext) Add(req requests.AddReq) (uint, error) {
 
 // Delete 删除用户
 func (u *UserReqContext) Delete(req requests.DeleteReq) error {
-	num := 0
 	for _, v := range req.Ids {
 		// 删除用户
-		n, err := sqlUtils.DeleteObjectsByModel(u.DB, &models.User{}, map[string]interface{}{"id": v})
-		if err != nil {
+		if _, err := sqlUtils.DeleteObjectsByModel(u.DB, &models.User{}, map[string]interface{}{"id": v}); err != nil {
 			return fmt.Errorf("UserReqContext.Delete() err: %v", err)
 		}
-		num += int(n)
+
+		// 删除该用户的详细信息
+		if _, err := sqlUtils.DeleteObjectsByModel(u.DB, &models.UserDetail{}, map[string]interface{}{"user_id": v}); err != nil {
+			return fmt.Errorf("UserReqContext.Delete() err: %v", err)
+		}
 
 		// 删除用户对应的角色id
 		casbinService, err := casbin.NewCasbinService(globals.DB)
 		if err != nil {
 			return fmt.Errorf("UserReqContext.Delete() err: %v", err)
 		}
-		// 获取该用户对应的全部id
+		// 获取该用户对应的全部角色id
 		roleIds, err := casbinService.GetRolesForUser(v)
 		if err != nil {
 			return fmt.Errorf("UserReqContext.Delete() err: %v", err)
@@ -118,7 +120,6 @@ func (u *UserReqContext) Delete(req requests.DeleteReq) error {
 			return fmt.Errorf("UserReqContext.Delete() err: %v", err)
 		}
 	}
-	fmt.Printf("应该删除 %d 条数据，实际删除 %v 条数据\n", len(req.Ids), num)
 	return nil
 }
 

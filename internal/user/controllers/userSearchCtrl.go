@@ -95,5 +95,70 @@ func UserRank(c *gin.Context) {
 
 // Attention 搜索用户关注的人
 func Attention(c *gin.Context) {
+	// 绑定数据
+	userId, err := strconv.Atoi(c.Query("userId"))
+	if err != nil {
+		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("Attention() err = 数据类型转换错误"), nil))
+		return
+	}
+	keyword := c.Query("keyword")
+	page, err := strconv.Atoi(c.Query("page"))
+	if err != nil {
+		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("Attention() err = 数据类型转换错误"), nil))
+		return
+	}
+	limit, err := strconv.Atoi(c.Query("limit"))
+	if err != nil {
+		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("Attention() err = 数据类型转换错误"), nil))
+		return
+	}
 
+	// 检验数据
+	if page <= 0 {
+		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("Attention() err: Page参数必须为正数"), nil))
+		return
+	}
+	if limit <= 0 {
+		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("Attention() err: limit参数必须为正数"), nil))
+		return
+	}
+
+	attentionReq := requests.AttentionReq{
+		UserId:  uint(userId),
+		Keyword: keyword,
+		Page:    page,
+		Limit:   limit,
+	}
+
+	// 业务逻辑
+	userReqContext := logics.NewUserReqContext(globals.DB, c, globals.SendEmailCfg)
+	ids, err := userReqContext.Attention(attentionReq)
+	if err != nil {
+		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("Attention() -> %v", err), nil))
+		return
+	}
+
+	// 成功
+	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", gin.H{"ids": ids}))
+}
+
+// GetBasicInfo 通过用户id获取到用户简略信息
+func GetBasicInfo(c *gin.Context) {
+	// 绑定数据
+	id, err := strconv.Atoi(c.Query("id"))
+	if err != nil {
+		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("GetBasicInfo() err = 数据类型转换错误"), nil))
+		return
+	}
+
+	// 业务逻辑
+	userReqContext := logics.NewUserReqContext(globals.DB, c, globals.SendEmailCfg)
+	userInfo, err := userReqContext.GetBasicInfo(uint(id))
+	if err != nil {
+		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("Attention() -> %v", err), nil))
+		return
+	}
+
+	// 成功
+	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", gin.H{"user_info": userInfo}))
 }

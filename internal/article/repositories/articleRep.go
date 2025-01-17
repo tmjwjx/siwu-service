@@ -396,7 +396,7 @@ func SearchArticlesRep(db *gorm.DB, req *requests.ArticleSearchReq) (articles []
 	}
 
 	// 查询公开文章
-	query = query.Where("status = ?", "public")
+	query = query.Where("sw_articles.status = ?", "public")
 
 	// 执行查询
 	if err = query.Find(&articles).Error; err != nil {
@@ -416,6 +416,7 @@ func SearchArticlesRep(db *gorm.DB, req *requests.ArticleSearchReq) (articles []
 func SearchArticlesListRep(db *gorm.DB, req *requests.ArticleListReq) (data interface{}, err error) {
 	// var articleList []requests.ArcList
 	var articleList []requests.SearchArticleListRes
+	var totalCount int64
 
 	query := db.Model(&models.Article{}).Preload("Tags").
 		Joins("LEFT JOIN sw_users ON sw_users.id = sw_articles.user_id").
@@ -491,6 +492,13 @@ func SearchArticlesListRep(db *gorm.DB, req *requests.ArticleListReq) (data inte
 		query = query.Where("sw_articles.heat >= ?", req.Heat)
 	}
 
+	// 获取总数
+	err = query.Count(&totalCount).Error
+	if err != nil {
+		globals.Log.Errorf("Error counting articles: %v", err)
+		return nil, err
+	}
+
 	// 分页
 	if req.Limit != 0 {
 		offset := (req.Page - 1) * req.Limit
@@ -503,7 +511,8 @@ func SearchArticlesListRep(db *gorm.DB, req *requests.ArticleListReq) (data inte
 		return // 结束函数执行
 	}
 
-	data = gin.H{"article_list": articleList}
+	data = gin.H{"article_list": articleList,
+		"total": totalCount}
 
 	return data, err
 }
