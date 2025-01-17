@@ -41,8 +41,8 @@ func ResponsePersonDateLogic(userID uint, db *gorm.DB) (*requests.UserDataRes, e
 func UserAccountRequestLogic(userAccountReq *requests.UserAccountReq, db *gorm.DB) (error, int) {
 	// 验证Email是否唯一
 	err := repositories.QueryPersonEmail(userAccountReq, db)
-	if err == nil {
-		// 查询到数据库已经存在了该 Email，返回错误
+	if err != nil {
+		// 查询到数据库已经存在了该 Email，并且已经被其他人使用了，返回错误
 		return fmt.Errorf("UserAccountRequestLogic -> %s", "该 Email 已经存在"), 400
 	}
 

@@ -18,21 +18,42 @@ const (
 )
 
 // 默认图片路径
-const (
-	// UserDefaultImage 默认用户头像路径
-	UserDefaultImage = "/images/user_default_head_image.png"
-	// ArticleDefaultImage 默认文章图片路径
-	ArticleDefaultImage = "/images/article_default_image.png"
-	// TagDefaultImage 默认标签图片
-	TagDefaultImage = "/images/tag_default_image.png"
-	// AdvertisementDefaultImage 默认广告图片
-	AdvertisementDefaultImage = "/images/advertisement_default_image.png"
-	CommentDefaultImage       = ""
-	CategoryDefaultImage      = ""
-)
+//const (
+//	// UserDefaultImage 默认用户头像路径
+//	UserDefaultImage = "user_default_head_image.png"
+//	// ArticleDefaultImage 默认文章图片路径
+//	ArticleDefaultImage = "/images/article_default_image.png"
+//	// TagDefaultImage 默认标签图片
+//	TagDefaultImage = "/images/tag_default_image.png"
+//	// AdvertisementDefaultImage 默认广告图片
+//	AdvertisementDefaultImage = "/images/advertisement_default_image.png"
+//	CommentDefaultImage       = ""
+//	CategoryDefaultImage      = ""
+//)
 
 // 用于判断广告是否被使用
 const (
 	Use = iota
 	NoUse
+)
+
+// 默认图片路径
+var (
+	// UserDefaultImage 默认用户头像路径
+	UserDefaultImage = ""
+
+	// ArticleDefaultImage 默认文章图片路径
+	ArticleDefaultImage = ""
+
+	// TagDefaultImage 默认标签图片
+	TagDefaultImage = ""
+
+	// AdvertisementDefaultImage 默认广告图片
+	AdvertisementDefaultImage = ""
+
+	// CommentDefaultImage 默认评论图片
+	CommentDefaultImage = ""
+
+	// CategoryDefaultImage 默认类目图片
+	CategoryDefaultImage = ""
 )
