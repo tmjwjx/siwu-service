@@ -58,7 +58,7 @@ func (u *UserReqContext) Add(req requests.AddReq) (uint, error) {
 	}
 
 	// 插入User表
-	if err = sqlUtils.InsertObject(u.DB, &models.User{Nickname: req.NickName, Email: req.Email, Password: encryptedPassword, Status: req.UserStatus}); err != nil {
+	if err = sqlUtils.InsertObject(u.DB, &models.User{Nickname: req.NickName, Email: req.Email, Password: encryptedPassword, Status: req.UserStatus, LastLoginTime: time.Now()}); err != nil {
 		return 0, fmt.Errorf("UserReqContext.Add() err: %v", err)
 	}
 
