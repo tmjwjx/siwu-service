@@ -32,4 +32,8 @@ func init() {
 	// 初始化静态文件映射配置
 	StaticInit()
 
+	// 生产图片的部分路径前缀
+	PartPathPrefixInit()
+
+
 }
