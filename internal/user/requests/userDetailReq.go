@@ -5,9 +5,9 @@ type UserDataReq struct {
 	ID              uint     `json:"id" form:"id"`                             // 用户ID
 	Nickname        string   `json:"nickname" form:"nickname"`                 // 用户名
 	CareerDirection string   `json:"career_direction" form:"career_direction"` // 职业方向
-	HomePage        string   `json:"user_home-page" form:"user_home_page"`     // 个人主页
+	HomePage        string   `json:"user_home_page" form:"user_home_page"`     // 个人主页
 	Signature       string   `json:"user_signature" form:"user_signature"`     // 个人签名
-	Path            []string `json:"path" form:"path"`                         // 用户头像
+	Path            string   `json:"path" form:"path"`                         // 用户头像
 	UserTags        []string `json:"user_tags" form:"user_tags"`               // 用户标签
 }
 

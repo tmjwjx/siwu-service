@@ -199,10 +199,10 @@ func (r *RoleReqContext) DispatchRole(dispatchRole requests.DispatchRoleReq) err
 	// 调用 casbin 方法
 	casbinService, err := casbin.NewCasbinService(globals.DB)
 	if err != nil {
-		fmt.Println("Api(e *gin.Engine) -> 创建 casbinService 失败, err = ", err)
+		return fmt.Errorf("RoleReqContext.DispatchRoleReq() -> err = %v", err)
 	}
 	if err = casbinService.AssignRolesForUser(userId, ids); err != nil {
-		return err
+		return fmt.Errorf("RoleReqContext.DispatchRoleReq() -> %v", err)
 	}
 	return nil
 }

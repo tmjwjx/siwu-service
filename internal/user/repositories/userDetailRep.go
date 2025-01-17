@@ -112,7 +112,7 @@ func UserDataRequest(userDataReq *requests.UserDataReq, db *gorm.DB) error {
 	}
 
 	u := &internalUtils.UrlParam{
-		UrlPath: userDataReq.Path,
+		UrlPath: []string{userDataReq.Path},
 		Home:    globals.UserHome,
 		HomeID:  userDataReq.ID,
 		DB:      db,
@@ -150,10 +150,16 @@ func UserAccountRequest(userAccountReq *requests.UserAccountReq, db *gorm.DB) er
 		return fmt.Errorf("UserAccountRequest -> 用户表中用户不存在 -> %s", err)
 	}
 
+	// 对密码进行加密
+	hashPassword, err := internalUtils.HashPassword(userAccountReq.Password)
+	if err != nil {
+		return fmt.Errorf("UserAccountRequest -> 密码加密失败 -> %s", err)
+	}
+
 	// 更新 User 表中的 email , password
 	err = tx.Model(&user).Updates(map[string]interface{}{
 		"email":    userAccountReq.Email,
-		"password": userAccountReq.Password,
+		"password": hashPassword,
 	}).Error
 	if err != nil {
 		tx.Rollback() // 回滚事务
@@ -213,7 +219,6 @@ func UserPrivateSetRequest(userID uint, userPrivateSetReq *requests.UserPrivateS
 	// 查询该用户是否存在
 	err := tx.Model(&models.User{}).Where("id = ?", userID).First(&user).Error
 	if err != nil {
-		// return fmt.Errorf("UserPrivateSetRequest -> %s", err)
 		// 数据库表中还没有该用户的数据，直接插入即可
 		user.ID = userID
 		user.PrivateSettings = userPrivateSetReq.PrivateSettings
