@@ -194,3 +194,20 @@ func TimeFormat(t time.Time) string {
 	formattedTime := t.Format("2006-01-02 15:04:05")
 	return formattedTime
 }
+
+// ChangeAnyToUint
+// @Description: 将Any类型转换成Uint类型
+// @Author wangyulong 2025-01-16 20:50:05
+// @param        value any
+// @return       uint
+// @return       error
+func ChangeAnyToUint(v any) (uint, error) {
+	var uintValue uint
+	// 使用类型断言进行转换
+	if num, ok := v.(uint); ok {
+		uintValue = num
+	} else {
+		fmt.Println("ChangeAnyToUint -> 将Any类型转换成Uint类型失败")
+	}
+	return uintValue, nil
+}

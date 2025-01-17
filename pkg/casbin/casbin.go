@@ -17,6 +17,12 @@ type CasbinService struct {
 	Adapter  *gormadapter.Adapter
 }
 
+// NewCasbinService
+// @Description: 创建 casbin_r_m_a 结构体
+// @Author wangyulong 2025-01-17 09:31:09
+// @param        db *gorm.DB
+// @return       *CasbinService
+// @return       error
 func NewCasbinService(db *gorm.DB) (*CasbinService, error) {
 	// 创建适配器
 	a, err := gormadapter.NewAdapterByDB(db)
@@ -203,6 +209,13 @@ func (c *CasbinService) GetRolesForUser(userId uint) ([]uint, error) {
 	return ids, nil
 }
 
+// DeleteRoleForUser
+// @Description: 删除用户对应的角色ids
+// @Author wangyulong 2025-01-17 09:30:30
+// @receiver     c
+// @param        userId uint
+// @param        roleIds []uint
+// @return       error
 func (c *CasbinService) DeleteRoleForUser(userId uint, roleIds []uint) error {
 	// 确保最新的策略数据
 	err := c.Enforcer.LoadPolicy()
@@ -228,6 +241,13 @@ func (c *CasbinService) DeleteRoleForUser(userId uint, roleIds []uint) error {
 	return nil
 }
 
+// UpdateRoleForUser
+// @Description: 更改用户的角色id
+// @Author wangyulong 2025-01-17 09:29:37
+// @receiver     c
+// @param        userId uint
+// @param        ids []uint
+// @return       error
 func (c *CasbinService) UpdateRoleForUser(userId uint, ids []uint) error {
 	// 确保最新的策略数据
 	err := c.Enforcer.LoadPolicy()
