@@ -27,6 +27,8 @@ func User(e *gin.Engine) {
 	r.POST("/click_attention", controllers.ClickAttention)
 	// 用户排行
 	r.GET("/rank", controllers.UserRank)
+	// Attention 搜索用户关注的人
+	r.GET("/attention", controllers.Attention)
 
 	// 上传用户个人资料
 	r.POST("/form_personal_data", controllers.UserDataRequestCtrl)

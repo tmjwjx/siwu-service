@@ -13,9 +13,9 @@ import (
 )
 
 // ClickAttention 点击关注和点击取消关注。followerId 关注 followedId
-func (u *UserReqContext) ClickAttention(follow requests.ClickAttentionReq) error {
-	followerId := follow.FollowerId
-	followedId := follow.FollowedId
+func (u *UserReqContext) ClickAttention(req requests.ClickAttentionReq) error {
+	followerId := req.FollowerId
+	followedId := req.FollowedId
 
 	// 查询两个id，判断两个id是否存在
 	// 关注者
@@ -86,11 +86,11 @@ func (u *UserReqContext) ClickAttention(follow requests.ClickAttentionReq) error
 }
 
 // UserRank 用户热度排行
-func (u *UserReqContext) UserRank(id uint, msg requests.UserRankReq) ([]*requests.UserRankRes, error) {
-	userRankReqSli := make([]*requests.UserRankRes, msg.Limit)
+func (u *UserReqContext) UserRank(id uint, req requests.UserRankReq) ([]*requests.UserRankRes, error) {
+	userRankReqSli := make([]*requests.UserRankRes, req.Limit)
 
 	// 查询排行榜：每个用户id，昵称
-	usersRank, err := repositories.QueryUserRank(u.DB, msg.Page, msg.Limit)
+	usersRank, err := repositories.QueryUserRank(u.DB, req.Page, req.Limit)
 	if err != nil {
 		return nil, fmt.Errorf("UserReqContext.UserRank() -> %v", err)
 	}
@@ -146,4 +146,30 @@ func (u *UserReqContext) UserRank(id uint, msg requests.UserRankReq) ([]*request
 	}
 
 	return userRankReqSli, nil
+}
+
+// Attention 搜索用户关注的人
+func (u *UserReqContext) Attention(req requests.AttentionReq) (*requests.AttentionRes, error) {
+	// 判断该用户是否存在
+	user := repositories.QueryUserById(u.DB, req.UserId)
+	if user == nil {
+		return nil, fmt.Errorf("UserReqContext.Attention() : id为%d的用户不存在", req.UserId)
+	}
+
+	// 查询
+	ids, err := repositories.QueryAttentionByPage(u.DB, req.UserId, req.Keyword, req.Page, req.Limit)
+	if err != nil {
+		return nil, fmt.Errorf("DictReqContext.GetType() err: %v", err)
+	}
+
+	// 筛除数据（避免 ids 里面存在 user.Id ）
+	for k, v := range ids {
+		if v == req.UserId {
+			ids = append(ids[:k], ids[k+1:]...)
+		}
+	}
+
+	res := &requests.AttentionRes{Ids: ids}
+
+	return res, nil
 }

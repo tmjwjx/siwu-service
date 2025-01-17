@@ -31,5 +31,5 @@ type AttentionReq struct {
 
 // AttentionRes 搜索用户关注的人响应
 type AttentionRes struct {
-	UserIds []uint `json:"user_ids"`
+	Ids []uint `json:"ids"`
 }
