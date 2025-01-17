@@ -130,14 +130,14 @@ func GetHotTagsRep(db *gorm.DB, n int) (data interface{}, err error) {
 		// 计算占比
 		temp := float64(tag.Count) / float64(total) * 100
 		other -= temp
-		value := fmt.Sprintf("%.2f%%", temp)
+		value := fmt.Sprintf("%.2f", temp)
 		hotTagsRes = append(hotTagsRes, struct {
 			Type  string `json:"type"`
 			Value string `json:"value"`
 		}{tag.Name, value})
 	}
 
-	value := fmt.Sprintf("%.2f%%", other)
+	value := fmt.Sprintf("%.2f", other)
 	hotTagsRes = append(hotTagsRes, struct {
 		Type  string `json:"type"`
 		Value string `json:"value"`
@@ -191,7 +191,7 @@ func GetHotArticleRep(db *gorm.DB, n int) (articleList []requests.HotArticleRes,
 		}
 
 		// 处理点赞涨幅格式
-		increase := fmt.Sprintf("%.2f%%", article.Increase*100)
+		increase := fmt.Sprintf("%.2f", article.Increase*100)
 
 		// 将处理后的数据存入 articleList
 		articleList = append(articleList, requests.HotArticleRes{
@@ -367,6 +367,7 @@ func SearchArticlesRep(db *gorm.DB, req *requests.ArticleSearchReq) (articles []
 
 	condition := internalUtils.ArticlesOrder(req.Kind) // 选择排序方式  0热度 1时间
 
+	// 查询文章列表
 	query := db.Model(&models.Article{}).Preload("Tags").
 		Select("sw_articles.*, sw_users.nickname").
 		Joins("LEFT JOIN sw_users ON sw_users.id = sw_articles.user_id")
@@ -393,6 +394,9 @@ func SearchArticlesRep(db *gorm.DB, req *requests.ArticleSearchReq) (articles []
 		offset := (req.Page - 1) * req.Limit // 计算当前页的偏移量，用于分页
 		query = query.Limit(req.Limit).Offset(offset)
 	}
+
+	// 查询公开文章
+	query = query.Where("status = ?", "public")
 
 	// 执行查询
 	if err = query.Find(&articles).Error; err != nil {
