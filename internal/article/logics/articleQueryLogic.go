@@ -144,7 +144,7 @@ func GetArticlesByTagLogic(db *gorm.DB, req *requests.GetArticleByTagReq) (data 
 // @Author tianjiajie 2024-10-18 15:37:28
 func GetUserArticleOrCollectionLogic(db *gorm.DB, req *requests.UserArticleOrCollectionReq, id int) (data interface{}, err error) {
 
-	articleList, err := repositories.GetUserArticleOrCollectionRep(db, req, id)
+	articleList, total, err := repositories.GetUserArticleOrCollectionRep(db, req, id)
 	if err != nil {
 		return nil, err
 	}
@@ -160,6 +160,8 @@ func GetUserArticleOrCollectionLogic(db *gorm.DB, req *requests.UserArticleOrCol
 		}
 
 	}
-	data = gin.H{"dataList": articleList}
+	data = gin.H{
+		"dataList": articleList,
+		"total":    total}
 	return data, nil
 }

@@ -799,16 +799,15 @@ func GetArticlesByTagRep(db *gorm.DB, req *requests.GetArticleByTagReq) (article
 // @return       articles
 // @return       err
 // @Author tianjiajie 2024-10-18 16:38:47
-func GetUserArticleOrCollectionRep(db *gorm.DB, req *requests.UserArticleOrCollectionReq, id int) (articles []requests.SearchArticleListRes, err error) {
+func GetUserArticleOrCollectionRep(db *gorm.DB, req *requests.UserArticleOrCollectionReq, id int) (articles []requests.SearchArticleListRes, total int64, err error) {
 
 	condition := internalUtils.ArticlesOrder(1) // 选择排序方式  0热度 1时间
 
 	query := db.Model(&models.Article{}).Preload("Tags").
 		Select("sw_articles.*, sw_users.nickname").
-		//Select("sw_articles.id").
 		Joins("LEFT JOIN sw_users ON sw_users.id = sw_articles.user_id").
 		// 获取未封禁的文章
-		Where("sw_articles.article_condition = ?", 1)
+		Where("sw_articles.article_condition = ?", 1).Debug()
 
 	// 判断是发布的文章还是收藏的文章
 	switch req.Type {
@@ -835,7 +834,14 @@ func GetUserArticleOrCollectionRep(db *gorm.DB, req *requests.UserArticleOrColle
 
 	// 只获取公开文章
 	if req.Id != id {
-		query = query.Where("status = ?", "public")
+		query = query.Where("sw_articles.status = ?", "public")
+	}
+
+	// 查询数量
+	err = query.Count(&total).Error
+	if err != nil {
+		globals.Log.Errorf("Error counting articles: %v", err)
+		return nil, 0, err
 	}
 
 	// 执行查询
@@ -844,5 +850,5 @@ func GetUserArticleOrCollectionRep(db *gorm.DB, req *requests.UserArticleOrColle
 		return // 结束函数执行
 	}
 
-	return articles, nil
+	return articles, total, nil
 }

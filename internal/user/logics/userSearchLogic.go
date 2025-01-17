@@ -199,3 +199,28 @@ func (u *UserReqContext) GetBasicInfo(id uint) (*requests.GetBasicInfoReq, error
 
 	return req, nil
 }
+
+// GetUserArticleLogic
+// @Description: 获取用户的文章
+// @param        db *gorm.DB
+// @param        userId int
+// @param        page int
+// @param        limit int
+// @return       []*models.Article
+// @return       error
+// @Author tianjiajie 2025-01-17 17:12:57
+//func GetUserArticleLogic(db *gorm.DB, req requests.UserDataRequest, b bool) (data interface{}, err error) {
+//	// 查询用户的文章
+//	articles, total, err := repositories.QueryUserArticleRep(db, req, b)
+//	if err != nil {
+//		return nil, fmt.Errorf("GetUserArticleLogic() -> %v", err)
+//	}
+//
+//	// 封装数据
+//	data = gin.H{
+//		"articles": articles,
+//		"total":    total,
+//	}
+//
+//	return data, nil
+//}
