@@ -28,7 +28,7 @@ func GetWorkplaceDataCtrl(c *gin.Context) {
 		return
 	}
 
-	// 获取文章列表
+	// 返回响应
 	data := response.NewAppData(globals.StatusOK, "成功", totalData)
 	response.Success(c, http.StatusOK, data)
 }
@@ -53,7 +53,7 @@ func GetHotTagsCtrl(c *gin.Context) {
 		return
 	}
 
-	// 获取文章列表
+	// 返回响应
 	data := response.NewAppData(globals.StatusOK, "成功", tags)
 	response.Success(c, http.StatusOK, data)
 }
@@ -71,7 +71,6 @@ func GetHotArticleCtrl(c *gin.Context) {
 	// 无需绑定
 
 	// 进入业务层
-
 	// 获取文章列表
 	articleList, err := logics.GetHotArticleLogic(db)
 	if err != nil {

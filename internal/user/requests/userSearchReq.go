@@ -33,3 +33,10 @@ type AttentionReq struct {
 type AttentionRes struct {
 	Ids []uint `json:"ids"`
 }
+
+//// UserDataRequest 用户 文章 请求
+//type UserDataRequest struct {
+//	Id    uint `json:"id" form:"id"`
+//	Page  int  `json:"page" form:"page"`
+//	Limit int  `json:"limit" form:"limit"`
+//}
