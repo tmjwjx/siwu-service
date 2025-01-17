@@ -96,7 +96,11 @@ func HGet(rdb *redis.Client, ctx context.Context, hash, key string) (string, err
 	val, err := rdb.HGet(ctx, hash, key).Result()
 	if errors.Is(err, redis.Nil) {
 		// 字段不存在
-		return "", fmt.Errorf("哈希表 %s 中的字段 %s 不存在", hash, key)
+		err = rdb.HSet(ctx, hash, key, 0).Err()
+		if err != nil {
+			globals.Log.Errorf("设置哈希表 %s 中字段 %s 的默认值时出错: %v", hash, key, err)
+			return "", fmt.Errorf("内部错误: %v", err)
+		}
 	}
 	if err != nil {
 		globals.Log.Errorf("获取 Redis 哈希表 %s 中的字段 %s 时出错: %v", hash, key, err)
