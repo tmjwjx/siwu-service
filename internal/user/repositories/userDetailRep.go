@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"errors"
 	"fmt"
 	"forum/internal/internalPkg/internalUtils"
 	"forum/internal/models"
@@ -16,11 +17,19 @@ func QueryPersonEmail(userAccountReq *requests.UserAccountReq, db *gorm.DB) erro
 	var user models.User
 	err := db.Where("email = ?", userAccountReq.Email).First(&user).Error
 	if err != nil {
-		return fmt.Errorf("QueryPersonEmail -> %s", err)
+		// 如果没找到，就可以更改
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil
+		} else {
+			return fmt.Errorf("QueryPersonEmail -> 查询 Email异常 -> %s", err)
+		}
+	}
+	// 如果查出来的是自己旧的Email，那也可以更改，否则就不能更改
+	if user.ID == userAccountReq.ID {
+		return nil
 	}
 
-	return nil
-
+	return fmt.Errorf("该 Email 已经被其他人使用")
 }
 
 // UserDataRequest 更新用户个人资料
