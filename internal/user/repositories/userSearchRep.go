@@ -7,18 +7,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// // QueryLastUserVerifyCodeByUserID 根据 UserID 查询最后一条 UserVerifyCode 记录（不论该数据的DeleteAt是否已经被赋值）
-// func QueryLastUserVerifyCodeByUserID(db *gorm.DB, userID uint) (*models.UserVerifyCode, error) {
-// 	var userVerifyCode models.UserVerifyCode
-// 	// 查询最后一条创建的记录（Unscoped()：不论这条数据的deleteAt是否被赋值）
-// 	result := db.Unscoped().Where("user_id = ?", userID).Order("created_at DESC").First(&userVerifyCode)
-// 	if result.Error != nil {
-// 		return nil, fmt.Errorf("QueryLastUserVerifyCodeByUserID() err: 查找id为%d用户验证码失败, 执行的查询语句为: %v", userID, result.Statement.SQL.String())
-// 	}
-//
-// 	return &userVerifyCode, nil
-// }
-
 // QueryLastUserVerifyCodeByEmail 根据 email 查询最后一条 UserVerifyCode 记录（不论该数据的DeleteAt是否已经被赋值）
 func QueryLastUserVerifyCodeByEmail(db *gorm.DB, email string) (*models.UserVerifyCode, error) {
 	var userVerifyCode models.UserVerifyCode

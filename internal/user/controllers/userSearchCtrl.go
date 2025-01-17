@@ -11,19 +11,19 @@ import (
 	"strconv"
 )
 
-// Follow 关注和取消关注
-func Follow(c *gin.Context) {
+// ClickAttention 点击关注和点击取消关注
+func ClickAttention(c *gin.Context) {
 	userReqContext := logics.NewUserReqContext(globals.DB, c, globals.SendEmailCfg)
 	// 绑定数据
-	var followMsg requests.FollowReq
+	var followMsg requests.ClickAttentionReq
 	if err := c.ShouldBind(&followMsg); err != nil {
-		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("Follow() err: %v", err), nil))
+		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("ClickAttention() err: %v", err), nil))
 		return
 	}
 
 	follerId, exists := c.Get("id")
 	if !exists {
-		response.Failed(c, http.StatusUnauthorized, response.NewAppErr(globals.StatusUnauthorized, fmt.Errorf("Follow() err = 无法获取 id"), nil))
+		response.Failed(c, http.StatusUnauthorized, response.NewAppErr(globals.StatusUnauthorized, fmt.Errorf("ClickAttention() err = 无法获取 id"), nil))
 		return
 	}
 	// 类型断言
@@ -31,13 +31,13 @@ func Follow(c *gin.Context) {
 
 	// 简单检验数据
 	if followMsg.FollowerId == followMsg.FollowedId {
-		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("Follow() : id%d不能关注%d", followMsg.FollowerId, followMsg.FollowedId), nil))
+		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("ClickAttention() : id%d不能关注%d", followMsg.FollowerId, followMsg.FollowedId), nil))
 		return
 	}
 
 	// 业务逻辑
-	if err := userReqContext.Follow(followMsg); err != nil {
-		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("Follow() -> %v", err), nil))
+	if err := userReqContext.ClickAttention(followMsg); err != nil {
+		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("ClickAttention() -> %v", err), nil))
 		return
 	}
 
@@ -91,4 +91,9 @@ func UserRank(c *gin.Context) {
 
 	// 成功
 	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", gin.H{"user_heat_rank": userRankRep}))
+}
+
+// Attention 搜索用户关注的人
+func Attention(c *gin.Context) {
+
 }
