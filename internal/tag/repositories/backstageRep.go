@@ -212,7 +212,7 @@ func UpdateTagRep(c *gin.Context, db *gorm.DB, req *requests.BsUpTagReq) (error,
 }
 
 // QueryTagRep 查询标签
-func QueryTagRep(db *gorm.DB, req *requests.BsQueTagReq) (*requests.BsQueTagRes, error) {
+func QueryTagRep(db *gorm.DB, req *requests.BsQueTagReq) (*requests.BsQueTag, error) {
 
 	// 查询标签是否存在
 	var tag models.Tag
@@ -222,7 +222,7 @@ func QueryTagRep(db *gorm.DB, req *requests.BsQueTagReq) (*requests.BsQueTagRes,
 	}
 
 	// 设置响应数据
-	tagRes := &requests.BsQueTagRes{
+	tagRes := &requests.BsQueTag{
 		ID:           tag.ID,
 		Name:         tag.Name,
 		Description:  tag.Description,
@@ -246,9 +246,9 @@ func QueryTagRep(db *gorm.DB, req *requests.BsQueTagReq) (*requests.BsQueTagRes,
 }
 
 // BatchQueryTagRep 批量查询标签
-func BatchQueryTagRep(db *gorm.DB, req *requests.BsBatchQueTagReq) (*[]*requests.BsQueTagRes, error) {
+func BatchQueryTagRep(db *gorm.DB, req *requests.BsBatchQueTagReq) (*requests.BsQueTagRes, error) {
 
-	var tagRes []*requests.BsQueTagRes
+	var tagRes []*requests.BsQueTag
 	var tags []models.Tag
 
 	// 查询标签数据
@@ -258,7 +258,7 @@ func BatchQueryTagRep(db *gorm.DB, req *requests.BsBatchQueTagReq) (*[]*requests
 	}
 
 	for _, tag := range tags {
-		t := &requests.BsQueTagRes{
+		t := &requests.BsQueTag{
 			ID:           tag.ID,
 			Name:         tag.Name,
 			Description:  tag.Description,
@@ -283,6 +283,10 @@ func BatchQueryTagRep(db *gorm.DB, req *requests.BsBatchQueTagReq) (*[]*requests
 
 	}
 
-	return &tagRes, nil
+	res := &requests.BsQueTagRes{
+		TagList: &tagRes,
+	}
+
+	return res, nil
 
 }

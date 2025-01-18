@@ -428,30 +428,16 @@ func SearchApiListRep(db *gorm.DB, req *requests.SearchApiListReq) (*requests.Se
 
 	var searchApiRes []requests.SearchApiRes
 	var res requests.SearchApiListRes
+
 	//建立表关联
 
 	query := db.Table("sw_apis").
+		Debug().
 		Select("sw_apis.id, sw_apis.path, sw_apis.brief_introduction, sw_groups.id as group_id, sw_groups.name as group_name, sw_request_methods.id as request_method_id, sw_request_methods.name as request_method_name").
 		Joins("left join sw_api_groups on sw_api_groups.api_id = sw_apis.id").
 		Joins("left join sw_groups on sw_api_groups.group_id = sw_groups.id").
 		Joins("left join sw_api_request_methods on sw_api_request_methods.api_id = sw_apis.id").
 		Joins("left join sw_request_methods on sw_api_request_methods.request_method_id = sw_request_methods.id")
-
-	//query := db.Model(models.Api{}).Select("sw_apis.id AS ID, sw_apis.path As Path, sw_apis.brief_introduction As BriefIntroduction, " +
-	//	"sw_api_groups.group_id As GroupId, sw_groups.name As GroupName, sw_api_request_methods.request_method_id " +
-	//	"As RequestMethodId, sw_request_methods.name As RequestMethodName").
-	//	Joins("join sw_api_groups on sw_api_groups.api_id = sw_apis.id").
-	//	Joins("join sw_groups on sw_groups.id = sw_api_groups.group_id").
-	//	Joins("join sw_api_request_methods on sw_api_request_methods.api_id = sw_apis.id").
-	//	Joins("join sw_request_methods on sw_request_methods.id = sw_api_request_methods.request_method_id")
-	//
-	//query := db.Model(models.Api{}).Select("sw_apis.id AS ID, sw_apis.path As Path, sw_apis.brief_introduction As BriefIntroduction, " +
-	//	"sw_api_groups.group_id As GroupId, sw_groups.name As GroupName, sw_api_request_methods.request_method_id " +
-	//	"As RequestMethodId, sw_request_methods.name As RequestMethodName").
-	//	Joins("left join sw_api_groups on sw_api_groups.api_id = sw_apis.id").
-	//	Joins("left join sw_groups on sw_groups.id = sw_api_groups.group_id").
-	//	Joins("left join sw_api_request_methods on sw_api_request_methods.api_id = sw_apis.id").
-	//	Joins("left join sw_request_methods on sw_request_methods.id = sw_api_request_methods.request_method_id")
 
 	// 添加查询条件
 	if req.Path != "" {
@@ -467,14 +453,7 @@ func SearchApiListRep(db *gorm.DB, req *requests.SearchApiListReq) (*requests.Se
 		query = query.Where("sw_apis.brief_introduction = ?", req.BriefIntroduction)
 	}
 
-	//else {
-	//	return nil, fmt.Errorf("SearchApiListRep -> 查询条件不能全部为空")
-	//}
-
-	// 查询数据
-	//if req.Limit == 0 {
-	//	return nil, fmt.Errorf("SearchApiListRep -> Limit的值不能为0")
-	//}
+	query = query.Where("sw_apis.deleted_at IS NULL")
 
 	err := query.Limit(req.Limit).Offset(req.Page).Scan(&searchApiRes).Error
 	if err != nil {
@@ -490,7 +469,6 @@ func SearchApiListRep(db *gorm.DB, req *requests.SearchApiListReq) (*requests.Se
 	}
 
 	return &res, nil
-
 }
 
 // MethodAndGroup
