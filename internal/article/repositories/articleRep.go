@@ -242,12 +242,14 @@ func InsertArticlesRep(db *gorm.DB, req requests.ReqPublish, userId uint) (id in
 	}
 	fmt.Println("我进来了")
 
+	// 判断当前用户是否是文章作者
+	if userId != req.UserId {
+		// 如果当前用户不是文章作者
+		return 0, errors.New("当前用户不是文章作者")
+	}
+
 	// 设置文章ID
 	if req.ArticleId != 0 {
-		if userId != req.UserId {
-			// 如果当前用户不是文章作者
-			return 0, errors.New("当前用户不是文章作者")
-		}
 		newArticle.ID = uint(req.ArticleId)
 
 		//// 获取数据库文章记录
@@ -553,8 +555,10 @@ func ArticleDetailRep(db *gorm.DB, id string) (requests.ArticleDetailRes, error)
 
 	articleDetail := requests.ArticleDetailRes{}
 	query := db.Model(&models.Article{}).
+		Select("sw_articles.*, sw_users.nickname").
+		Joins("LEFT JOIN sw_users ON sw_users.id = sw_articles.user_id").
 		Preload("Tags").
-		Omit("like_status", "collection_status")
+		Omit("like_status", "collection_status").Debug()
 
 	query = query.Where("sw_articles.id = ?", id)
 
@@ -662,23 +666,27 @@ func UpdateLikeRep(db *gorm.DB, req requests.ArticleLikeReq, userId uint) (err e
 	if req.LikeStatus == true {
 		if err = db.Where("article_id = ? AND user_id = ?", req.ArticleId, userId).First(&like).Error; err != nil {
 
-			// 如果没有找到点赞记录，创建点赞记录
-			like = models.ArticleLike{
-				ArticleID: req.ArticleId,
-				UserID:    userId,
-			}
-			if err = db.Create(&like).Error; err != nil {
-				return err
-			}
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				// 如果没有找到点赞记录，创建点赞记录
+				like = models.ArticleLike{
+					ArticleID: req.ArticleId,
+					UserID:    userId,
+				}
+				if err = db.Create(&like).Error; err != nil {
+					return err
+				}
 
-			// 创建点赞记录后 通知文章作者
-			var article models.Article
-			if err = db.Where("id = ?", req.ArticleId).First(&article).Error; err != nil {
+				// 创建点赞记录后 通知文章作者
+				var article models.Article
+				if err = db.Where("id = ?", req.ArticleId).First(&article).Error; err != nil {
+					return err
+				}
+				// 通知文章作者
+				authorId := strconv.Itoa(int(article.UserID))
+				internalUtils.MessagePush("like", authorId)
+			} else {
 				return err
 			}
-			// 通知文章作者
-			authorId := strconv.Itoa(int(article.UserID))
-			internalUtils.MessagePush("like", authorId)
 		}
 
 	} else if req.LikeStatus == false {
@@ -709,24 +717,29 @@ func UpdateCollectionRep(db *gorm.DB, req requests.ArticleCollectionReq, userId 
 
 	if req.CollectionStatus == true {
 		if err = db.Where("article_id = ? AND user_id = ?", req.ArticleId, userId).First(&collection).Error; err != nil {
-			// 如果没有找到收藏记录，创建收藏记录
-			collection = models.ArticleCollection{
-				ArticleID: req.ArticleId,
-				UserID:    userId,
-			}
-			if err = db.Create(&collection).Error; err != nil {
-				return err
-			}
 
-			// 创建收藏记录后 通知文章作者
-			var article models.Article
-			if err = db.Where("id = ?", req.ArticleId).First(&article).Error; err != nil {
-				//globals.Log.Errorf("err = %s", err)
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				// 如果没有找到收藏记录，创建收藏记录
+				collection = models.ArticleCollection{
+					ArticleID: req.ArticleId,
+					UserID:    userId,
+				}
+				if err = db.Create(&collection).Error; err != nil {
+					return err
+				}
+
+				// 创建收藏记录后 通知文章作者
+				var article models.Article
+				if err = db.Where("id = ?", req.ArticleId).First(&article).Error; err != nil {
+					//globals.Log.Errorf("err = %s", err)
+					return err
+				}
+				// 通知文章作者
+				authorId := strconv.Itoa(int(article.UserID))
+				internalUtils.MessagePush("collection", authorId)
+			} else {
 				return err
 			}
-			// 通知文章作者
-			authorId := strconv.Itoa(int(article.UserID))
-			internalUtils.MessagePush("collection", authorId)
 
 		}
 	} else if req.CollectionStatus == false {
