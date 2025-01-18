@@ -183,7 +183,7 @@ func UserPrivateSetRequestCtrl(c *gin.Context) {
 	var userPrivateSetReq *requests.UserPrivateSettingsReq
 
 	// 绑定 JSON 数据到结构体
-	err := c.ShouldBindJSON(&userPrivateSetReq)
+	err := c.ShouldBind(&userPrivateSetReq)
 	if err != nil {
 		// 处理绑定错误
 		e := response.NewAppErr(globals.StatusBadRequest, err, nil)
