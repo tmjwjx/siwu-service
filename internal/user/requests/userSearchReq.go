@@ -52,3 +52,10 @@ type GetBasicInfoReq struct {
 	Status          int       `json:"status"`           // 用户状态：0全部 1正常 2封禁
 	LastLoginTime   time.Time `json:"last_login_time"`  // 最后一次的登录时间。设置默认值为零值。
 }
+
+//// UserDataRequest 用户 文章 请求
+//type UserDataRequest struct {
+//	Id    uint `json:"id" form:"id"`
+//	Page  int  `json:"page" form:"page"`
+//	Limit int  `json:"limit" form:"limit"`
+//}

@@ -77,3 +77,47 @@ func QueryUserIdsByNickname(db *gorm.DB, ids []uint, keyword string) ([]uint, er
 	}
 	return userIds, nil
 }
+
+// QueryUserArticleRep
+// @Description: 查询用户的文章
+// @param        db *gorm.DB
+// @param        req requests.UserDataRequest
+// @param        b bool
+// @return       []*models.Article
+// @return       error
+// @Author tianjiajie 2025-01-17 17:19:16
+//func QueryUserArticleRep(db *gorm.DB, req requests.UserDataRequest, b bool) ([]article_req.SearchArticleListRes, int64, error) {
+//	var articles []article_req.SearchArticleListRes
+//	query := db.
+//		Model(&models.Article{}).Preload("Tags").
+//		Joins("LEFT JOIN sw_users ON sw_users.id = sw_articles.user_id").
+//		//Joins("LEFT JOIN sw_article_tags ON sw_article_tags.article_id = sw_articles.id").
+//		Select("DISTINCT sw_articles.*,sw_articles.published_at, sw_users.nickname")
+//
+//	// 查询条件
+//	query = query.Where("user_id = ?", req.Id)
+//
+//	// 排序
+//	query = query.Order("sw_articles.published_at DESC")
+//
+//	// 如果不是自己，只查询已发布的文章
+//	if !b {
+//		query = query.Where("sw_articles.status = ?", "public")
+//	}
+//
+//	// 查询总数
+//	var total int64
+//	// 复制查询语句
+//	if err := query.Select("sw_articles.id").Count(&total).Error; err != nil {
+//		return nil, 0, fmt.Errorf("QueryUserArticleRep() -> %v", err)
+//	}
+//
+//	// 分页
+//	query = query.Scopes(sqlUtils.Paginate(req.Page, req.Limit))
+//
+//	// 查询文章
+//	if err := query.Find(&articles).Error; err != nil {
+//		return nil, 0, fmt.Errorf("QueryUserArticleRep() -> %v", err)
+//	}
+//	return articles, total, nil
+//}

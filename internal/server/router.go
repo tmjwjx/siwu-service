@@ -3,7 +3,6 @@ package server
 import (
 	ApiRouter "forum/internal/api/routes"
 	articleRouter "forum/internal/article/routes"
-	bsLoginRouter "forum/internal/backstage/routes"
 	casbinRouter "forum/internal/casbin_r_m_a/routes"
 	dictRouter "forum/internal/dictManage/routes"
 	imageRouter "forum/internal/image/routes"
@@ -58,5 +57,5 @@ func SetupRouter() {
 	casbinRouter.CasbinRMA(globals.Router)
 
 	// 后台登陆分路由
-	bsLoginRouter.Backstage(globals.Router)
+	// bsLoginRouter.Backstage(globals.Router)
 }
