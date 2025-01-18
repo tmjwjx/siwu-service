@@ -43,6 +43,6 @@ func Tag(e *gin.Engine) {
 	r2.GET("/query", controllers.QueryTagCtrl)
 
 	// 批量查询标签
-	r2.GET("/batch_query", controllers.BatchQueryTagCtrl)
+	r2.POST("/batch_query", controllers.BatchQueryTagCtrl)
 
 }

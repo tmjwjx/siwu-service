@@ -98,8 +98,8 @@ func Comment(e *gin.Engine) {
 	// 后台
 	r2 := e.Group("/backstage_comment").Use(casbin.CasbinAuth(globals.CasbinEnforcer))
 
-	// 展示评论列表
-	r2.GET("/list", controllers.ShowCommentsListCtrl)
+	// 展示评论列表(检索api获取列表)
+	r2.POST("/list", controllers.ShowCommentsListCtrl)
 
 	// 添加评论
 	r2.POST("/add", controllers.AddCommentCtrl)

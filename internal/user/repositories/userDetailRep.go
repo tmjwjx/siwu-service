@@ -78,9 +78,9 @@ func UserDataRequest(userDataReq *requests.UserDataReq, db *gorm.DB) error {
 	} else {
 		// 使用 Map 更新特定字段，如果 UserDataReq 结构体字段与数据库字段不一致时
 		updates := map[string]interface{}{
-			"careerDirection": userDataReq.CareerDirection,
-			"homePage":        userDataReq.HomePage, // 注意这里要使用数据库中的列名
-			"signature":       userDataReq.Signature,
+			"career_direction": userDataReq.CareerDirection,
+			"home_page":        userDataReq.HomePage, // 注意这里要使用数据库中的列名
+			"signature":        userDataReq.Signature,
 		}
 
 		// 更新用户详情表中相应的字段
