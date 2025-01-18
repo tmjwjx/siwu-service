@@ -370,6 +370,8 @@ func (u *UserReqContext) Export() error {
 		return fmt.Errorf("UserReqContext.Export() err: Failed to create Excel file")
 	}
 
+	u.Ctx.Writer.Flush()
+
 	return nil
 }
 
