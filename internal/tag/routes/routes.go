@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"fmt"
 	"forum/internal/tag/controllers"
 	"forum/pkg/casbin"
 	"forum/pkg/globals"
@@ -9,11 +8,6 @@ import (
 )
 
 func Tag(e *gin.Engine) {
-
-	casbinService, err := casbin.NewCasbinService(globals.DB)
-	if err != nil {
-		fmt.Println("Api(e *gin.Engine) -> 创建 casbinService 失败, err = ", err)
-	}
 
 	// 前台分组
 	r := e.Group("/tag")
@@ -31,7 +25,7 @@ func Tag(e *gin.Engine) {
 	r.GET("/get_all_tags", controllers.GetAllTagCtrl)
 
 	// 后台分组
-	r2 := e.Group("/backstage_tag").Use(casbin.CasbinAuth(casbinService))
+	r2 := e.Group("/backstage_tag").Use(casbin.CasbinAuth(globals.CasbinEnforcer))
 
 	// 新增标签
 	r2.POST("/add", controllers.AddTagCtrl)

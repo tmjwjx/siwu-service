@@ -129,7 +129,7 @@ func MessagePush(data string, userId string) {
 	}
 }
 
-// ChangeStringToUint
+/*// ChangeStringToUint
 // @Description: 将string类型的值转换成uint类型
 // @Author wangyulong 2024-10-09 15:26:15
 // @param        str string
@@ -147,7 +147,7 @@ func ChangeStringToUint(str string) (uint, error) {
 	uintNum := uint(num)
 
 	return uintNum, nil
-}
+}*/
 
 // ChangeStringToInt
 // @Description: 将string类型的值转换成int类型

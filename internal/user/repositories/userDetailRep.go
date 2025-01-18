@@ -147,21 +147,31 @@ func UserAccountRequest(userAccountReq *requests.UserAccountReq, db *gorm.DB) er
 		tx.Rollback() // 回滚事务
 		return fmt.Errorf("UserAccountRequest -> 用户表中用户不存在 -> %s", err)
 	}
+	if userAccountReq.Password != "" {
+		// 对密码进行加密
+		hashPassword, err := internalUtils.HashPassword(userAccountReq.Password)
+		if err != nil {
+			return fmt.Errorf("UserAccountRequest -> 密码加密失败 -> %s", err)
+		}
 
-	// 对密码进行加密
-	hashPassword, err := internalUtils.HashPassword(userAccountReq.Password)
-	if err != nil {
-		return fmt.Errorf("UserAccountRequest -> 密码加密失败 -> %s", err)
-	}
-
-	// 更新 User 表中的 email , password
-	err = tx.Model(&user).Updates(map[string]interface{}{
-		"email":    userAccountReq.Email,
-		"password": hashPassword,
-	}).Error
-	if err != nil {
-		tx.Rollback() // 回滚事务
-		return fmt.Errorf("UserAccountRequest -> 更新 User 表中的 email , password -> %s", err)
+		// 更新 User 表中的 email , password
+		err = tx.Model(&user).Updates(map[string]interface{}{
+			"email":    userAccountReq.Email,
+			"password": hashPassword,
+		}).Error
+		if err != nil {
+			tx.Rollback() // 回滚事务
+			return fmt.Errorf("UserAccountRequest -> 更新 User 表中的 email , password -> %s", err)
+		}
+	} else {
+		// 更新 User 表中的 email , password
+		err = tx.Model(&user).Updates(map[string]interface{}{
+			"email": userAccountReq.Email,
+		}).Error
+		if err != nil {
+			tx.Rollback() // 回滚事务
+			return fmt.Errorf("UserAccountRequest -> 更新 User 表中的 email -> %s", err)
+		}
 	}
 
 	// 查询该用户的外键是否存在
@@ -214,8 +224,10 @@ func UserPrivateSetRequest(userID uint, userPrivateSetReq *requests.UserPrivateS
 	}
 
 	var user models.User
+	fmt.Println("**************----->", userID)
 	// 查询该用户是否存在
 	err := tx.Model(&models.User{}).Where("id = ?", userID).First(&user).Error
+	fmt.Println("^^^^^^^^^^^^^-->", err)
 	if err != nil {
 		// 数据库表中还没有该用户的数据，直接插入即可
 		user.ID = userID
@@ -314,7 +326,7 @@ func UserAccountResponse(userID uint, db *gorm.DB) (*requests.UserAccountRes, er
 		BlogLink:   user.UserDetail.BlogLink,
 		WeiboLink:  user.UserDetail.WeiboLink,
 		GithubLink: user.UserDetail.GithubLink,
-		Password:   user.Password,
+		Password:   "",
 	}
 
 	return userAccountRes, nil

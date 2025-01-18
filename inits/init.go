@@ -35,5 +35,7 @@ func init() {
 	// 生产图片的部分路径前缀
 	PartPathPrefixInit()
 
+	// 初始化casbin配置
+	CasbinInit()
 
 }

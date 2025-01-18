@@ -2,9 +2,7 @@ package casbin
 
 import (
 	"fmt"
-	"forum/internal/internalPkg/internalUtils"
-	"forum/internal/models"
-	"forum/pkg/globals"
+	"forum/pkg/utils"
 	"github.com/casbin/casbin/v2"
 	"github.com/casbin/casbin/v2/model"
 	gormadapter "github.com/casbin/gorm-adapter/v3"
@@ -44,7 +42,7 @@ g = _,_
 e = some(where (p.eft == allow))
 
 [matchers]
-m = r.sub == p.sub && r.obj == p.obj`)
+m = g(r.sub, p.sub) && r.obj == p.obj`)
 	if err != nil {
 		return nil, fmt.Errorf("NewCasbinService -> 创建模型失败 -> %s", err)
 	}
@@ -69,7 +67,7 @@ func (c *CasbinService) GetApiPerm(id string) ([]uint, error) {
 	}
 	for _, p := range permissions {
 		obj := p[1] // p[1] 是资源字段
-		apiId, err := internalUtils.ChangeStringToUint(obj)
+		apiId, err := utils.ChangeStringToUint(obj)
 		if err != nil {
 			return nil, fmt.Errorf("GetApiPerm -> 获取当前角色的api权限失败 -> %s", err)
 		}
@@ -107,7 +105,7 @@ func (c *CasbinService) ModifyRolePolicy(roleId string, apiIds []string) error {
 
 }
 
-// SelApiId 根据请求路径查找api的id
+/*// SelApiId 根据请求路径查找api的id
 func SelApiId(requestUrl string) (uint, error) {
 	var apiId uint
 	// 根据请求中的路由接口,查询apiId
@@ -119,7 +117,7 @@ func SelApiId(requestUrl string) (uint, error) {
 		return 0, fmt.Errorf("SelApiId -> 该api不存在，该用户没有该权限")
 	}
 	return apiId, nil
-}
+}*/
 
 // AssignRolesForUser
 // @Description: 为用户分配角色
@@ -199,7 +197,7 @@ func (c *CasbinService) GetRolesForUser(userId uint) ([]uint, error) {
 
 	var id uint
 	for _, roleId := range roleIds {
-		id, err = internalUtils.ChangeStringToUint(roleId)
+		id, err = utils.ChangeStringToUint(roleId)
 		if err != nil {
 			return nil, fmt.Errorf("c *CasbinService) GetRolesForUser -> %s", err)
 		}
