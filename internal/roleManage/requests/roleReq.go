@@ -19,9 +19,9 @@ type SearchRoleReq struct {
 	Name   string `json:"name"`
 	Code   string `json:"code"`
 	Status int    `json:"status"`
-	Sort   int    `json:"sort"`
-	Page   int    `json:"page"`
-	Limit  int    `json:"limit"`
+	// Sort   int    `json:"sort"`
+	Page  int `json:"page"`
+	Limit int `json:"limit"`
 }
 
 // SearchRoleRes 检索角色响应

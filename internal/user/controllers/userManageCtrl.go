@@ -166,7 +166,6 @@ func Export(c *gin.Context) {
 	// 设置响应头，返回 Excel 文件
 	fileName := "users.xlsx"
 	c.Header("Content-Disposition", "attachment; filename="+fileName)
-	// c.Header("Content-Type", "application/vnd.ms-excel")
 	c.Header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 	c.Header("Content-Transfer-Encoding", "binary")
 
@@ -177,29 +176,15 @@ func Export(c *gin.Context) {
 		return
 	}
 
-	// // 业务逻辑
-	// userReqContext := logics.NewUserReqContext(globals.DB, c, globals.SendEmailCfg)
-	// excelData, err := userReqContext.Export()
-	// if err != nil {
-	// 	response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("Export() err: %v", err), nil))
-	// 	return
-	// }
-	//
-	// // 设置响应头，返回 Excel 文件
-	// fileName := "users.xlsx"
-	// c.Header("Content-Disposition", "attachment; filename="+fileName)
-	// c.Header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-	// 直接发二进制
-	// c.Data(http.StatusOK, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", excelData.Bytes())
-
 	// response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", nil))
 }
 
 // DownloadTemplate 下载导入用户模版excel
 func DownloadTemplate(c *gin.Context) {
 	// 设置响应头，返回 Excel 文件
-	c.Header("Content-Disposition", "attachment; filename=user_template.xlsx")
-	c.Header("Content-Type", "application/octet-stream")
+	fileName := "user_template.xlsx"
+	c.Header("Content-Disposition", "attachment; filename="+fileName)
+	c.Header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 	c.Header("Content-Transfer-Encoding", "binary")
 
 	// 业务逻辑

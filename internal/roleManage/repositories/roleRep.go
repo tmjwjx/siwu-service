@@ -3,6 +3,7 @@ package repositories
 import (
 	"fmt"
 	"forum/internal/models"
+	"forum/internal/roleManage/requests"
 	"gorm.io/gorm"
 	"reflect"
 )
@@ -120,13 +121,29 @@ func QueryRoles(db *gorm.DB, conditions map[string]interface{}) ([]*models.Role,
 // limit: 每页数据条数。
 // 例子：如果 page = 2，limit = 10，那么会跳过前 10 条记录，返回第 11-20 条记录。
 // 返回的int表示一共有多少条符合条件的数据
-func QueryRolesByPage(db *gorm.DB, conditions map[string]interface{}, page int, limit int) ([]*models.Role, int, error) {
+func QueryRolesByPage(db *gorm.DB, req requests.SearchRoleReq) ([]*models.Role, int, error) {
+	name := req.Name
+	status := req.Status
+	code := req.Code
+	page := req.Page
+	limit := req.Limit
+
+	// 存放查询结果
 	var roles []*models.Role
 
 	// 使用条件查询
 	query := db.Model(&models.Role{})
-	for key, value := range conditions {
-		query = query.Where(fmt.Sprintf("%s = ?", key), value)
+
+	// 模糊查询
+	if name != "" {
+		query = query.Where("name LIKE ?", "%"+name+"%")
+	}
+
+	if code != "" {
+		query = query.Where("code = ?", code)
+	}
+	if status != 0 {
+		query = query.Where("status = ?", status)
 	}
 
 	// 查看符合条件的数据一共有多少条

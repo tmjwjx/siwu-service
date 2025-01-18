@@ -50,22 +50,8 @@ func (r *RoleReqContext) DeleteRole(ids requests.RoleIdsReq) error {
 
 // SearchRole 检索数据
 func (r *RoleReqContext) SearchRole(searchRole requests.SearchRoleReq) ([]*requests.SearchRoleRes, int, error) {
-	conditions := map[string]interface{}{}
-
-	// 判断是否该添加某些查询条件（如果某些条件为空，那么就不查询这个条件）
-	if searchRole.Name != "" {
-		conditions["name"] = searchRole.Name
-	}
-	if searchRole.Code != "" {
-		conditions["code"] = searchRole.Code
-	}
-	// status == 0 代表着全部
-	if searchRole.Status != 0 {
-		conditions["status"] = searchRole.Status
-	}
-
 	// 查询
-	roleSli, total, err := repositories.QueryRolesByPage(r.DB, conditions, searchRole.Page, searchRole.Limit)
+	roleSli, total, err := repositories.QueryRolesByPage(r.DB, searchRole)
 	if err != nil {
 		return nil, 0, fmt.Errorf("RoleReqContext.SearchRoleReq() -> %v", err)
 	}
