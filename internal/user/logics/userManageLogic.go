@@ -1,7 +1,6 @@
 package logics
 
 import (
-	"bytes"
 	"fmt"
 	"forum/internal/internalPkg/internalUtils"
 	"forum/internal/internalPkg/sqlUtils"
@@ -328,12 +327,85 @@ func (u *UserReqContext) Import(file *multipart.FileHeader) error {
 	return nil
 }
 
+//
+// // Export 导出用户表
+// func (u *UserReqContext) Export() (*bytes.Buffer, error) {
+// 	// 从数据库获取所有用户
+// 	users, err := repositories.QueryAllUser(u.DB)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("UserReqContext.Export() -> %v", err)
+// 	}
+//
+// 	// 创建一个新的 Excel 文件
+// 	f := excelize.NewFile()
+// 	// 创建一个新的 Sheet，工作表名称为 "Users"
+// 	index, _ := f.NewSheet("Users")
+// 	// 添加列头到第一行
+// 	headers := []string{"Id", "创造时间", "更新时间", "昵称", "邮箱", "密码", "热度", "关注数量", "粉丝数量", "状态", "最后登录时间"}
+// 	for i, header := range headers {
+// 		cell := fmt.Sprintf("%s1", string(rune('A'+i)))
+// 		f.SetCellValue("Users", cell, header)
+// 	}
+//
+// 	// 写入用户数据
+// 	for i, user := range users {
+// 		row := i + 2 // 从第二行开始写入数据
+// 		f.SetCellValue("Users", fmt.Sprintf("A%d", row), user.ID)
+// 		f.SetCellValue("Users", fmt.Sprintf("B%d", row), user.CreatedAt.Format("2006-01-02 15:04:05"))
+// 		f.SetCellValue("Users", fmt.Sprintf("C%d", row), user.UpdatedAt.Format("2006-01-02 15:04:05"))
+// 		f.SetCellValue("Users", fmt.Sprintf("D%d", row), user.Nickname)
+// 		f.SetCellValue("Users", fmt.Sprintf("E%d", row), user.Email)
+// 		f.SetCellValue("Users", fmt.Sprintf("F%d", row), user.Password)
+// 		f.SetCellValue("Users", fmt.Sprintf("G%d", row), user.Heat)
+// 		f.SetCellValue("Users", fmt.Sprintf("H%d", row), user.AttentionCount)
+// 		f.SetCellValue("Users", fmt.Sprintf("I%d", row), user.FansCount)
+// 		f.SetCellValue("Users", fmt.Sprintf("J%d", row), user.Status)
+// 		f.SetCellValue("Users", fmt.Sprintf("K%d", row), user.LastLoginTime.Format("2006-01-02 15:04:05"))
+// 	}
+//
+// 	// 设置活动工作表
+// 	f.SetActiveSheet(index)
+//
+// 	// 将 Excel 文件写入内存
+// 	excelData, err := f.WriteToBuffer()
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	return excelData, err
+//
+// 	// // 创建 Excel 文件
+// 	// f := excelize.NewFile()
+// 	//
+// 	// // 设置表头
+// 	// f.SetCellValue("Sheet1", "A1", "入学年份")
+// 	// f.SetCellValue("Sheet1", "B1", "班级")
+// 	// f.SetCellValue("Sheet1", "C1", "姓名")
+// 	// f.SetCellValue("Sheet1", "D1", "学号")
+// 	//
+// 	// // 填充数据
+// 	// for i, user := range users {
+// 	// 	row := i + 2 // 从第二行开始填充数据
+// 	// 	f.SetCellValue("Sheet1", fmt.Sprintf("A%d", row), user.PlusTime.Format("2006"))
+// 	// 	f.SetCellValue("Sheet1", fmt.Sprintf("B%d", row), user.Class)
+// 	// 	f.SetCellValue("Sheet1", fmt.Sprintf("C%d", row), user.Name)
+// 	// 	f.SetCellValue("Sheet1", fmt.Sprintf("D%d", row), user.Username)
+// 	// }
+// 	//
+// 	// // 将 Excel 文件写入内存
+// 	// excelData, err := f.WriteToBuffer()
+// 	// if err != nil {
+// 	// 	return  err
+// 	// }
+// 	//
+// 	// return excelData, err
+// }
+
 // Export 导出用户表
-func (u *UserReqContext) Export() (*bytes.Buffer, error) {
+func (u *UserReqContext) Export() error {
 	// 从数据库获取所有用户
 	users, err := repositories.QueryAllUser(u.DB)
 	if err != nil {
-		return nil, fmt.Errorf("UserReqContext.Export() -> %v", err)
+		return fmt.Errorf("UserReqContext.Export() -> %v", err)
 	}
 
 	// 创建一个新的 Excel 文件
@@ -366,12 +438,18 @@ func (u *UserReqContext) Export() (*bytes.Buffer, error) {
 	// 设置活动工作表
 	f.SetActiveSheet(index)
 
-	// 将 Excel 文件写入内存
-	excelData, err := f.WriteToBuffer()
-	if err != nil {
-		return nil, err
+	// 写入响应
+	if err = f.Write(u.Ctx.Writer); err != nil {
+		return fmt.Errorf("UserReqContext.Export() -> %v", err)
 	}
-	return excelData, err
+	return nil
+
+	// // 将 Excel 文件写入内存
+	// excelData, err := f.WriteToBuffer()
+	// if err != nil {
+	// 	return  err
+	// }
+	// return  err
 
 	// // 创建 Excel 文件
 	// f := excelize.NewFile()
