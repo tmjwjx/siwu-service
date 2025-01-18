@@ -22,7 +22,6 @@ func CasbinAuth(e *casbin.Enforcer) gin.HandlerFunc {
 
 		// 获取用户id
 		id, exists := c.Get("id")
-		fmt.Println("---------------->", id)
 		if !exists {
 			e := response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("NewCasbinAuth -> 获取用户id失败"), nil)
 			response.Failed(c, 500, e)
@@ -34,19 +33,15 @@ func CasbinAuth(e *casbin.Enforcer) gin.HandlerFunc {
 
 		// 获取apiId
 		apiId, err := utils.SelApiId(c.Request.URL.Path)
-		fmt.Println("=================>", apiId)
 		if err != nil {
 			e := response.NewAppErr(globals.StatusBadRequest, err, nil)
 			response.Failed(c, 400, e)
 			c.Abort()
 			return
 		}
-		fmt.Println("+++++++++---->", fmt.Sprintf("%v", id), fmt.Sprintf("%v", apiId))
-		//ok, err := cbs.Enforcer.Enforce(id, apiId)
-		//ok, err := cbs.Enforcer.Enforce(fmt.Sprintf("%v", id), fmt.Sprintf("%v", apiId))
-		ok, err2 := e.Enforce("1", "16")
-		fmt.Println(err2)
-		if err2 != nil {
+
+		ok, err := e.Enforce(fmt.Sprintf("%v", id), fmt.Sprintf("%v", apiId))
+		if err != nil {
 			e := response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("NewCasbinAuth -> 权限验证失败"), nil)
 			response.Failed(c, 500, e)
 			c.Abort()
