@@ -38,8 +38,8 @@ type AboutArticleRes struct {
 // ArticleLikeReq
 // @Description: 文章点赞请求结构体
 type ArticleLikeReq struct {
-	ArticleId  uint `json:"article_id"`
-	LikeStatus bool `json:"like_status"`
+	ArticleId  uint `json:"article_id" form:"article_id"`
+	LikeStatus bool `json:"like_status" form:"like_status"`
 }
 
 // ArticleCollectionReq
