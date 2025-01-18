@@ -480,8 +480,7 @@ func SearchArticlesListRep(db *gorm.DB, req *requests.ArticleListReq) (data inte
 	}
 
 	// 获取总数（不使用 DISTINCT）
-	err = query.Debug().
-		Group("sw_articles.id").
+	err = query.Group("sw_articles.id").
 		Count(&totalCount).Error
 	if err != nil {
 		globals.Log.Errorf("Error counting articles: %v", err)
