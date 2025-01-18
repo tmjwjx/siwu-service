@@ -250,16 +250,22 @@ func BatchQueryTagRep(db *gorm.DB, req *requests.BsBatchQueTagReq) (*requests.Bs
 
 	var tagRes []*requests.BsQueTag
 	var tags []models.Tag
-	var total int
+
+	query := db.Model(models.Tag{})
+
+	if req.Name != "" {
+		query = query.Where("name LIKE ?", "%"+req.Name+"%")
+	}
 
 	// 查询标签数据
-	err := db.Limit(req.Limit).Offset(req.Offset).Find(&tags).Error
+	err := query.Find(&tags).Error
 	if err != nil {
 		return nil, fmt.Errorf("BatchQueryTagRep -> 批量查询标签失败 -> %s", err)
 	}
 
+	length := len(tags)
+
 	for _, tag := range tags {
-		total++
 		t := &requests.BsQueTag{
 			ID:           tag.ID,
 			Name:         tag.Name,
@@ -281,10 +287,27 @@ func BatchQueryTagRep(db *gorm.DB, req *requests.BsBatchQueTagReq) (*requests.Bs
 		tagRes = append(tagRes, t)
 	}
 
-	res := &requests.BsQueTagRes{
-		TagList: &tagRes,
-		Total:   total,
+	// 分页返回数据
+	page := (req.Offset - 1) * req.Limit
+	if length > page {
+		end := page + req.Limit
+		if end > length {
+			end = length
+		}
+
+		tagRes = tagRes[page:end]
+		res := &requests.BsQueTagRes{
+			TagList: &tagRes,
+			Total:   length,
+		}
+
+		return res, nil
 	}
 
+	tagList := make([]*requests.BsQueTag, 0)
+	res := &requests.BsQueTagRes{
+		TagList: &tagList,
+		Total:   0,
+	}
 	return res, nil
 }
