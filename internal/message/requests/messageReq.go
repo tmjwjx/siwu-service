@@ -100,6 +100,7 @@ type CommentMessageRes struct {
 	Path       string `json:"path"`        // 评论者头像URL
 	Title      string `json:"title"`       // 被评论文章标题
 	Content    string `json:"content"`     // 评论内容
+	ParentId   uint   `json:"parent_id"`   // 被评论的评论
 	Comment    string `json:"comment"`     // 被评论的评论
 	CreatedAt  string `json:"created_at"`  // 评论创建时间
 	LikesCount int    `json:"likes_count"` // 点赞数量
