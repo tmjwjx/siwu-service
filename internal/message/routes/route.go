@@ -22,7 +22,7 @@ func Message(e *gin.Engine) {
 		messageGroup.GET("/follow", controllers.FollowMessageCtrl)
 
 		// 评论消息
-		messageGroup.GET("/comment", controllers.CommentMesCtrl)
+		//messageGroup.GET("/comment", controllers.CommentMesCtrl)
 	}
 
 }

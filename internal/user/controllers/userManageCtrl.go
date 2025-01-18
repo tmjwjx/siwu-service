@@ -157,7 +157,7 @@ func Export(c *gin.Context) {
 
 	// 设置响应头，返回 Excel 文件
 	c.Header("Content-Disposition", "attachment; filename=users.xlsx")
-	c.Header("Content-Type", "application/octet-stream")
+	c.Header("Content-Type", "application/vnd.ms-excel")
 	c.Header("Content-Transfer-Encoding", "binary")
 
 	// 业务逻辑
@@ -166,7 +166,7 @@ func Export(c *gin.Context) {
 		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("Export() err: %v", err), nil))
 		return
 	}
-	// response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", nil))
+	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", nil))
 }
 
 // DownloadTemplate 下载导入用户模版excel

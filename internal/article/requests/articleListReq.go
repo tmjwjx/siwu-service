@@ -20,6 +20,7 @@ type ArticleListReq struct {
 	LikesCount       int       `json:"likes_count"`       // 文章点赞量
 	CollectionsCount int       `json:"collections_count"` // 文章收藏量
 	CommentsCount    int       `json:"comments_count"`    // 文章评论量
+	Kind             int       `json:"kind"`              // 排序方式
 	Heat             int       `json:"heat"`              // 文章热度
 }
 
