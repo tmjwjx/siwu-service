@@ -12,7 +12,7 @@ import (
 
 // // UpdateAdminRoles 更新用户的角色（要确保 userId 存在）
 // func UpdateAdminRoles(db *gorm.DB, userId uint, newRoleIds []uint) error {
-// 	// 查询当前 userId 拥有的 RoleIds
+// 	// 查询当前 userId 拥有的 RoleNames
 // 	var currentRoleIds []uint
 // 	err := db.Model(&models.AdminRole{}).Select("role_id").Where("admin_id = ?", userId).Find(&currentRoleIds).Error
 // 	if err != nil {
@@ -22,13 +22,13 @@ import (
 // 	var deleteRoleIds []uint // 要删除的role_id
 // 	var addRoleIds []uint    // 要添加的role_id
 //
-// 	// 找出 userId 需要删除的 RoleIds (当前有的，但不在新列表中)
+// 	// 找出 userId 需要删除的 RoleNames (当前有的，但不在新列表中)
 // 	for _, v := range currentRoleIds {
 // 		if !lo.Contains(newRoleIds, v) {
 // 			deleteRoleIds = append(deleteRoleIds, v)
 // 		}
 // 	}
-// 	// 找出 userId 需要增加的 RoleIds (新列表中有的，但当前没有)
+// 	// 找出 userId 需要增加的 RoleNames (新列表中有的，但当前没有)
 // 	for _, v := range newRoleIds {
 // 		if !lo.Contains(currentRoleIds, v) {
 // 			addRoleIds = append(addRoleIds, v)
