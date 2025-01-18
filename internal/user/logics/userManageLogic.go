@@ -181,7 +181,7 @@ func (u *UserReqContext) List(req requests.ListReq) ([]*requests.ListRes, int, e
 		conditions["status"] = req.UserStatus
 	}
 
-	// 查询符合条件的角色（除了符合 req.RoleIds）
+	// 查询符合条件的角色（除了符合 req.RoleNames）
 	users, total, err := repositories.QueryUserListByPage(u.DB, conditions, req.Page, req.Limit, req.RoleIds, req.Heat, req.FansCount, req.CreateTimeBegin, req.CreateTimeEnd, req.LastLoginTimeBegin, req.LastLoginTimeEnd)
 	if err != nil {
 		return nil, 0, fmt.Errorf("UserReqContext.List() %v", err)
@@ -210,6 +210,12 @@ func (u *UserReqContext) List(req requests.ListReq) ([]*requests.ListRes, int, e
 		if err != nil {
 			return nil, 0, fmt.Errorf("UserReqContext.List() %v", err)
 		}
+		// 通过角色id查找角色名称
+		roleNames := make([]string, 0)
+		for _, v := range roleIds {
+			role := repositories.QueryRoleById(u.DB, v)
+			roleNames = append(roleNames, role.Name)
+		}
 
 		listRes = append(listRes, &requests.ListRes{
 			Id:         v.ID,
@@ -218,7 +224,7 @@ func (u *UserReqContext) List(req requests.ListReq) ([]*requests.ListRes, int, e
 			Email:      v.Email,
 			Heat:       v.Heat,
 			FansCount:  v.FansCount,
-			RoleIds:    roleIds,
+			RoleNames:  roleNames,
 			UserStatus: v.Status,
 			// 将 time.Time 格式化为字符串
 			LastLoginTime: v.LastLoginTime.Format("2006-01-02 15:04:05"),
