@@ -18,7 +18,7 @@ func init() {
 	DBInit()
 
 	// 初始化 redis
-	RedisInit()
+	//RedisInit()
 
 	// 初始化表
 	TableInit()
@@ -35,5 +35,7 @@ func init() {
 	// 生产图片的部分路径前缀
 	PartPathPrefixInit()
 
+	// 初始化casbin配置
+	CasbinInit()
 
 }

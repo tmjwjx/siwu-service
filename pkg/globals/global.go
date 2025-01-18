@@ -1,6 +1,7 @@
 package globals
 
 import (
+	"github.com/casbin/casbin/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
 	"go.uber.org/zap"
@@ -35,6 +36,8 @@ var (
 
 	// SubscriberChannels 全局 map，用于存储各文章 ID 的 SSE 订阅者通道
 	SubscriberChannels = make(map[string]chan string)
+
+	CasbinEnforcer *casbin.Enforcer
 
 	// // SystemMsgSubject 系统消息主题
 	// SystemMsgSubject = observer.NewSystemMsgSubject()

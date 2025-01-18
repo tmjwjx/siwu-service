@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"fmt"
 	"forum/internal/article/controllers"
 	"forum/pkg/casbin"
 	"forum/pkg/globals"
@@ -73,10 +72,10 @@ func Workplace(e *gin.Engine) {
 // Comment 评论
 func Comment(e *gin.Engine) {
 
-	casbinService, err := casbin.NewCasbinService(globals.DB)
-	if err != nil {
-		fmt.Println("Api(e *gin.Engine) -> 创建 casbinService 失败, err = ", err)
-	}
+	//casbinService, err := casbin.NewCasbinService(globals.DB)
+	//if err != nil {
+	//	fmt.Println("Api(e *gin.Engine) -> 创建 casbinService 失败, err = ", err)
+	//}
 
 	// 前台
 	r := e.Group("/comment")
@@ -97,7 +96,7 @@ func Comment(e *gin.Engine) {
 	r.POST("/praise", controllers.UpdatePraiseCountCtrl)
 
 	// 后台
-	r2 := e.Group("/backstage_comment").Use(casbin.CasbinAuth(casbinService))
+	r2 := e.Group("/backstage_comment").Use(casbin.CasbinAuth(globals.CasbinEnforcer))
 
 	// 展示评论列表
 	r2.GET("/list", controllers.ShowCommentsListCtrl)
