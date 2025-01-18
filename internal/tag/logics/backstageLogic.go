@@ -40,7 +40,7 @@ func QueryTagLogic(db *gorm.DB, req *requests.BsQueTagReq) (*requests.BsQueTag, 
 }
 
 // BatchQueryTagLogic 批量查询标签
-func BatchQueryTagLogic(db *gorm.DB, req *requests.BsBatchQueTagReq) (*[]*requests.BsQueTagRes, error) {
+func BatchQueryTagLogic(db *gorm.DB, req *requests.BsBatchQueTagReq) (*requests.BsQueTagRes, error) {
 	batchTagRes, err := repositories.BatchQueryTagRep(db, req)
 	return batchTagRes, err
 }
