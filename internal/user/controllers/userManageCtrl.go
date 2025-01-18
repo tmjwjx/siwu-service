@@ -157,7 +157,7 @@ func Export(c *gin.Context) {
 
 	// 设置响应头，返回 Excel 文件
 	c.Header("Content-Disposition", "attachment; filename=users.xlsx")
-	c.Header("Content-Type", "application/octet-stream")
+	c.Header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 	c.Header("Content-Transfer-Encoding", "binary")
 
 	// 业务逻辑
