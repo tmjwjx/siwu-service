@@ -365,12 +365,12 @@ func (u *UserReqContext) Export() error {
 	// 设置活动工作表
 	f.SetActiveSheet(index)
 
-	// // 将文件内容写入响应中
-	// if err := f.Write(u.Ctx.Writer); err != nil {
-	// 	return fmt.Errorf("UserReqContext.Export() err: Failed to create Excel file")
-	// }
-	//
-	// u.Ctx.Writer.Flush()
+	// 将文件内容写入响应中
+	if err := f.Write(u.Ctx.Writer); err != nil {
+		return fmt.Errorf("UserReqContext.Export() err: Failed to create Excel file")
+	}
+
+	u.Ctx.Writer.Flush()
 
 	return nil
 }
