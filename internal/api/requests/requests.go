@@ -108,6 +108,6 @@ type SearchApiRes struct {
 
 // SearchApiListRes 检索api列表响应结构体
 type SearchApiListRes struct {
-	Api   []*SearchApiRes `json:"api"`
-	Total int             `json:"total"`
+	Api   []SearchApiRes `json:"api"`
+	Total int            `json:"total"`
 }

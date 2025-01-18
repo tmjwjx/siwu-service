@@ -83,8 +83,9 @@ type BsQueTag struct {
 
 // BsBatchQueTagReq 后台批量查询请求
 type BsBatchQueTagReq struct {
-	Offset int `json:"offset"` // 分页查询的起始位置
-	Limit  int `json:"limit"`  // 分页查询返回的记录条数
+	Offset int    `json:"offset"` // 分页查询的起始位置
+	Limit  int    `json:"limit"`  // 分页查询返回的记录条数
+	Name   string `json:"name"`   // 标签名称
 }
 
 // StorageTagReq

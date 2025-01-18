@@ -441,7 +441,7 @@ func SearchApiListRep(db *gorm.DB, req *requests.SearchApiListReq) (*requests.Se
 
 	// 添加查询条件
 	if req.Path != "" {
-		query = query.Where("sw_apis.path = ?", req.Path)
+		query = query.Where("sw_apis.path LIKE ?", "%"+req.Path+"%")
 	}
 	if req.RequestMethod != "" {
 		query = query.Where("sw_request_methods.name = ?", req.RequestMethod)
@@ -455,25 +455,38 @@ func SearchApiListRep(db *gorm.DB, req *requests.SearchApiListReq) (*requests.Se
 
 	query = query.Where("sw_apis.deleted_at IS NULL")
 
-	err := query.Limit(req.Limit).Offset(req.Page).Scan(&searchApiRes).Error
+	//err := query.Limit(req.Limit).Offset(req.Page).Scan(&searchApiRes).Error
+	err := query.Scan(&searchApiRes).Error
 	if err != nil {
 		return nil, fmt.Errorf("SearchApiListRep -> 查询api异常 -> %s", err)
 	}
-	if len(searchApiRes) == 0 {
+	length := len(searchApiRes)
+	if length == 0 {
 		//return nil, fmt.Errorf("SearchApiListRep -> 不存在该api")
 		res2 := &requests.SearchApiListRes{
-			Api:   make([]*requests.SearchApiRes, 0),
+			Api:   make([]requests.SearchApiRes, 0),
 			Total: 0,
 		}
 		return res2, nil
 	}
 
-	for _, searchApi := range searchApiRes {
-		res.Api = append(res.Api, &searchApi)
-		res.Total += 1
+	// 分页返回数据
+	offset := (req.Page - 1) * req.Limit
+	if length > offset {
+		end := offset + req.Limit
+		if end > length {
+			end = length
+		}
+		res.Api = searchApiRes[offset:end]
+		res.Total = length
+		return &res, nil
 	}
 
-	return &res, nil
+	res2 := &requests.SearchApiListRes{
+		Api:   make([]requests.SearchApiRes, 0),
+		Total: 0,
+	}
+	return res2, nil
 }
 
 // MethodAndGroup
