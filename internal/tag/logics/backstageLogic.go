@@ -34,13 +34,13 @@ func UpdateTagLogic(c *gin.Context, db *gorm.DB, req *requests.BsUpTagReq) (erro
 }
 
 // QueryTagLogic 查询标签
-func QueryTagLogic(db *gorm.DB, req *requests.BsQueTagReq) (*requests.BsQueTagRes, error) {
+func QueryTagLogic(db *gorm.DB, req *requests.BsQueTagReq) (*requests.BsQueTag, error) {
 	tagRes, err := repositories.QueryTagRep(db, req)
 	return tagRes, err
 }
 
 // BatchQueryTagLogic 批量查询标签
-func BatchQueryTagLogic(db *gorm.DB, req *requests.BsBatchQueTagReq) (*[]*requests.BsQueTagRes, error) {
+func BatchQueryTagLogic(db *gorm.DB, req *requests.BsBatchQueTagReq) (*requests.BsQueTagRes, error) {
 	batchTagRes, err := repositories.BatchQueryTagRep(db, req)
 	return batchTagRes, err
 }

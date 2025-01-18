@@ -67,6 +67,10 @@ type BsQueTagReq struct {
 
 // BsQueTagRes 后台查询响应
 type BsQueTagRes struct {
+	TagList *[]*BsQueTag `json:"tag_list"`
+}
+
+type BsQueTag struct {
 	ID           uint   `json:"id"`            // 标签ID
 	Name         string `json:"name"`          // 标签名称
 	Description  string `json:"description"`   // 标签描述
