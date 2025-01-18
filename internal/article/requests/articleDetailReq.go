@@ -45,6 +45,6 @@ type ArticleLikeReq struct {
 // ArticleCollectionReq
 // @Description: 文章收藏请求结构体
 type ArticleCollectionReq struct {
-	ArticleId        uint `json:"article_id"`
-	CollectionStatus bool `json:"collection_status"`
+	ArticleId        uint `json:"article_id" form:"article_id"`
+	CollectionStatus bool `json:"collection_status" form:"collection_status"`
 }
