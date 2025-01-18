@@ -119,7 +119,15 @@ func List(c *gin.Context) {
 		return
 	}
 	if listReq.Limit <= 0 {
-		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("List() err: limit参数必须为正数"), nil))
+		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("List() err: Limit参数必须为正数"), nil))
+		return
+	}
+	if listReq.Heat < 0 {
+		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("List() err: Heat参数必须>=0"), nil))
+		return
+	}
+	if listReq.FansCount < 0 {
+		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("List() err: FansCount参数必须>=0"), nil))
 		return
 	}
 

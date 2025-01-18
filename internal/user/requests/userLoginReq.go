@@ -16,8 +16,9 @@ type LogicReq struct {
 
 // LogicRes 登录响应
 type LogicRes struct {
-	Id       uint   `json:"id"`
-	Nickname string `json:"nickname"`
+	Id         uint   `json:"id"`
+	Nickname   string `json:"nickname"`
+	AvatarPath string `json:"avatar_path"`
 }
 
 // ForgotPasswordReq 忘记验证码请求

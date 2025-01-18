@@ -176,6 +176,16 @@ func (u *UserReqContext) Login(logicMsg requests.LogicReq) (*requests.LogicRes, 
 		return nil, fmt.Errorf("UserReqContext.Login() err: 不存在该邮箱用户")
 	}
 
+	userImages, err := internalUtils.GetImages(u.DB, globals.UserHome, user.ID)
+	if err != nil {
+		return nil, fmt.Errorf("UserReqContext.Login() %v", err)
+	}
+	// 没有图片
+	if userImages == nil {
+		return nil, fmt.Errorf("UserReqContext.Login() err = 无法找到id为%d的用户头像图片", user.ID)
+	}
+	avatarPath := (*userImages)[0]
+
 	// 比较加密密码
 	encryptedPassword := user.Password
 	if !internalUtils.CheckPasswordHash(password, encryptedPassword) {
@@ -190,8 +200,9 @@ func (u *UserReqContext) Login(logicMsg requests.LogicReq) (*requests.LogicRes, 
 
 	// 获取登陆响应
 	logicRes := &requests.LogicRes{
-		Id:       user.ID,
-		Nickname: user.Nickname,
+		Id:         user.ID,
+		Nickname:   user.Nickname,
+		AvatarPath: avatarPath,
 	}
 	return logicRes, nil
 }
