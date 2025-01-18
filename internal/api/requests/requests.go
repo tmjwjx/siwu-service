@@ -49,7 +49,7 @@ type ApiGroupRes struct {
 }
 
 type ApiGroup struct {
-	Value uint   `json:"value"`
+	Value string `json:"value"`
 	Label string `json:"label"`
 }
 
@@ -59,7 +59,7 @@ type ApiReqMethodRes struct {
 }
 
 type ApiReqMethod struct {
-	Value uint   `json:"value"`
+	Value string `json:"value"`
 	Label string `json:"label"`
 }
 

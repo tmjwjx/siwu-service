@@ -159,7 +159,7 @@ func GetGroupListRep(db *gorm.DB) (*requests.ApiGroupRes, error) {
 	for _, group := range groups {
 
 		apiGroup := &requests.ApiGroup{
-			Value: group.ID,
+			Value: group.Name,
 			Label: group.Name,
 		}
 
@@ -184,7 +184,7 @@ func GetRequestMethodRep(db *gorm.DB) (*requests.ApiReqMethodRes, error) {
 	for _, reqMethod := range reqMethods {
 
 		apiReqMethod := &requests.ApiReqMethod{
-			Value: reqMethod.ID,
+			Value: reqMethod.Name,
 			Label: reqMethod.Name,
 		}
 
@@ -460,7 +460,12 @@ func SearchApiListRep(db *gorm.DB, req *requests.SearchApiListReq) (*requests.Se
 		return nil, fmt.Errorf("SearchApiListRep -> 查询api异常 -> %s", err)
 	}
 	if len(searchApiRes) == 0 {
-		return nil, fmt.Errorf("SearchApiListRep -> 不存在该api")
+		//return nil, fmt.Errorf("SearchApiListRep -> 不存在该api")
+		res2 := &requests.SearchApiListRes{
+			Api:   make([]*requests.SearchApiRes, 0),
+			Total: 0,
+		}
+		return res2, nil
 	}
 
 	for _, searchApi := range searchApiRes {

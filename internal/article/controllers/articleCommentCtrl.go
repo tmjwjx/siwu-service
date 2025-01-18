@@ -65,7 +65,7 @@ func GetTopLevelCommentsCtrl(c *gin.Context) {
 	var req requests.TopCommentsReq
 	err := c.ShouldBindJSON(&req)
 	if err != nil {
-		e := response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("GetTopLevelCommentsCtrl -> 绑定请求结构失败"), nil)
+		e := response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("GetTopLevelCommentsCtrl -> 绑定请求结构失败 %s", err), nil)
 		response.Failed(c, 400, e)
 		return
 	}
@@ -90,7 +90,7 @@ func GetRepliesRep2Ctrl(c *gin.Context) {
 	var req requests.RepliesReq2
 	err := c.ShouldBindJSON(&req)
 	if err != nil {
-		e := response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("GetRepliesRep2Ctrl -> 绑定请求结构失败"), nil)
+		e := response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("GetRepliesRep2Ctrl -> 绑定请求结构失败 %s", err), nil)
 		response.Failed(c, 400, e)
 		return
 	}
