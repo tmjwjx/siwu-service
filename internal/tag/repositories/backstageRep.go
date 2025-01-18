@@ -250,6 +250,7 @@ func BatchQueryTagRep(db *gorm.DB, req *requests.BsBatchQueTagReq) (*requests.Bs
 
 	var tagRes []*requests.BsQueTag
 	var tags []models.Tag
+	var total int
 
 	// 查询标签数据
 	err := db.Limit(req.Limit).Offset(req.Offset).Find(&tags).Error
@@ -258,6 +259,7 @@ func BatchQueryTagRep(db *gorm.DB, req *requests.BsBatchQueTagReq) (*requests.Bs
 	}
 
 	for _, tag := range tags {
+		total++
 		t := &requests.BsQueTag{
 			ID:           tag.ID,
 			Name:         tag.Name,
@@ -266,27 +268,23 @@ func BatchQueryTagRep(db *gorm.DB, req *requests.BsBatchQueTagReq) (*requests.Bs
 			Heat:         tag.Heat,
 			FansCount:    tag.FansCount,
 		}
-		tagRes = append(tagRes, t)
-	}
-	// 查询标签头像
-	for _, tag := range tagRes {
 
 		// 查询标签头像
-		images, err := internalUtils.GetImages(db, globals.TagHome, tag.ID)
+		images, err := internalUtils.GetImages(db, globals.TagHome, t.ID)
 		if err != nil {
 			return nil, fmt.Errorf("BatchQueryTagRep -> %s", err)
 		} else {
 			for _, path := range *images {
-				tag.Path = path
+				t.Path = path
 			}
 		}
-
+		tagRes = append(tagRes, t)
 	}
 
 	res := &requests.BsQueTagRes{
 		TagList: &tagRes,
+		Total:   total,
 	}
 
 	return res, nil
-
 }

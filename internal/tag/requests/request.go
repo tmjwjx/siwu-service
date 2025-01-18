@@ -68,6 +68,7 @@ type BsQueTagReq struct {
 // BsQueTagRes 后台查询响应
 type BsQueTagRes struct {
 	TagList *[]*BsQueTag `json:"tag_list"`
+	Total   int          `json:"total"`
 }
 
 type BsQueTag struct {
