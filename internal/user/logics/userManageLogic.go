@@ -168,21 +168,8 @@ func (u *UserReqContext) Edit(req requests.EditReq) error {
 
 // List 获取所有用户列表
 func (u *UserReqContext) List(req requests.ListReq) ([]*requests.ListRes, int, error) {
-	conditions := make(map[string]interface{})
-	// 判断是否该添加某些查询条件（如果某些条件为空或为0，代表着不查询这个条件）
-	if req.NickName != "" {
-		conditions["nickname"] = req.NickName
-	}
-	if req.Email != "" {
-		conditions["email"] = req.Email
-	}
-	// status = 0 表示全部
-	if req.UserStatus != 0 {
-		conditions["status"] = req.UserStatus
-	}
-
-	// 查询符合条件的角色（除了符合 req.RoleNames）
-	users, total, err := repositories.QueryUserListByPage(u.DB, conditions, req.Page, req.Limit, req.RoleIds, req.Heat, req.FansCount, req.CreateTimeBegin, req.CreateTimeEnd, req.LastLoginTimeBegin, req.LastLoginTimeEnd)
+	// 查询符合条件的角色（除了符合 req.RoleNames）（nickname使用模糊查询）
+	users, total, err := repositories.QueryUserListByPage(u.DB, req)
 	if err != nil {
 		return nil, 0, fmt.Errorf("UserReqContext.List() %v", err)
 	}

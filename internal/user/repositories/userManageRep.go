@@ -3,6 +3,7 @@ package repositories
 import (
 	"fmt"
 	"forum/internal/models"
+	"forum/internal/user/requests"
 	"forum/pkg/casbin"
 	"forum/pkg/globals"
 	"github.com/samber/lo"
@@ -65,22 +66,48 @@ func QueryRoleById(db *gorm.DB, id uint) *models.Role {
 
 // QueryUserListByPage 分页查询所有用户列表
 // conditions: 查询条件。
+// nickname： 昵称，模糊查询
 // page: 第几页。
 // limit: 每页数据条数。
 // heat: 用户热度的下限。
 // fans_count: 粉丝数的下限。
 // 例子：如果 page = 2，limit = 10，那么会跳过前 10 条记录，返回第 11-20 条记录。
 // 返回的int表示一共有多少条符合条件的数据
-func QueryUserListByPage(db *gorm.DB, conditions map[string]interface{}, page int, limit int, roleIds []uint, heat, fansCount int, createTimeBegin, createTimeEnd, lastLoginTimeBegin, lastLoginTimeEnd string) ([]*models.User, int, error) {
+func QueryUserListByPage(db *gorm.DB, req requests.ListReq) ([]*models.User, int, error) {
+	nickname := req.NickName
+	email := req.Email
+	userStatus := req.UserStatus
+	page := req.Page
+	limit := req.Limit
+	roleIds := req.RoleIds
+	heat := req.Heat
+	fansCount := req.FansCount
+	createTimeBegin := req.CreateTimeBegin
+	createTimeEnd := req.CreateTimeEnd
+	lastLoginTimeBegin := req.LastLoginTimeBegin
+	lastLoginTimeEnd := req.LastLoginTimeEnd
+
+	// 存放查询结果
 	var users []*models.User
 
 	// 使用条件查询
 	query := db.Model(&models.User{})
-	for key, value := range conditions {
-		query = query.Where(fmt.Sprintf("%s = ?", key), value)
+
+	// 添加 nickname 模糊查询
+	if nickname != "" {
+		query = query.Where("nickname LIKE ?", "%"+nickname+"%")
+	}
+	// 是否查询邮箱
+	if email != "" {
+		query = query.Where("email = ?", email)
+	}
+	// status = 0 表示查询全部 status = 0 的用户
+	if userStatus != 0 {
+		query = query.Where("status = ?", userStatus)
 	}
 	// 添加 heat 和 fans_count 的条件
 	query = query.Where("heat >= ? AND fans_count >= ?", heat, fansCount)
+
 	// 解析 lastLoginTimeBegin 和 lastLoginTimeEnd 字符串为 time.Time 类型
 	if lastLoginTimeBegin != "" {
 		parsedLastLoginTimeBegin, err := time.Parse("2006-01-02", lastLoginTimeBegin)
