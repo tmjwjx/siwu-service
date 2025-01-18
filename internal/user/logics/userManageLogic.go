@@ -430,39 +430,6 @@ func (u *UserReqContext) Export() error {
 		return fmt.Errorf("UserReqContext.Export() -> %v", err)
 	}
 	return nil
-
-	// // 将 Excel 文件写入内存
-	// excelData, err := f.WriteToBuffer()
-	// if err != nil {
-	// 	return  err
-	// }
-	// return  err
-
-	// // 创建 Excel 文件
-	// f := excelize.NewFile()
-	//
-	// // 设置表头
-	// f.SetCellValue("Sheet1", "A1", "入学年份")
-	// f.SetCellValue("Sheet1", "B1", "班级")
-	// f.SetCellValue("Sheet1", "C1", "姓名")
-	// f.SetCellValue("Sheet1", "D1", "学号")
-	//
-	// // 填充数据
-	// for i, user := range users {
-	// 	row := i + 2 // 从第二行开始填充数据
-	// 	f.SetCellValue("Sheet1", fmt.Sprintf("A%d", row), user.PlusTime.Format("2006"))
-	// 	f.SetCellValue("Sheet1", fmt.Sprintf("B%d", row), user.Class)
-	// 	f.SetCellValue("Sheet1", fmt.Sprintf("C%d", row), user.Name)
-	// 	f.SetCellValue("Sheet1", fmt.Sprintf("D%d", row), user.Username)
-	// }
-	//
-	// // 将 Excel 文件写入内存
-	// excelData, err := f.WriteToBuffer()
-	// if err != nil {
-	// 	return  err
-	// }
-	//
-	// return excelData, err
 }
 
 // DownloadTemplate 下载导入用户模版excel
