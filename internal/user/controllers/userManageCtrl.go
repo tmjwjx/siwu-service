@@ -156,7 +156,8 @@ func Import(c *gin.Context) {
 func Export(c *gin.Context) {
 
 	// 设置响应头，返回 Excel 文件
-	c.Header("Content-Disposition", "attachment; filename=users.xlsx")
+	fileName := "users.xls"
+	c.Header("Content-Disposition", "attachment; filename="+fileName)
 	c.Header("Content-Type", "application/vnd.ms-excel")
 	c.Header("Content-Transfer-Encoding", "binary")
 
