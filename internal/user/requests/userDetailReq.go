@@ -25,12 +25,12 @@ type UserDataRes struct {
 
 // UserAccountReq 用户账号设置更新
 type UserAccountReq struct {
-	ID         uint   `json:"id"`          // 用户ID
-	Email      string `json:"email"`       // 邮箱，唯一
-	BlogLink   string `json:"blog_link"`   // 个人博客链接
-	WeiboLink  string `json:"weibo_link"`  // 新浪微博链接
-	GithubLink string `json:"github_link"` // Github链接
-	Password   string `json:"password"`    // 密码
+	ID         uint   `json:"id" form:"id"`                   // 用户ID
+	Email      string `json:"email" form:"email"`             // 邮箱，唯一
+	BlogLink   string `json:"blog_link" form:"blog_link"`     // 个人博客链接
+	WeiboLink  string `json:"weibo_link" form:"weibo_link"`   // 新浪微博链接
+	GithubLink string `json:"github_link" form:"github_link"` // Github链接
+	Password   string `json:"password" form:"password"`       // 密码
 }
 
 // UserAccountRes 用户账号设置响应
@@ -45,7 +45,7 @@ type UserAccountRes struct {
 
 // UserPrivateSettingsReq 用户私信设置更新
 type UserPrivateSettingsReq struct {
-	PrivateSettings string `json:"private_settings"`
+	PrivateSettings string `json:"private_settings" form:"private_settings"`
 }
 
 // UserPrivateSettingsRes 用户私信设置响应

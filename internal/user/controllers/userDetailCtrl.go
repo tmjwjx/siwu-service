@@ -97,7 +97,7 @@ func UserAccountRequestCtrl(c *gin.Context) {
 	var userAccountReq requests.UserAccountReq
 
 	// 绑定 JSON 数据到结构体
-	err := c.ShouldBindJSON(&userAccountReq)
+	err := c.ShouldBind(&userAccountReq)
 	if err != nil {
 		// 处理绑定错误
 		e := response.NewAppErr(globals.StatusBadRequest, err, nil)
