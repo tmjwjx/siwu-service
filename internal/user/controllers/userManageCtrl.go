@@ -166,7 +166,7 @@ func Export(c *gin.Context) {
 		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("Export() err: %v", err), nil))
 		return
 	}
-	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", nil))
+	// response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", nil))
 }
 
 // DownloadTemplate 下载导入用户模版excel
