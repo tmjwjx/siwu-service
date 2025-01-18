@@ -1,6 +1,7 @@
 package logics
 
 import (
+	"bytes"
 	"fmt"
 	"forum/internal/internalPkg/internalUtils"
 	"forum/internal/internalPkg/sqlUtils"
@@ -328,11 +329,11 @@ func (u *UserReqContext) Import(file *multipart.FileHeader) error {
 }
 
 // Export 导出用户表
-func (u *UserReqContext) Export() error {
+func (u *UserReqContext) Export() (*bytes.Buffer, error) {
 	// 从数据库获取所有用户
 	users, err := repositories.QueryAllUser(u.DB)
 	if err != nil {
-		return fmt.Errorf("UserReqContext.Export() -> %v", err)
+		return nil, fmt.Errorf("UserReqContext.Export() -> %v", err)
 	}
 
 	// 创建一个新的 Excel 文件
@@ -365,12 +366,38 @@ func (u *UserReqContext) Export() error {
 	// 设置活动工作表
 	f.SetActiveSheet(index)
 
-	// 将文件内容写入响应中
-	if err := f.Write(u.Ctx.Writer); err != nil {
-		return fmt.Errorf("UserReqContext.Export() err: Failed to create Excel file")
+	// 将 Excel 文件写入内存
+	excelData, err := f.WriteToBuffer()
+	if err != nil {
+		return nil, err
 	}
+	return excelData, err
 
-	return nil
+	// // 创建 Excel 文件
+	// f := excelize.NewFile()
+	//
+	// // 设置表头
+	// f.SetCellValue("Sheet1", "A1", "入学年份")
+	// f.SetCellValue("Sheet1", "B1", "班级")
+	// f.SetCellValue("Sheet1", "C1", "姓名")
+	// f.SetCellValue("Sheet1", "D1", "学号")
+	//
+	// // 填充数据
+	// for i, user := range users {
+	// 	row := i + 2 // 从第二行开始填充数据
+	// 	f.SetCellValue("Sheet1", fmt.Sprintf("A%d", row), user.PlusTime.Format("2006"))
+	// 	f.SetCellValue("Sheet1", fmt.Sprintf("B%d", row), user.Class)
+	// 	f.SetCellValue("Sheet1", fmt.Sprintf("C%d", row), user.Name)
+	// 	f.SetCellValue("Sheet1", fmt.Sprintf("D%d", row), user.Username)
+	// }
+	//
+	// // 将 Excel 文件写入内存
+	// excelData, err := f.WriteToBuffer()
+	// if err != nil {
+	// 	return  err
+	// }
+	//
+	// return excelData, err
 }
 
 // DownloadTemplate 下载导入用户模版excel
