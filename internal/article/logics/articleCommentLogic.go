@@ -7,8 +7,8 @@ import (
 )
 
 // InsertCommentLogic 将评论存入数据库中
-func InsertCommentLogic(articleCommentReq *requests.ArticleCommentReq, db *gorm.DB) (error, int) {
-	err, status := repositories.InsertCommentRep(articleCommentReq, db)
+func InsertCommentLogic(userId uint, articleCommentReq *requests.ArticleCommentReq, db *gorm.DB) (error, int) {
+	err, status := repositories.InsertCommentRep(userId, articleCommentReq, db)
 	return err, status
 }
 
@@ -28,14 +28,14 @@ func GetRepliesLogic(req *requests.RepliesReq) (*[]models.ArticleComment, error)
 }*/
 
 // GetTopLevelCommentsLogic 返回顶级评论
-func GetTopLevelCommentsLogic(db *gorm.DB, req *requests.TopCommentsReq) (*requests.TopCommentsRes, error) {
-	topCommentsRes, err := repositories.GetTopLevelCommentsRep(db, req)
+func GetTopLevelCommentsLogic(userId uint, db *gorm.DB, req *requests.TopCommentsReq) (*requests.TopCommentsRes, error) {
+	topCommentsRes, err := repositories.GetTopLevelCommentsRep(userId, db, req)
 	return topCommentsRes, err
 }
 
 // GetRepliesRep2Logic 返回评论回复
-func GetRepliesRep2Logic(db *gorm.DB, req *requests.RepliesReq2) (*requests.RepliesRes, error) {
-	repliesRes, err := repositories.GetRepliesRep2Rep(db, req)
+func GetRepliesRep2Logic(userId uint, db *gorm.DB, req *requests.RepliesReq2) (*requests.RepliesRes, error) {
+	repliesRes, err := repositories.GetRepliesRep2Rep(userId, db, req)
 	return repliesRes, err
 }
 

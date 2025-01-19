@@ -2,7 +2,6 @@ package requests
 
 type ArticleCommentReq struct {
 	ArticleID    uint     `json:"article_id"`
-	UserID       uint     `json:"user_id"`
 	HighestID    *uint    `json:"highest_id"`
 	ParentID     *uint    `json:"parent_id"`
 	ParentUserID *uint    `json:"parent_user_id"` // 上一条评论的发布用户ID
@@ -35,7 +34,6 @@ type TopCommentsReq struct {
 	ArticleID uint `json:"article_id"`
 	Offset    int  `json:"offset"`
 	Limit     int  `json:"limit"`
-	UserID    uint `json:"user_id"`
 }
 
 // TopCommentsRes
@@ -67,7 +65,6 @@ type RepliesReq2 struct {
 	HighestID *uint `json:"highest_id"` // 顶级评论ID
 	Offset    int   `json:"offset"`     // 分页查询的起始位置
 	Limit     int   `json:"limit"`      // 分页查询要返回记录的数量
-	UserID    uint  `json:"user_id"`
 }
 
 // RepliesRes

@@ -15,25 +15,20 @@ import (
 // @param        c *gin.Context
 func InitUserInfoCtrl(c *gin.Context) {
 
-	// 获取参数
+	// 从查询参数中获取前端本页面用户的id
 	qid := c.Query("id")
+
+	// 从token中获取用户id
 	gid, exists := c.Get("id")
 	if !exists {
-		e := response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("从token中获取用户id失败"), nil)
-		response.Failed(c, 400, e)
-		return
-	}
-
-	// 将 any 转换成 string
-	strid, ok := gid.(string)
-	if !ok {
-		e := response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("any转换string失败"), nil)
-		response.Failed(c, 400, e)
+		// 返回错误响应
+		e := response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("InitUserInfoCtrl -> 从token中获取用户ID失败"), nil)
+		response.Failed(c, 500, e)
 		return
 	}
 
 	// 逻辑处理
-	req, err := logics.InitUserInfoLogic(globals.DB, qid, strid)
+	req, err := logics.InitUserInfoLogic(globals.DB, qid, fmt.Sprintf("%v", gid))
 
 	// 返回响应
 	if err != nil {
@@ -65,7 +60,7 @@ func EditSignatureCtrl(c *gin.Context) {
 	// 从token中获取用户id
 	gid, exists := c.Get("id")
 	if !exists {
-		e := response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("从token中获取用户id失败"), nil)
+		e := response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("EditSignatureCtrl -> 从token中获取用户id失败"), nil)
 		response.Failed(c, 400, e)
 		return
 	}
@@ -73,7 +68,7 @@ func EditSignatureCtrl(c *gin.Context) {
 	// 将 any 转换成 uint
 	uid, ok := gid.(uint)
 	if !ok {
-		e := response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("any转换uint失败"), nil)
+		e := response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("EditSignatureCtrl -> any转换uint失败"), nil)
 		response.Failed(c, 400, e)
 		return
 	}
@@ -87,6 +82,6 @@ func EditSignatureCtrl(c *gin.Context) {
 		response.Failed(c, 500, e)
 		return
 	}
-	d := response.NewAppData(globals.StatusOK, "检索获取所有菜单列表成功", req)
+	d := response.NewAppData(globals.StatusOK, "编辑个签成功", req)
 	response.Success(c, 200, d)
 }
