@@ -36,7 +36,7 @@ func InitUserInfoCtrl(c *gin.Context) {
 		response.Failed(c, 500, e)
 		return
 	}
-	d := response.NewAppData(globals.StatusOK, "检索获取所有菜单列表成功", req)
+	d := response.NewAppData(globals.StatusOK, "用户信息响应成功", req)
 	response.Success(c, 200, d)
 
 }

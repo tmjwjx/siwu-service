@@ -27,6 +27,10 @@ func InitUserInfoRep(db *gorm.DB, qid string, gid string) (*requests.InitUserInf
 	if err != nil {
 		return nil, fmt.Errorf("InitUserInfoRep -> 查询 头像，昵称，个签 失败 -> %s", err)
 	}
+
+	// 统计用户总的文章数量
+	initUserInfoRes.ArticleCount = len(articleInfo)
+
 	// 统计该用户所有文章总的点赞数、浏览量、收藏数
 	//var likesCount int
 	//var ViewsCount int
