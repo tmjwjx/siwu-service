@@ -10,7 +10,7 @@ import (
 )
 
 // InsertCommentRep 将评论存入数据库中
-func InsertCommentRep(articleCommentReq *requests.ArticleCommentReq, db *gorm.DB) (error, int) {
+func InsertCommentRep(userId uint, articleCommentReq *requests.ArticleCommentReq, db *gorm.DB) (error, int) {
 
 	// 开启事务
 	tx := db.Begin()
@@ -21,7 +21,7 @@ func InsertCommentRep(articleCommentReq *requests.ArticleCommentReq, db *gorm.DB
 	// 构建要插入的结构体
 	articleComment := &models.ArticleComment{
 		ArticleID: articleCommentReq.ArticleID,
-		UserID:    articleCommentReq.UserID,
+		UserID:    userId,
 		HighestID: articleCommentReq.HighestID,
 		ParentID:  articleCommentReq.ParentID,
 		Content:   articleCommentReq.Content,
@@ -109,7 +109,7 @@ func buildCommentTree(comment *requests.ArticleCommentRes, commentMap map[uint][
 }*/
 
 // GetTopLevelCommentsRep 返回顶级评论
-func GetTopLevelCommentsRep(db *gorm.DB, req *requests.TopCommentsReq) (*requests.TopCommentsRes, error) {
+func GetTopLevelCommentsRep(userId uint, db *gorm.DB, req *requests.TopCommentsReq) (*requests.TopCommentsRes, error) {
 	var firstCommentsList []*requests.FirstComment
 	var count int64
 	var articleComments []models.ArticleComment
@@ -117,14 +117,16 @@ func GetTopLevelCommentsRep(db *gorm.DB, req *requests.TopCommentsReq) (*request
 
 	// 查询顶级评论
 	err := db.Where("article_id = ? AND parent_id IS NULL", req.ArticleID).
-		Order("created_at asc").Limit(req.Limit).Offset(req.Offset).Find(&articleComments).Error
+		Order("created_at asc").Find(&articleComments).Error
 	if err != nil {
 		return nil, fmt.Errorf("GetTopLevelCommentsRep -> %s", err)
 	}
 
+	length := len(articleComments)
+
 	// 查询用户对该篇文章中的评论的点赞情况
 	err = db.Model(models.ArticleComment{}).Joins("join sw_comment_likes on sw_comment_likes.comment_id = sw_article_comments.id").
-		Select("sw_article_comments.id").Where("sw_article_comments.article_id = ? and sw_comment_likes.user_id = ?", req.ArticleID, req.UserID).Find(&commentId).Error
+		Select("sw_article_comments.id").Where("sw_article_comments.article_id = ? and sw_comment_likes.user_id = ?", req.ArticleID, userId).Find(&commentId).Error
 	if err != nil {
 		return nil, fmt.Errorf("GetTopLevelCommentsRep -> 查询用户对该篇文章中的评论的点赞情况失败 -> %s", err)
 	}
@@ -195,13 +197,29 @@ func GetTopLevelCommentsRep(db *gorm.DB, req *requests.TopCommentsReq) (*request
 		}
 	}
 
+	// 分页返回数据
+	page := (req.Offset - 1) * req.Limit
+	if length > page {
+		end := page + req.Limit
+		if end > length {
+			end = length
+		}
+
+		firstCommentsList = firstCommentsList[page:end]
+		res := &requests.TopCommentsRes{
+			FirstCommentsList: firstCommentsList,
+			CommentsTotal:     length,
+		}
+
+		return res, nil
+	}
+
 	topCommentsRes := &requests.TopCommentsRes{
-		FirstCommentsList: firstCommentsList,
+		FirstCommentsList: make([]*requests.FirstComment, 0),
 		CommentsTotal:     len(firstCommentsList),
 	}
 
 	return topCommentsRes, nil
-
 }
 
 /*func GetCommentsRep(req *requests.CommentReq) (*[]models.ArticleComment, error) {
@@ -234,19 +252,21 @@ func GetRepliesRep(req *requests.RepliesReq) (*[]models.ArticleComment, error) {
 }*/
 
 // GetRepliesRep2Rep 返回评论回复
-func GetRepliesRep2Rep(db *gorm.DB, req *requests.RepliesReq2) (*requests.RepliesRes, error) {
+func GetRepliesRep2Rep(userId uint, db *gorm.DB, req *requests.RepliesReq2) (*requests.RepliesRes, error) {
 	var secondCommentsList []*requests.SecondComment
 	var articleComments []models.ArticleComment
 	var commentId []uint
 
-	err := db.Where("highest_id = ?", req.HighestID).Order("created_at asc").Limit(req.Limit).Offset(req.Offset).Find(&articleComments).Error
+	err := db.Where("highest_id = ?", req.HighestID).Order("created_at asc").Find(&articleComments).Error
 	if err != nil {
 		return nil, fmt.Errorf("GetRepliesRep2Rep -> %s", err)
 	}
 
+	length := len(articleComments)
+
 	// 查询用户对该篇文章中的评论的点赞情况
 	err = db.Model(models.ArticleComment{}).Joins("join sw_comment_likes on sw_comment_likes.comment_id = sw_article_comments.id").
-		Where("sw_article_comments.highest_id = ? and sw_comment_likes.user_id = ?", req.HighestID, req.UserID).Find(&commentId).Error
+		Where("sw_article_comments.highest_id = ? and sw_comment_likes.user_id = ?", req.HighestID, userId).Find(&commentId).Error
 	if err != nil {
 		return nil, fmt.Errorf("GetTopLevelCommentsRep -> 查询用户对该篇文章中的评论的点赞情况失败 -> %s", err)
 	}
@@ -327,12 +347,26 @@ func GetRepliesRep2Rep(db *gorm.DB, req *requests.RepliesReq2) (*requests.Replie
 		}
 	}
 
+	// 分页返回数据
+	page := (req.Offset - 1) * req.Limit
+	if length > page {
+		end := page + req.Limit
+		if end > length {
+			end = length
+		}
+
+		secondCommentsList = secondCommentsList[page:end]
+		res := &requests.RepliesRes{
+			SecondCommentsList: secondCommentsList,
+		}
+		return res, nil
+	}
+
 	repliesRes := &requests.RepliesRes{
-		SecondCommentsList: secondCommentsList,
+		SecondCommentsList: make([]*requests.SecondComment, 0),
 	}
 
 	return repliesRes, nil
-
 }
 
 // DeleteCommentRep 删除评论

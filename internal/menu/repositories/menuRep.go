@@ -5,6 +5,7 @@ import (
 	"forum/internal/menu/requests"
 	"forum/internal/models"
 	"gorm.io/gorm"
+	"strconv"
 )
 
 // MenuSearchRep 检索获取所有菜单列表
@@ -14,7 +15,6 @@ func MenuSearchRep(db *gorm.DB, req *requests.MenuSearchReq) (*requests.MenuSear
 		return nil, fmt.Errorf("MenuSearchRep -> Limit的值不能为0")
 	}
 
-	var menuSearchRes *requests.MenuSearchRes
 	var menus []models.Menu
 	var menusRes []*requests.Menus
 	// 建立表关联
@@ -22,42 +22,47 @@ func MenuSearchRep(db *gorm.DB, req *requests.MenuSearchReq) (*requests.MenuSear
 
 	// 添加查询条件
 	if req.Icon != "" {
-		query = query.Where("icon = ?", req.Icon)
+		query = query.Where("icon LIKE ?", "%"+req.Icon+"%")
 	}
 	if req.Name != "" {
-		query = query.Where("name = ?", req.Name)
+		query = query.Where("name LIKE ?", "%"+req.Name+"%")
 	}
 	if req.Type == 1 || req.Type == 2 || req.Type == 3 {
-		query = query.Where("type = ?", req.Type)
+		query = query.Where("type LIKE ?", "%"+strconv.Itoa(req.Type)+"%")
 	}
 	if req.RouteName != "" {
-		query = query.Where("route_name = ?", req.RouteName)
+		query = query.Where("route_name LIKE ?", "%"+req.RouteName+"%")
 	}
 	if req.RoutePath != "" {
-		query = query.Where("route_path = ?", req.RoutePath)
+		query = query.Where("route_path LIKE ?", "%"+req.RoutePath+"%")
 	}
 	if req.Visible == 1 || req.Visible == 2 {
-		query = query.Where("isVisible = ?", req.Name)
+		query = query.Where("isVisible LIKE ?", "%"+req.Name+"%")
 	}
 	if req.Code != "" {
-		query = query.Where("code = ?", req.Code)
+		query = query.Where("code LIKE ?", "%"+req.Code+"%")
 	}
 	if req.ComponentPath != "" {
-		query = query.Where("component_path = ?", req.ComponentPath)
+		query = query.Where("component_path LIKE ?", "%"+req.ComponentPath+"%")
 	}
 	if req.ParentId >= 0 {
-		query = query.Where("parent_id = ?", req.ParentId)
+		query = query.Where("parent_id LIKE ?", "%"+fmt.Sprintf("%v", req.ParentId)+"%")
 	}
 
 	// 查询数据
-	err := query.Limit(req.Limit).Offset(req.Page).Find(&menus).Error
+	err := query.Find(&menus).Error
 	if err != nil {
 		return nil, fmt.Errorf("MenuSearchRep -> 检索获取所有菜单列表失败 -> %s", err)
 	}
 
-	total := len(menus)
-	if total == 0 {
-		return nil, fmt.Errorf("没有符合条件的菜单")
+	length := len(menus)
+	if length == 0 {
+		//return nil, fmt.Errorf("没有符合条件的菜单")
+		res := &requests.MenuSearchRes{
+			Menus: make([]*requests.Menus, 0),
+			Total: 0,
+		}
+		return res, nil
 	}
 
 	for _, menu := range menus {
@@ -79,13 +84,26 @@ func MenuSearchRep(db *gorm.DB, req *requests.MenuSearchReq) (*requests.MenuSear
 		menusRes = append(menusRes, m)
 	}
 
-	menuSearchRes = &requests.MenuSearchRes{
-		Menus: menusRes,
-		Total: total,
+	// 分页返回数据
+	offset := (req.Page - 1) * req.Limit
+	if length > offset {
+		end := offset + req.Limit
+		if end > length {
+			end = length
+		}
+		menusRes = menusRes[offset:end]
+		res := &requests.MenuSearchRes{
+			Menus: menusRes,
+			Total: length,
+		}
+		return res, nil
 	}
 
-	return menuSearchRes, nil
-
+	res := &requests.MenuSearchRes{
+		Menus: make([]*requests.Menus, 0),
+		Total: 0,
+	}
+	return res, nil
 }
 
 // GetMenuIconRep 获取所有菜单图标
