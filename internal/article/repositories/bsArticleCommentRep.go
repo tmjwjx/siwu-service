@@ -42,8 +42,8 @@ func BatchReviewRep(db *gorm.DB, req *requests.BatchReviewReq) (*requests.BatchR
 // ShowCommentsListRep 展示评论列表(获取评论列表)
 func ShowCommentsListRep(db *gorm.DB, req *requests.CommentsListReq) (*requests.CommentsListRes, error) {
 
-	if req.Limit == 0 {
-		return nil, fmt.Errorf("ShowCommentsListRep -> Limit的值不能为0")
+	if req.Limit <= 0 || req.Offset < 0 {
+		return nil, fmt.Errorf("ShowCommentsListRep -> Limit的值不能小于等于0 或者 Offset的值不能小于0")
 	}
 
 	var commentsListRes *requests.CommentsListRes
@@ -68,16 +68,16 @@ func ShowCommentsListRep(db *gorm.DB, req *requests.CommentsListReq) (*requests.
 
 	// 添加查询条件
 	if req.Email != "" {
-		query = query.Where("sw_user.email = ?", req.Email)
+		query = query.Where("sw_users.email = ?", req.Email)
 	}
 	if req.Nickname != "" {
-		query = query.Where("sw_user.nickname", req.Nickname)
+		query = query.Where("sw_users.nickname", req.Nickname)
 	}
 	if req.Title != "" {
-		query = query.Where("sw_article.title", req.Title)
+		query = query.Where("sw_articles.title", req.Title)
 	}
 	if req.ParentEmail != "" {
-		query = query.Where("sw_article_comment.parent_email = ?", req.ParentEmail)
+		query = query.Where("sw_article_comments.parent_email = ?", req.ParentEmail)
 	}
 
 	//else {

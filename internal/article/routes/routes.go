@@ -84,10 +84,10 @@ func Comment(e *gin.Engine) {
 	r.POST("/create", controllers.InsertCommentCtrl)
 
 	// 返回顶级评论
-	r.GET("/top_level", controllers.GetTopLevelCommentsCtrl)
+	r.POST("/top_level", controllers.GetTopLevelCommentsCtrl)
 
 	// 返回评论回复
-	r.GET("/replies", controllers.GetRepliesRep2Ctrl)
+	r.POST("/replies", controllers.GetRepliesRep2Ctrl)
 
 	// 删除评论
 	r.POST("/delete", controllers.DeleteCommentCtrl)

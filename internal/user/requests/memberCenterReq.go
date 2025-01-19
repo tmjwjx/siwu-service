@@ -17,6 +17,7 @@ type InitUserInfoRes struct {
 	Data             string `json:"data"`             // 注册时间
 	Tag              string `json:"tag"`              // 网站的名称
 	ConcernStatus    int    `json:"concern_status"`   // 关注状态 0：未关注 1：关注 2：用户本人页面
+	ArticleCount     int    `json:"article_count"`    // 用户的总文章数量
 }
 
 //// 用户
