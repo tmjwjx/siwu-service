@@ -22,13 +22,26 @@ func UpdateTagUserCountReq(userId uint, db *gorm.DB, tagID uint) (*requests.TagF
 	}
 
 	var userTag models.UserTag
-	err := tx.Model(&models.UserTag{}).First(&userTag).Error
+	err := tx.Model(&models.UserTag{}).Where("user_id = ? and tag_id = ?", userId, tagID).First(&userTag).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			// 如果没有找到，说明该用户还没有对该标签点过赞，进行下一步点赞就可以了
 		} else {
-			return nil, fmt.Errorf("查询用户是否点赞过该标签异常 -> %s", err)
+			return nil, fmt.Errorf("UpdateTagUserCountReq -> 查询用户是否点赞过该标签异常 -> %s", err)
 		}
+	} else {
+		// 如果找到了就删除UserTag表中的记录(即取消关注)
+		db2 := tx.Model(&models.UserTag{}).Where("user_id = ? and tag_id = ?", userId, tagID).Delete(nil)
+		if db2.Error != nil {
+			return nil, fmt.Errorf("UpdateTagUserCountReq -> 取消关注失败 -> %s", err)
+		} else if db2.RowsAffected == 0 {
+			return nil, fmt.Errorf("UpdateTagUserCountReq -> 该用户没有关注该标签 -> %s", err)
+		}
+
+		tagFansCountRes := &requests.TagFansCountRes{
+			TagFansCount: &requests.TagFansCount{},
+		}
+		return tagFansCountRes, nil
 	}
 
 	// 查询该标签是否存在
@@ -36,6 +49,18 @@ func UpdateTagUserCountReq(userId uint, db *gorm.DB, tagID uint) (*requests.TagF
 		tx.Rollback() // 回滚事务
 		return nil, fmt.Errorf("UpdateTagUserCountReq -> 查询该标签是否存在失败 -> %s", err)
 	}
+
+	// 向UserTag表中添加记录
+	uT := &models.UserTag{
+		UserID: userId,
+		TagID:  tagID,
+	}
+	err = tx.Model(&models.UserTag{}).Create(uT).Error
+	if err != nil {
+		tx.Rollback() // 回滚事务
+		return nil, fmt.Errorf("UpdateTagUserCountReq -> 向UserTag表中添加记录失败 -> %s", err)
+	}
+
 	// 更新该标签的关注人数
 	if err := tx.Model(&tag).Update("fans_count", tag.FansCount+1).Error; err != nil {
 		tx.Rollback() // 回滚事务
