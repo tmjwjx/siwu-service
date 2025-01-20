@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"forum/internal/internalPkg/internalUtils"
 	"forum/internal/tag/logics"
 	"forum/internal/tag/requests"
 	"forum/pkg/globals"
@@ -20,8 +21,24 @@ func UpdateTagUserCount(c *gin.Context) {
 		return
 	}
 
+	userID, exists := c.Get("id")
+	if !exists {
+		// 返回错误响应
+		e := response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("UserDataResponseCtrl -> 从token中获取用户ID失败"), nil)
+		response.Failed(c, 500, e)
+		return
+	}
+
+	uintValue, err := internalUtils.ChangeAnyToUint(userID)
+	if err != nil {
+		// 返回错误响应
+		e := response.NewAppErr(globals.StatusInternalServerError, err, nil)
+		response.Failed(c, 500, e)
+		return
+	}
+
 	// 业务处理
-	fansCount, err := logics.UpdateTagUserCountLogic(globals.DB, tag.ID)
+	fansCount, err := logics.UpdateTagUserCountLogic(uintValue, globals.DB, tag.ID)
 
 	// 返回响应
 	if err != nil {

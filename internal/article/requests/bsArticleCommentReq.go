@@ -26,8 +26,8 @@ type CommentsListReq struct {
 
 // CommentsListRes 评论列表加载响应
 type CommentsListRes struct {
-	Comlist *[]*ComList `json:"comlist"`
-	Total   int         `json:"total"`
+	Comlist []ComList `json:"comlist"`
+	Total   int       `json:"total"`
 }
 
 type ComList struct {
