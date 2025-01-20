@@ -104,6 +104,6 @@ type GetAllTagRes struct {
 }
 
 type T struct {
-	ID   string `json:"id"`
+	ID   uint   `json:"id"`
 	Name string `json:"name"`
 }

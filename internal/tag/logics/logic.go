@@ -7,9 +7,9 @@ import (
 )
 
 // UpdateTagUserCountLogic 更新数据库中标签的关注人数
-func UpdateTagUserCountLogic(db *gorm.DB, tagID uint) (*requests.TagFansCountRes, error) {
+func UpdateTagUserCountLogic(userId uint, db *gorm.DB, tagID uint) (*requests.TagFansCountRes, error) {
 	// 更新数据库中标签的关注人数
-	fansCount, err := repositories.UpdateTagUserCountReq(db, tagID)
+	fansCount, err := repositories.UpdateTagUserCountReq(userId, db, tagID)
 	return fansCount, err
 }
 

@@ -327,6 +327,7 @@ func UserAccountResponse(userID uint, db *gorm.DB) (*requests.UserAccountRes, er
 		WeiboLink:  user.UserDetail.WeiboLink,
 		GithubLink: user.UserDetail.GithubLink,
 		Password:   "",
+		Nickname:   user.Nickname,
 	}
 
 	return userAccountRes, nil

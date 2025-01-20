@@ -41,6 +41,7 @@ type UserAccountRes struct {
 	WeiboLink  string `json:"weibo_link"`  // 新浪微博链接
 	GithubLink string `json:"github_link"` // Github链接
 	Password   string `json:"password"`    // 密码
+	Nickname   string `json:"nickname"`    // 用户名
 }
 
 // UserPrivateSettingsReq 用户私信设置更新

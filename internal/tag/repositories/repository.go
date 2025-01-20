@@ -11,7 +11,7 @@ import (
 )
 
 // UpdateTagUserCountReq 更新数据库中标签的关注人数
-func UpdateTagUserCountReq(db *gorm.DB, tagID uint) (*requests.TagFansCountRes, error) {
+func UpdateTagUserCountReq(userId uint, db *gorm.DB, tagID uint) (*requests.TagFansCountRes, error) {
 	var tag models.Tag
 	var fansCount string // 统计现在的人数
 
@@ -19,6 +19,16 @@ func UpdateTagUserCountReq(db *gorm.DB, tagID uint) (*requests.TagFansCountRes, 
 	tx := db.Begin()
 	if tx.Error != nil {
 		return nil, fmt.Errorf("UpdateTagUserCountReq -> 开启事务失败 -> %s", tx.Error)
+	}
+
+	var userTag models.UserTag
+	err := tx.Model(&models.UserTag{}).First(&userTag).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			// 如果没有找到，说明该用户还没有对该标签点过赞，进行下一步点赞就可以了
+		} else {
+			return nil, fmt.Errorf("查询用户是否点赞过该标签异常 -> %s", err)
+		}
 	}
 
 	// 查询该标签是否存在
@@ -46,7 +56,7 @@ func UpdateTagUserCountReq(db *gorm.DB, tagID uint) (*requests.TagFansCountRes, 
 	}
 
 	// 提交事务
-	err := tx.Commit().Error
+	err = tx.Commit().Error
 	if err != nil {
 		return nil, fmt.Errorf("UpdateTagUserCountReq -> 提交事务失败 -> %s", err)
 	}
@@ -103,6 +113,7 @@ func UpdateTagArticleCountReq(db *gorm.DB) (*requests.TagRes, error) {
 				t.Path = path
 			}
 		}
+
 		var userTag models.UserTag
 		err = db.Model(&models.UserTag{}).First(&userTag).Error
 		if err != nil {
@@ -111,9 +122,9 @@ func UpdateTagArticleCountReq(db *gorm.DB) (*requests.TagRes, error) {
 			} else {
 				return nil, fmt.Errorf("UpdateTagArticleCountReq -> 查询用户是否关注该标签异常 -> %s", err)
 			}
+		} else {
+			t.Status = 1
 		}
-
-		t.Status = 1
 
 		tagList = append(tagList, t)
 
@@ -174,11 +185,10 @@ func GetAllTagRep(db *gorm.DB) (*requests.GetAllTagRes, error) {
 	var tags []requests.T
 	err := db.Model(models.Tag{}).Select("id, name").Scan(&tags).Error
 	if err != nil {
-		return nil, fmt.Errorf("GetAllTagRep -> 提交事务失败 -> %s", err)
+		return nil, fmt.Errorf("GetAllTagRep -> 获取所有标签的id和name失败 -> %s", err)
 	}
 	res := &requests.GetAllTagRes{
 		Tags: tags,
 	}
 	return res, nil
-
 }

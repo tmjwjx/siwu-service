@@ -48,7 +48,7 @@ func ShowCommentsListRep(db *gorm.DB, req *requests.CommentsListReq) (*requests.
 
 	var commentsListRes *requests.CommentsListRes
 	var comments []models.ArticleComment
-	var comList []*requests.ComList
+	var comList []requests.ComList
 	var user models.User
 	var article models.Article
 	var examine int
@@ -123,7 +123,7 @@ func ShowCommentsListRep(db *gorm.DB, req *requests.CommentsListReq) (*requests.
 			return nil, fmt.Errorf("ShowCommentsListRep -> 查询文章信息失败 -> %s", err)
 		}
 
-		commentRes := &requests.ComList{
+		commentRes := requests.ComList{
 			ID:        comment.ID,
 			Nickname:  user.Nickname,
 			Email:     user.Email,
@@ -139,7 +139,13 @@ func ShowCommentsListRep(db *gorm.DB, req *requests.CommentsListReq) (*requests.
 		// 查询用户回复对象信息
 		err = db.Where("id = ?", comment.ParentUserID).First(&user).Error
 		if err != nil {
-			return nil, fmt.Errorf("ShowCommentsListRep -> 查询用户回复对象信息失败 -> %s", err)
+			//return nil, fmt.Errorf("ShowCommentsListRep -> 查询用户回复对象信息失败 -> %s", err)
+			commentsListRes = &requests.CommentsListRes{
+				Comlist: make([]requests.ComList, 0),
+				Total:   total,
+			}
+
+			return commentsListRes, nil
 		}
 
 		commentRes.ParentNickname = user.Nickname
@@ -169,7 +175,7 @@ func ShowCommentsListRep(db *gorm.DB, req *requests.CommentsListReq) (*requests.
 	}
 
 	commentsListRes = &requests.CommentsListRes{
-		Comlist: &comList,
+		Comlist: comList,
 		Total:   total,
 	}
 
