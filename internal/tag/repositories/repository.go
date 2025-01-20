@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"errors"
 	"fmt"
 	"forum/internal/internalPkg/internalUtils"
 	"forum/internal/models"
@@ -102,6 +103,17 @@ func UpdateTagArticleCountReq(db *gorm.DB) (*requests.TagRes, error) {
 				t.Path = path
 			}
 		}
+		var userTag models.UserTag
+		err = db.Model(&models.UserTag{}).First(&userTag).Error
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				t.Status = 2
+			} else {
+				return nil, fmt.Errorf("UpdateTagArticleCountReq -> 查询用户是否关注该标签异常 -> %s", err)
+			}
+		}
+
+		t.Status = 1
 
 		tagList = append(tagList, t)
 

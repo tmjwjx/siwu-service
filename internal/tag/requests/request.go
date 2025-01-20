@@ -27,6 +27,7 @@ type Tag struct {
 	Heat         string `json:"heat" form:"heat"`                   // 标签热度
 	FansCount    string `json:"fans_count" form:"fans_count"`       // 关注人数
 	Path         string `json:"path" form:"path"`                   // 标签头像
+	Status       int    `json:"status"`                             // 用户是否关注了该标签 (1:已关注, 2:未关注)
 }
 
 // BsAddTagReq 后台新增请求
