@@ -19,14 +19,14 @@ type GetAllApiRes struct {
 }
 
 type List struct {
-	GroupID   uint        `json:"group_id"`
-	GroupName string      `json:"group_name"`
+	GroupID   uint        `json:"key"`
+	GroupName string      `json:"title"`
 	Children  []*Children `json:"children"`
 }
 
 type Children struct {
-	ApiID   uint   `json:"api_id"`
-	ApiName string `json:"api_name"`
+	ApiID   uint   `json:"key"`
+	ApiName string `json:"title"`
 }
 
 type Result struct {

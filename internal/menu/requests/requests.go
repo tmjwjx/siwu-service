@@ -11,8 +11,8 @@ type MenuSearchReq struct {
 	Code          string `json:"code"`           // 权限标识
 	ComponentPath string `json:"component_path"` // 路由组件(文件路径)
 	ParentId      uint   `json:"pid"`            // 父菜单(0表示没有父级)
-	Page          int    `json:"page"`           // 分页查询的起始位置
-	Limit         int    `json:"limit"`          // 分页查询返回数据的条数
+	//Page          int    `json:"page"`           // 分页查询的起始位置
+	//Limit         int    `json:"limit"`          // 分页查询返回数据的条数
 }
 
 // MenuSearchRes 检索获取所有菜单列表响应

@@ -11,9 +11,9 @@ import (
 // MenuSearchRep 检索获取所有菜单列表
 func MenuSearchRep(db *gorm.DB, req *requests.MenuSearchReq) (*requests.MenuSearchRes, error) {
 
-	if req.Limit == 0 {
-		return nil, fmt.Errorf("MenuSearchRep -> Limit的值不能为0")
-	}
+	//if req.Limit <= 0 && req.Page < 0 {
+	//	return nil, fmt.Errorf("MenuSearchRep -> Limit的值不能小于等于0, 或者Page的值不能小于0")
+	//}
 
 	var menus []models.Menu
 	var menusRes []*requests.Menus
@@ -45,7 +45,7 @@ func MenuSearchRep(db *gorm.DB, req *requests.MenuSearchReq) (*requests.MenuSear
 	if req.ComponentPath != "" {
 		query = query.Where("component_path LIKE ?", "%"+req.ComponentPath+"%")
 	}
-	if req.ParentId >= 0 {
+	if req.ParentId > 0 {
 		query = query.Where("parent_id LIKE ?", "%"+fmt.Sprintf("%v", req.ParentId)+"%")
 	}
 
@@ -85,24 +85,30 @@ func MenuSearchRep(db *gorm.DB, req *requests.MenuSearchReq) (*requests.MenuSear
 	}
 
 	// 分页返回数据
-	offset := (req.Page - 1) * req.Limit
-	if length > offset {
-		end := offset + req.Limit
-		if end > length {
-			end = length
-		}
-		menusRes = menusRes[offset:end]
-		res := &requests.MenuSearchRes{
-			Menus: menusRes,
-			Total: length,
-		}
-		return res, nil
-	}
+	//offset := (req.Page - 1) * req.Limit
+	//if length > offset {
+	//	end := offset + req.Limit
+	//	if end > length {
+	//		end = length
+	//	}
+	//	menusRes = menusRes[offset:end]
+	//	res := &requests.MenuSearchRes{
+	//		Menus: menusRes,
+	//		Total: length,
+	//	}
+	//	return res, nil
+	//}
+	//
+	//res := &requests.MenuSearchRes{
+	//	Menus: make([]*requests.Menus, 0),
+	//	Total: 0,
+	//}
 
 	res := &requests.MenuSearchRes{
-		Menus: make([]*requests.Menus, 0),
-		Total: 0,
+		Menus: menusRes,
+		Total: length,
 	}
+
 	return res, nil
 }
 
