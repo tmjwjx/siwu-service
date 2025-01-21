@@ -817,8 +817,8 @@ func GetUserArticleOrCollectionRep(db *gorm.DB, req *requests.UserArticleOrColle
 	// 判断是发布的文章还是收藏的文章
 	switch req.Type {
 	case "收藏":
-		query = query.Joins("JOIN article_collections ON articles.id = article_collections.article_id").
-			Where("article_collections.user_id = ?", req.Id)
+		query = query.Joins("Left JOIN sw_article_collections ON sw_articles.id = sw_article_collections.article_id").
+			Where("sw_article_collections.user_id = ?", req.Id)
 	case "文章":
 		query = query.Where("sw_articles.user_id = ?", req.Id)
 	}
