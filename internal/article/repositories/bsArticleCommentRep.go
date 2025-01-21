@@ -71,10 +71,10 @@ func ShowCommentsListRep(db *gorm.DB, req *requests.CommentsListReq) (*requests.
 		query = query.Where("sw_users.email = ?", req.Email)
 	}
 	if req.Nickname != "" {
-		query = query.Where("sw_users.nickname", req.Nickname)
+		query = query.Where("sw_users.nickname LIKE ?", "%"+req.Nickname+"%")
 	}
 	if req.Title != "" {
-		query = query.Where("sw_articles.title", req.Title)
+		query = query.Where("sw_articles.title LIKE ?", "%"+req.Title+"%")
 	}
 	if req.ParentEmail != "" {
 		query = query.Where("sw_article_comments.parent_email = ?", req.ParentEmail)
@@ -95,13 +95,13 @@ func ShowCommentsListRep(db *gorm.DB, req *requests.CommentsListReq) (*requests.
 	//	}
 	//}
 
-	err := query.Where("examine = ?", examine).Limit(req.Limit).Offset(req.Offset).Find(&comments).Error
+	err := query.Where("examine = ?", examine).Find(&comments).Error
 	if err != nil {
 		return nil, fmt.Errorf("ShowCommentsListRep -> 查询评论信息失败 -> %s", err)
 	}
 
 	// 获取返回评论的总数目
-	total := len(comments)
+	length := len(comments)
 
 	for _, comment := range comments {
 
@@ -142,7 +142,7 @@ func ShowCommentsListRep(db *gorm.DB, req *requests.CommentsListReq) (*requests.
 			//return nil, fmt.Errorf("ShowCommentsListRep -> 查询用户回复对象信息失败 -> %s", err)
 			commentsListRes = &requests.CommentsListRes{
 				Comlist: make([]requests.ComList, 0),
-				Total:   total,
+				Total:   length,
 			}
 
 			return commentsListRes, nil
@@ -174,9 +174,24 @@ func ShowCommentsListRep(db *gorm.DB, req *requests.CommentsListReq) (*requests.
 
 	}
 
+	// 分页返回数据
+	page := (req.Offset - 1) * req.Limit
+	if length > page {
+		end := page + req.Limit
+		if end > length {
+			end = length
+		}
+		comList = comList[page:end]
+		commentsListRes = &requests.CommentsListRes{
+			Comlist: comList,
+			Total:   length,
+		}
+		return commentsListRes, nil
+	}
+
 	commentsListRes = &requests.CommentsListRes{
-		Comlist: comList,
-		Total:   total,
+		Comlist: make([]requests.ComList, 0),
+		Total:   0,
 	}
 
 	return commentsListRes, nil
