@@ -410,6 +410,12 @@ func SearchArticlesRep(db *gorm.DB, req *requests.ArticleSearchReq) (articles []
 		return // 结束函数执行
 	}
 
+	// 格式化时间
+	for i := 0; i < len(articles); i++ {
+		articles[i].FormatTime = internalUtils.TimeFormat(articles[i].PublishedAt)
+		articles[i].DailyTime = internalUtils.TimeFormatDaily(articles[i].PublishedAt)
+	}
+
 	return articles, err
 }
 
@@ -510,6 +516,7 @@ func SearchArticlesListRep(db *gorm.DB, req *requests.ArticleListReq) (data inte
 		return nil, err
 	}
 
+	// 格式化时间
 	for i := 0; i < len(articleList); i++ {
 		articleList[i].FormatTime = internalUtils.TimeFormat(articleList[i].PublishedAt)
 		articleList[i].DailyTime = internalUtils.TimeFormatDaily(articleList[i].PublishedAt)
@@ -646,6 +653,9 @@ func ArticleDetailRep(db *gorm.DB, id string) (requests.ArticleDetailRes, error)
 	// query = query.Joins("LEFT JOIN sw_users ON sw_users.id = sw_articles.user_id")
 
 	query.Find(&articleDetail)
+
+	articleDetail.FormatTime = internalUtils.TimeFormat(articleDetail.PublishedAt)
+	articleDetail.DailyTime = internalUtils.TimeFormatDaily(articleDetail.PublishedAt)
 
 	return articleDetail, nil
 }
@@ -874,6 +884,12 @@ func GetArticlesByTagRep(db *gorm.DB, req *requests.GetArticleByTagReq) (article
 		return // 结束函数执行
 	}
 
+	// 格式化时间
+	for i := 0; i < len(articles); i++ {
+		articles[i].FormatTime = internalUtils.TimeFormat(articles[i].PublishedAt)
+		articles[i].DailyTime = internalUtils.TimeFormatDaily(articles[i].PublishedAt)
+	}
+
 	return articles, nil
 }
 
@@ -935,6 +951,12 @@ func GetUserArticleOrCollectionRep(db *gorm.DB, req *requests.UserArticleOrColle
 	if err = query.Find(&articles).Error; err != nil {
 		globals.Log.Errorf("err = %s", err)
 		return // 结束函数执行
+	}
+
+	// 格式化时间
+	for i := 0; i < len(articles); i++ {
+		articles[i].FormatTime = internalUtils.TimeFormat(articles[i].PublishedAt)
+		articles[i].DailyTime = internalUtils.TimeFormatDaily(articles[i].PublishedAt)
 	}
 
 	return articles, total, nil

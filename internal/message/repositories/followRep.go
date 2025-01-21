@@ -61,6 +61,12 @@ func FollowRep(db *gorm.DB, req requests.MessageReq, userId uint) (res []request
 			res[i].IsFollowed = 0
 		}
 	}
-	fmt.Println(res)
+
+	// 格式化时间
+	for i := range res {
+		res[i].FormatTime = internalUtils.TimeFormat(res[i].CreatedAt)
+		res[i].DailyTime = internalUtils.TimeFormatDaily(res[i].CreatedAt)
+	}
+
 	return res, nil
 }
