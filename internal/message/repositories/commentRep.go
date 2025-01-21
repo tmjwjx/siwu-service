@@ -38,7 +38,7 @@ func IsCommentLikeRep(db *gorm.DB, userId uint, commentId uint) (bool, error) {
 // @Author tianjiajie 2025-01-18 11:25:24
 func CommentRep(db *gorm.DB, req *requests.MessageReq, userId uint) (res []requests.CommentMessageRes, err error) {
 	query := db.Table("sw_article_comments").
-		Joins("right join sw_articles on sw_article_comments.article_id = sw_articles.id").
+		Joins("left join sw_articles on sw_article_comments.article_id = sw_articles.id").
 		Joins("left join sw_users on sw_article_comments.user_id = sw_users.id").
 		Joins("left join sw_comment_likes on sw_comment_likes.comment_id = sw_article_comments.id").
 		Joins("left join sw_article_comments sac on sac.id = sw_article_comments.parent_id").
@@ -66,8 +66,8 @@ func CommentRep(db *gorm.DB, req *requests.MessageReq, userId uint) (res []reque
 		//"sac.id AS parent_id, " +
 		"sw_article_comments.parent_id, " +
 		"sac.content AS comment, " +
-		"sw_attachments.path").
-		Group("sw_article_comments.id, sw_attachments.path, sw_article_comments.created_at") // 添加这一行用于去重
+		"sw_attachments.path")
+	//Group("sw_article_comments.id, sw_attachments.path, sw_article_comments.created_at, sw_articles.title") // 添加这一行用于去重
 
 	if err = query.
 		Find(&res).Error; err != nil {
