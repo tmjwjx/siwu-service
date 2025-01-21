@@ -43,12 +43,15 @@ func Article(e *gin.Engine) {
 
 		// 获取标签下的文章
 		articleGroup.GET("/get_article_by_tag", controllers.GetArticlesByTagCtrl)
+
+		// 会员中心 获取用户文章或收藏列表
+		articleGroup.GET("/get_type_data", controllers.GetUserArticleOrCollectionCtrl)
 	}
 
-	// token 校验
-	e.Use(token.AuthMiddleware())
-	// 会员中心 获取用户文章或收藏列表
-	e.GET("/get_type_data", controllers.GetUserArticleOrCollectionCtrl)
+	//// token 校验
+	//e.Use(token.AuthMiddleware())
+	//// 会员中心 获取用户文章或收藏列表
+	//e.GET("/get_type_data", controllers.GetUserArticleOrCollectionCtrl)
 
 }
 
