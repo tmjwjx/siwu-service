@@ -516,12 +516,69 @@ func SearchArticlesListRep(db *gorm.DB, req *requests.ArticleListReq) (data inte
 // @param        db *gorm.DB
 // @param        id string
 // @return       error
-func BanArticlesRep(db *gorm.DB, id string) error {
-	// 修改文章状态
-	if err := db.Model(&models.Article{}).Where("id = ?", id).Update("article_condition", 2).Error; err != nil {
-		globals.Log.Errorf("err = %s", err)
+func BanArticlesRep(db *gorm.DB, idList requests.ArticleOperationListReq) error {
+	// 开始一个事务
+	tx := db.Begin()
+
+	// 确保在函数退出时回滚事务，如果发生错误
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback() // 回滚事务
+			globals.Log.Errorf("Panic occurred: %v", r)
+		}
+	}()
+
+	// 更新文章的状态
+	if err := tx.Model(&models.Article{}).
+		Where("id IN (?)", idList.IdList). // 使用 IN 查询匹配多个 id
+		Update("article_condition", 2).Error; err != nil {
+		tx.Rollback() // 如果更新失败，回滚事务
+		globals.Log.Errorf("Error updating article_condition: %v", err)
 		return err
 	}
+
+	// 提交事务
+	if err := tx.Commit().Error; err != nil {
+		globals.Log.Errorf("Error committing transaction: %v", err)
+		return err
+	}
+
+	return nil
+}
+
+// UnblockArticlesRep
+// @Description: 解封文章
+// @param        db *gorm.DB
+// @param        idList requests.ArticleOperationListReq
+// @return       error
+// @Author tianjiajie 2025-01-21 11:31:35
+func UnblockArticlesRep(db *gorm.DB, idList requests.ArticleOperationListReq) error {
+	// 开始一个事务
+	tx := db.Begin()
+
+	// 确保在函数退出时回滚事务，如果发生错误
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback() // 回滚事务
+			globals.Log.Errorf("Panic occurred: %v", r)
+		}
+	}()
+
+	// 更新文章的状态
+	if err := tx.Model(&models.Article{}).
+		Where("id IN (?)", idList.IdList). // 使用 IN 查询匹配多个 id
+		Update("article_condition", 0).Error; err != nil {
+		tx.Rollback() // 如果更新失败，回滚事务
+		globals.Log.Errorf("Error updating article_condition: %v", err)
+		return err
+	}
+
+	// 提交事务
+	if err := tx.Commit().Error; err != nil {
+		globals.Log.Errorf("Error committing transaction: %v", err)
+		return err
+	}
+
 	return nil
 }
 

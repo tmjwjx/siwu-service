@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"forum/internal/article/logics"
+	"forum/internal/article/requests"
 	"forum/pkg/globals"
 	"forum/pkg/response"
 	"github.com/gin-gonic/gin"
@@ -14,12 +15,46 @@ import (
 func ArticleBanCtrl(c *gin.Context) {
 	// 初始化需要的变量
 	db := globals.DB
+	idList := requests.ArticleOperationListReq{}
 
 	// 绑定查询参数到变量
-	id := c.Query("id")
+	if err := c.BindJSON(&idList); err != nil {
+		// 处理错误
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
 	// 进入业务层
-	err := logics.ArticleBanLocal(db, id)
+	err := logics.ArticleBanLocal(db, idList)
+	if err != nil {
+		data := response.NewAppErr(globals.StatusInternalServerError, err, nil)
+		response.Failed(c, http.StatusInternalServerError, data)
+		return
+	}
+
+	// 返回响应
+	data := response.NewAppData(globals.StatusOK, "成功", nil)
+	response.Success(c, http.StatusOK, data)
+}
+
+// ArticleUnblockCtrl
+// @Description: 解封文章
+// @param        c *gin.Context
+// @Author tianjiajie 2025-01-21 11:30:06
+func ArticleUnblockCtrl(c *gin.Context) {
+	// 初始化需要的变量
+	db := globals.DB
+	idList := requests.ArticleOperationListReq{}
+
+	// 绑定查询参数到变量
+	if err := c.BindJSON(&idList); err != nil {
+		// 处理错误
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// 进入业务层
+	err := logics.ArticleUnblockLocal(db, idList)
 	if err != nil {
 		data := response.NewAppErr(globals.StatusInternalServerError, err, nil)
 		response.Failed(c, http.StatusInternalServerError, data)
@@ -37,12 +72,17 @@ func ArticleBanCtrl(c *gin.Context) {
 func DeleteArticlesCtrl(c *gin.Context) {
 	// 初始化需要的变量
 	db := globals.DB
+	idList := requests.ArticleOperationListReq{}
 
 	// 绑定查询参数到变量
-	id := c.Query("id")
+	if err := c.BindJSON(&idList); err != nil {
+		// 处理错误
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
 	// 进入业务层
-	err := logics.ArticleDeleteLocal(db, id)
+	err := logics.ArticleDeleteLocal(db, idList)
 	if err != nil {
 		data := response.NewAppErr(globals.StatusInternalServerError, err, nil)
 		response.Failed(c, http.StatusInternalServerError, data)
