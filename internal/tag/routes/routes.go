@@ -4,13 +4,14 @@ import (
 	"forum/internal/tag/controllers"
 	"forum/pkg/casbin"
 	"forum/pkg/globals"
+	"forum/pkg/token"
 	"github.com/gin-gonic/gin"
 )
 
 func Tag(e *gin.Engine) {
 
 	// 前台分组
-	r := e.Group("/tag")
+	r := e.Group("/tag").Use(token.AuthMiddleware())
 
 	// 更新标签关注人数
 	r.POST("/fan_count", controllers.UpdateTagUserCount)
@@ -25,7 +26,7 @@ func Tag(e *gin.Engine) {
 	r.GET("/get_all_tags", controllers.GetAllTagCtrl)
 
 	// 后台分组
-	r2 := e.Group("/backstage_tag").Use(casbin.CasbinAuth(globals.CasbinEnforcer))
+	r2 := e.Group("/backstage_tag").Use(token.AuthMiddleware()).Use(casbin.CasbinAuth(globals.CasbinEnforcer))
 
 	// 新增标签
 	r2.POST("/add", controllers.AddTagCtrl)

@@ -12,7 +12,7 @@ import (
 // casbin_r_m_a 结构体
 type CasbinService struct {
 	Enforcer *casbin.Enforcer
-	Adapter  *gormadapter.Adapter
+	//Adapter  *gormadapter.Adapter
 }
 
 // NewCasbinService
@@ -54,7 +54,6 @@ m = g(r.sub, p.sub) && r.obj == p.obj`)
 
 	return &CasbinService{
 		Enforcer: e,
-		Adapter:  a,
 	}, nil
 }
 
