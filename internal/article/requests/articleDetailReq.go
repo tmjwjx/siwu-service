@@ -20,6 +20,8 @@ type ArticleDetailRes struct {
 	CategoryID       uint         `json:"category_id"`                                                  // 所属类目ID，外键
 	Summary          string       `json:"summary"`                                                      // 文章摘要
 	PublishedAt      *time.Time   `json:"published_at"`                                                 // 发布时间 可以为空(如草稿)
+	FormatTime       string       `json:"format_time"`                                                  // 格式化时间
+	DailyTime        string       `json:"daily_time"`                                                   // 日常时间
 	Content          string       `json:"content"`                                                      // 文章内容
 	ImageUrl         string       `json:"image_url"`                                                    // 文章封面url
 	Nickname         string       `json:"nickname"`                                                     // 作者昵称

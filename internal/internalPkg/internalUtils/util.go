@@ -123,8 +123,8 @@ func ArticlesOrder(kind int) string {
 // @return       date
 // @return       err
 // @Author tianjiajie 2025-01-21 11:35:28
-func TimeFormatDaily(t time.Time) (date string) {
-	duration := time.Since(t)
+func TimeFormatDaily(t *time.Time) (date string) {
+	duration := time.Since(*t)
 	// 根据时间差判断返回值
 	if duration < time.Hour {
 		// 小于1小时
@@ -141,7 +141,7 @@ func TimeFormatDaily(t time.Time) (date string) {
 	}
 }
 
-func TimeFormat(t time.Time) (format string) {
+func TimeFormat(t *time.Time) (format string) {
 	format = t.Format("2006-01-02")
 	return format
 }

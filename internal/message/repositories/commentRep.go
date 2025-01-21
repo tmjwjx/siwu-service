@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"forum/internal/internalPkg/internalUtils"
 	"forum/internal/message/requests"
 	"gorm.io/gorm"
 )
@@ -70,6 +71,13 @@ func CommentRep(db *gorm.DB, req *requests.MessageReq, userId uint) (res []reque
 		Find(&res).Error; err != nil {
 		return res, err
 	}
+
+	// 格式化时间
+	for i := range res {
+		res[i].FormatTime = internalUtils.TimeFormat(res[i].CreatedAt)
+		res[i].DailyTime = internalUtils.TimeFormatDaily(res[i].CreatedAt)
+	}
+
 	return res, err
 
 }
