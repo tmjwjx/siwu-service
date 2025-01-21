@@ -14,8 +14,8 @@ func UpdateTagUserCountLogic(userId uint, db *gorm.DB, tagID uint) (*requests.Ta
 }
 
 // UpdateTagArticleCountLogic 更新前端的标签页
-func UpdateTagArticleCountLogic(db *gorm.DB) (*requests.TagRes, error) {
-	tagRes, err := repositories.UpdateTagArticleCountReq(db)
+func UpdateTagArticleCountLogic(userId uint, db *gorm.DB) (*requests.TagRes, error) {
+	tagRes, err := repositories.UpdateTagArticleCountReq(userId, db)
 	return tagRes, err
 }
 
