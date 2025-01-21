@@ -824,7 +824,7 @@ func GetUserArticleOrCollectionRep(db *gorm.DB, req *requests.UserArticleOrColle
 	condition := internalUtils.ArticlesOrder(1) // 选择排序方式  0热度 1时间
 
 	query := db.Model(&models.Article{}).Preload("Tags").
-		Select("sw_articles.*, sw_users.nickname").
+		Select("DISTINCT sw_articles.*, sw_users.nickname").
 		Joins("LEFT JOIN sw_users ON sw_users.id = sw_articles.user_id")
 	// 获取未封禁的文章
 	//Where("sw_articles.article_condition = ?", 0)
