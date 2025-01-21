@@ -38,8 +38,8 @@ func IsCommentLikeRep(db *gorm.DB, userId uint, commentId uint) (bool, error) {
 // @Author tianjiajie 2025-01-18 11:25:24
 func CommentRep(db *gorm.DB, req *requests.MessageReq, userId uint) (res []requests.CommentMessageRes, err error) {
 	query := db.Table("sw_article_comments").
+		Joins("right join sw_articles on sw_article_comments.article_id = sw_articles.id").
 		Joins("left join sw_users on sw_article_comments.user_id = sw_users.id").
-		Joins("left join sw_articles on sw_article_comments.article_id = sw_articles.id").
 		Joins("left join sw_comment_likes on sw_comment_likes.comment_id = sw_article_comments.id").
 		Joins("left join sw_article_comments sac on sac.id = sw_article_comments.parent_id").
 		Order("sw_article_comments.created_at DESC").
@@ -47,7 +47,7 @@ func CommentRep(db *gorm.DB, req *requests.MessageReq, userId uint) (res []reque
 		Offset((req.Page - 1) * req.Limit)
 
 	// 查询条件
-	query = query.Where("sw_article_comments.user_id = ?", userId)
+	query = query.Where("sw_articles.user_id = ?", userId)
 
 	// 查询用户头像
 	query = query.
