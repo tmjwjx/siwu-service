@@ -70,21 +70,21 @@ func UserDataResponseCtrl(c *gin.Context) {
 		return
 	}
 
-	//userID, exists := c.Get("id")
-	//if !exists {
+	// userID, exists := c.Get("id")
+	// if !exists {
 	//	// 返回错误响应
 	//	e := response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("UserDataResponseCtrl -> 从token中获取用户ID失败"), nil)
 	//	response.Failed(c, 500, e)
 	//	return
-	//}
+	// }
 	//
-	//uintValue, err := internalUtils.ChangeAnyToUint(userID)
-	//if err != nil {
+	// uintValue, err := internalUtils.ChangeAnyToUint(userID)
+	// if err != nil {
 	//	// 返回错误响应
 	//	e := response.NewAppErr(globals.StatusInternalServerError, err, nil)
 	//	response.Failed(c, 500, e)
 	//	return
-	//}
+	// }
 
 	// 业务处理
 	userDataRes, err := logics.ResponsePersonDateLogic(userId, globals.DB)
@@ -128,7 +128,7 @@ func UserAccountRequestCtrl(c *gin.Context) {
 		// 验证密码是否合法
 		res = internalUtils.IsValidPassword(userAccountReq.Password)
 		if !res {
-			e := response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("密码格式不正确"), nil)
+			e := response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("密码必须要同时包含字母、数字、特殊字符，长度在8到20位之间"), nil)
 			response.Failed(c, 400, e)
 			return
 		}

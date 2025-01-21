@@ -5,6 +5,7 @@ import (
 	"net/http"
 )
 
+// CorsMiddleware 跨域中间件
 func CorsMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// 获取当前请求的方法
