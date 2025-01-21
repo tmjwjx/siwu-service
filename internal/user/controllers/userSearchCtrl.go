@@ -167,7 +167,7 @@ func GetBasicInfo(c *gin.Context) {
 // @Description: 获取用户文章
 // @param        c *gin.Context
 // @Author tianjiajie 2025-01-17 16:39:16
-//func GetUserArticleCtrl(c *gin.Context) {
+// func GetUserArticleCtrl(c *gin.Context) {
 //	// 初始化需要的变量
 //	db := globals.DB
 //	req := requests.UserDataRequest{}
@@ -201,4 +201,4 @@ func GetBasicInfo(c *gin.Context) {
 //	data := response.NewAppData(globals.StatusOK, "成功", totalData)
 //	response.Success(c, http.StatusOK, data)
 //
-//}
+// }
