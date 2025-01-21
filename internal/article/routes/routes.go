@@ -27,11 +27,13 @@ func Article(e *gin.Engine) {
 		// 获取文章列表
 		articleGroup.POST("/get_list", controllers.ArticleListCtrl)
 		// 封禁文章
-		articleGroup.GET("/ban", controllers.ArticleBanCtrl)
+		articleGroup.POST("/ban", controllers.ArticleBanCtrl)
+		// 解封文章
+		articleGroup.POST("/unblock", controllers.ArticleUnblockCtrl)
 		// 管理员 删除文章
-		articleGroup.DELETE("/delete", controllers.DeleteArticlesCtrl)
+		articleGroup.POST("/delete", controllers.DeleteArticlesCtrl)
 		// 用户 删除文章
-		articleGroup.POST("/delete_article", controllers.UserDeleteArticlesCtrl)
+		articleGroup.GET("/delete_article", controllers.UserDeleteArticlesCtrl)
 		// 获取文章详情
 		articleGroup.GET("/detail", controllers.ArticleDetailCtrl)
 		// 点赞
