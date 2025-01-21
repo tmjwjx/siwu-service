@@ -46,6 +46,9 @@ func CommentRep(db *gorm.DB, req *requests.MessageReq, userId uint) (res []reque
 		Limit(req.Limit).
 		Offset((req.Page - 1) * req.Limit)
 
+	// 查询条件
+	query = query.Where("sw_article_comments.user_id = ?", userId)
+
 	// 查询用户头像
 	query = query.
 		Joins("left join sw_attachments on sw_attachments.home_id = sw_article_comments.user_id AND sw_attachments.home = ?", "user")
@@ -67,7 +70,6 @@ func CommentRep(db *gorm.DB, req *requests.MessageReq, userId uint) (res []reque
 		Group("sw_article_comments.id, sw_attachments.path, sw_article_comments.created_at") // 添加这一行用于去重
 
 	if err = query.
-		Debug().
 		Find(&res).Error; err != nil {
 		return res, err
 	}
