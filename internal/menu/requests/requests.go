@@ -36,6 +36,7 @@ type Menus struct {
 	Visible int    `json:"isVisible"` // 状态(显示隐藏)
 	Sort    int    `json:"sort"`      // 排序
 	Desc    string `json:"desc"`      // 描述
+	ApiId   []uint `json:"api_id"`    // 菜单拥有的所有api
 }
 
 // GetMenuIconRes 获取所有菜单图标

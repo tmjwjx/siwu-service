@@ -3,6 +3,8 @@ package logics
 import (
 	"forum/internal/casbin_r_m_a/repositories"
 	"forum/internal/casbin_r_m_a/requests"
+	"forum/pkg/casbin"
+	casbin2 "github.com/casbin/casbin/v2"
 	"gorm.io/gorm"
 )
 
@@ -19,8 +21,13 @@ func GetMenuPermLogic(db *gorm.DB, id string) (*requests.GetMenuPermRes, error) 
 }
 
 // GetApiPermLogic 获取当前角色的api权限
-func GetApiPermLogic(db *gorm.DB, id string) (req *requests.GetApiPermRes, err error) {
-	res, err := repositories.GetApiPermRep(db, id)
+func GetApiPermLogic(e *casbin2.Enforcer, id string) (req *requests.GetApiPermRes, err error) {
+
+	casbinService := &casbin.CasbinService{
+		Enforcer: e,
+	}
+
+	res, err := repositories.GetApiPermRep(casbinService, id)
 	return res, err
 }
 

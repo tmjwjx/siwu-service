@@ -63,7 +63,7 @@ func GetApiPermCtrl(c *gin.Context) {
 	id := c.Query("id")
 
 	// 业务处理
-	res, err := logics.GetApiPermLogic(globals.DB, id)
+	res, err := logics.GetApiPermLogic(globals.CasbinEnforcer, id)
 
 	// 返回响应
 	if err != nil {
