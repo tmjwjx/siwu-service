@@ -34,7 +34,7 @@ func BsLogin(c *gin.Context) {
 	}
 	// 检验密码是否合法
 	if !internalUtils.IsValidPassword(bsLogicMsg.Password) {
-		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("BsLogin() : 密码不合法"), nil))
+		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("BsLogin() : 密码必须要同时包含字母、数字、特殊字符，长度在8到20位之间"), nil))
 		return
 	}
 

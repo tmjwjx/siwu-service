@@ -275,7 +275,7 @@ func (u *UserReqContext) Import(file *multipart.FileHeader) error {
 		if password == "" { // 如果密码是空，就选择默认密码，默认密码为用户邮箱
 			password = email
 		} else if !internalUtils.IsValidPassword(password) { // 如果不为空，就判断是否合法
-			return fmt.Errorf("UserReqContext.Import() err: password为 %v 不合法", password)
+			return fmt.Errorf("UserReqContext.Import() err: 密码必须要同时包含字母、数字、特殊字符，长度在8到20位之间")
 		}
 		// 加密
 		encryptedPassword, err = internalUtils.HashPassword(password)

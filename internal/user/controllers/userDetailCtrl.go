@@ -127,7 +127,7 @@ func UserAccountRequestCtrl(c *gin.Context) {
 		// 验证密码是否合法
 		res = internalUtils.IsValidPassword(userAccountReq.Password)
 		if !res {
-			e := response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("密码格式不正确"), nil)
+			e := response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("密码必须要同时包含字母、数字、特殊字符，长度在8到20位之间"), nil)
 			response.Failed(c, 400, e)
 			return
 		}

@@ -22,10 +22,10 @@ func IsValidEmail(email string) bool {
 	return re.MatchString(email)
 }
 
-// IsValidPassword 判断密码是否合法。密码必须包含英文字母、数字、特殊字符，长度在8到16位之间，不限制中文字符。
+// IsValidPassword 判断密码是否合法。密码必须包含英文字母、数字、特殊字符，长度在8到20位之间，不限制中文字符。
 func IsValidPassword(password string) bool {
-	// 密码长度在8到16位之间
-	if len(password) < 8 || len(password) > 16 {
+	// 密码长度在8到20位之间
+	if len(password) < 8 || len(password) > 20 {
 		return false
 	}
 
