@@ -545,6 +545,21 @@ func DeleteArticlesRep(db *gorm.DB, id string) error {
 	return nil
 }
 
+// QueryArticleAuthor
+// @Description: 通过文章id查询文章作者id
+// @param        db *gorm.DB
+// @param        articleId string
+// @return       userId
+// @return       err
+// @Author tianjiajie 2025-01-21 09:13:04
+func QueryArticleAuthor(db *gorm.DB, articleId string) (userId uint, err error) {
+	var article models.Article
+	if err = db.Where("id = ?", articleId).First(&article).Error; err != nil {
+		return 0, err
+	}
+	return article.UserID, nil
+}
+
 // ArticleDetailRep
 // @Description: 获取文章详情
 // @param        db *gorm.DB

@@ -28,8 +28,10 @@ func Article(e *gin.Engine) {
 		articleGroup.POST("/get_list", controllers.ArticleListCtrl)
 		// 封禁文章
 		articleGroup.GET("/ban", controllers.ArticleBanCtrl)
-		// 删除文章
+		// 管理员 删除文章
 		articleGroup.DELETE("/delete", controllers.DeleteArticlesCtrl)
+		// 用户 删除文章
+		articleGroup.POST("/delete_article", controllers.UserDeleteArticlesCtrl)
 		// 获取文章详情
 		articleGroup.GET("/detail", controllers.ArticleDetailCtrl)
 		// 点赞
