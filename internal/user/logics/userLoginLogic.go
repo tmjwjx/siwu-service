@@ -127,7 +127,7 @@ func (u *UserReqContext) ReqVerifyCode(email string) error {
 	// 给用户发送验证码
 	body := fmt.Sprintf(templates.GetEmailFormatTemplate(), verifyCode, int(internalUtils.VerifyCodeEffectiveDuration.Minutes()))
 	if err := u.SendEmail(email, internalUtils.VerifyCodeSubject, body); err != nil {
-		return fmt.Errorf("UserReqContext.VerifyCodeReq() -> 发送验证码错误，可能不存在 %s 邮箱，%v", email, err)
+		return fmt.Errorf("UserReqContext.VerifyCodeReq() -> 向 %s 邮箱发送验证码错误，%v", email, err)
 	}
 
 	// 插入一条新的验证码数据
