@@ -240,6 +240,7 @@ func InsertArticlesRep(db *gorm.DB, req requests.ReqPublish, userId uint) (id in
 		// Content:    req.Content,
 		// ImageUrl:   req.ImageUrl,
 	}
+
 	fmt.Println("我进来了")
 
 	// 判断当前用户是否是文章作者
@@ -282,11 +283,14 @@ func InsertArticlesRep(db *gorm.DB, req requests.ReqPublish, userId uint) (id in
 	// 设置标签
 	// 查找传递过来的所有标签
 	var tags []models.Tag
-	if err := db.Where("id IN ?", req.Tags).Find(&tags).Error; err != nil {
+	if err = db.Where("id IN ?", req.Tags).Find(&tags).Error; err != nil {
 		return 0, err // 如果标签不存在，返回错误
 	}
 
 	newArticle.Tags = tags
+
+	// 设置文章status状态
+	newArticle.Status = req.Status
 
 	// 设置发布时间
 	if req.Status == "public" && newArticle.PublishedAt == nil {
