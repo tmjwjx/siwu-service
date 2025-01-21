@@ -7,7 +7,6 @@ import (
 	"forum/internal/user/requests"
 	"forum/pkg/globals"
 	"forum/pkg/response"
-	"forum/pkg/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -60,34 +59,34 @@ func UserDataRequestCtrl(c *gin.Context) {
 func UserDataResponseCtrl(c *gin.Context) {
 
 	// 获取参数
-	authorId := c.Query("author_id")
+	//authorId := c.Query("author_id")
+	//
+	//userId, err := utils.ChangeStringToUint(authorId)
+	//if err != nil {
+	//	// 返回错误响应
+	//	e := response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("UserDataResponseCtrl -> %s", err), nil)
+	//	response.Failed(c, 500, e)
+	//	return
+	//}
 
-	userId, err := utils.ChangeStringToUint(authorId)
-	if err != nil {
+	userID, exists := c.Get("id")
+	if !exists {
 		// 返回错误响应
-		e := response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("UserDataResponseCtrl -> %s", err), nil)
+		e := response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("UserDataResponseCtrl -> 从token中获取用户ID失败"), nil)
 		response.Failed(c, 500, e)
 		return
 	}
 
-	// userID, exists := c.Get("id")
-	// if !exists {
-	//	// 返回错误响应
-	//	e := response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("UserDataResponseCtrl -> 从token中获取用户ID失败"), nil)
-	//	response.Failed(c, 500, e)
-	//	return
-	// }
-	//
-	// uintValue, err := internalUtils.ChangeAnyToUint(userID)
-	// if err != nil {
-	//	// 返回错误响应
-	//	e := response.NewAppErr(globals.StatusInternalServerError, err, nil)
-	//	response.Failed(c, 500, e)
-	//	return
-	// }
+	uintValue, err := internalUtils.ChangeAnyToUint(userID)
+	if err != nil {
+		// 返回错误响应
+		e := response.NewAppErr(globals.StatusInternalServerError, err, nil)
+		response.Failed(c, 500, e)
+		return
+	}
 
 	// 业务处理
-	userDataRes, err := logics.ResponsePersonDateLogic(userId, globals.DB)
+	userDataRes, err := logics.ResponsePersonDateLogic(uintValue, globals.DB)
 
 	// 返回响应
 	if err != nil {

@@ -16,10 +16,10 @@ import (
 func InitUserInfoCtrl(c *gin.Context) {
 
 	// 从查询参数中获取前端本页面用户的id
-	qid := c.Query("id")
+	authorId := c.Query("author_id")
 
 	// 从token中获取用户id
-	gid, exists := c.Get("id")
+	id, exists := c.Get("id")
 	if !exists {
 		// 返回错误响应
 		e := response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("InitUserInfoCtrl -> 从token中获取用户ID失败"), nil)
@@ -28,7 +28,7 @@ func InitUserInfoCtrl(c *gin.Context) {
 	}
 
 	// 逻辑处理
-	req, err := logics.InitUserInfoLogic(globals.DB, qid, fmt.Sprintf("%v", gid))
+	req, err := logics.InitUserInfoLogic(globals.DB, fmt.Sprintf("%v", id), authorId)
 
 	// 返回响应
 	if err != nil {

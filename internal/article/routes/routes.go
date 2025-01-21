@@ -85,7 +85,7 @@ func Comment(e *gin.Engine) {
 	//}
 
 	// 前台
-	r := e.Group("/comment")
+	r := e.Group("/comment").Use(token.AuthMiddleware())
 
 	// 保存评论
 	r.POST("/create", controllers.InsertCommentCtrl)
