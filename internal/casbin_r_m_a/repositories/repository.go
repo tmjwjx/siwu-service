@@ -57,12 +57,7 @@ func GetMenuPermRep(db *gorm.DB, id string) (*requests.GetMenuPermRes, error) {
 }
 
 // GetApiPermRep 获取当前角色的api权限
-func GetApiPermRep(db *gorm.DB, id string) (req *requests.GetApiPermRes, err error) {
-
-	casbinService, err := casbin.NewCasbinService(db)
-	if err != nil {
-		return nil, fmt.Errorf("GetApiPermRep -> 获取当前角色的api权限失败 -> %s", err)
-	}
+func GetApiPermRep(casbinService *casbin.CasbinService, id string) (req *requests.GetApiPermRes, err error) {
 
 	apiIds, err := casbinService.GetApiPerm(id)
 	if err != nil {
@@ -143,7 +138,8 @@ func AssignApiPermRep(db *gorm.DB, req *requests.AssignApiPermReq) error {
 func GetPermCodeRep(db *gorm.DB, id string) (*requests.GetPermCodeRes, error) {
 
 	var codeList []string
-	err := db.Model(&models.RoleMenu{}).Joins("join sw_menus on sw_menus.id = sw_role_menus.menu_id").Where("role_id = ?", id).Pluck("sw_menus.Code", &codeList).Error
+	err := db.Model(&models.RoleMenu{}).
+		Joins("join sw_menus on sw_menus.id = sw_role_menus.menu_id").Where("role_id = ?", id).Pluck("sw_menus.code", &codeList).Error
 	if err != nil {
 		return nil, fmt.Errorf("GetPermCodeRep -> 获取当前角色的所有权限标识失败 -> %s", err)
 	}

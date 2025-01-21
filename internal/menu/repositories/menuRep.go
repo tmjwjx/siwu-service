@@ -65,7 +65,14 @@ func MenuSearchRep(db *gorm.DB, req *requests.MenuSearchReq) (*requests.MenuSear
 		return res, nil
 	}
 
+	var apiIds []uint
 	for _, menu := range menus {
+
+		err = db.Model(models.MenuApi{}).Where("menu_id = ?", menu.ID).Pluck("api_id", apiIds).Error
+		if err != nil {
+			return nil, fmt.Errorf("MenuSearchRep -> 查询 menuApi 表失败 -> %s", err)
+		}
+
 		m := &requests.Menus{
 			ID:            menu.ID,
 			ParentId:      menu.ParentId,
@@ -79,6 +86,7 @@ func MenuSearchRep(db *gorm.DB, req *requests.MenuSearchReq) (*requests.MenuSear
 			Visible:       menu.Visible,
 			Sort:          menu.Sort,
 			Desc:          menu.Desc,
+			ApiId:         apiIds,
 		}
 
 		menusRes = append(menusRes, m)

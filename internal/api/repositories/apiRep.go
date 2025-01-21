@@ -432,7 +432,6 @@ func SearchApiListRep(db *gorm.DB, req *requests.SearchApiListReq) (*requests.Se
 	//建立表关联
 
 	query := db.Table("sw_apis").
-		Debug().
 		Select("sw_apis.id, sw_apis.path, sw_apis.brief_introduction, sw_groups.id as group_id, sw_groups.name as group_name, sw_request_methods.id as request_method_id, sw_request_methods.name as request_method_name").
 		Joins("left join sw_api_groups on sw_api_groups.api_id = sw_apis.id").
 		Joins("left join sw_groups on sw_api_groups.group_id = sw_groups.id").

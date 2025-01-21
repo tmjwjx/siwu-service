@@ -51,17 +51,17 @@ func ShowCommentsListRep(db *gorm.DB, req *requests.CommentsListReq) (*requests.
 	var comList []requests.ComList
 	var user models.User
 	var article models.Article
-	var examine int
+	examines := make([]int, 2)
 
 	query := db.Model(&models.ArticleComment{}).Joins("left join sw_users on sw_users.id = sw_article_comments.user_id").
 		Joins("left join sw_articles on sw_articles.id = sw_article_comments.article_id")
 
 	if req.Type == 1 {
-		// 不做任何处理
+		examines = append(examines, 0, 1)
 	} else if req.Type == 2 {
-		examine = 2
+		examines = append(examines, 0)
 	} else if req.Type == 3 {
-		examine = 1
+		examines = append(examines, 1)
 	} else {
 		return nil, fmt.Errorf("ShowCommentsListRep -> type的值不是规定值 1, 2, 3")
 	}
@@ -95,15 +95,15 @@ func ShowCommentsListRep(db *gorm.DB, req *requests.CommentsListReq) (*requests.
 	//	}
 	//}
 
-	err := query.Where("examine = ?", examine).Scan(&comments).Error
+	err := query.Where("examine IN ?", examines).Scan(&comments).Error
 	if err != nil {
-		//return nil, fmt.Errorf("ShowCommentsListRep -> 查询评论信息失败 -> %s", err)
-		commentsListRes = &requests.CommentsListRes{
-			Comlist: make([]requests.ComList, 0),
-			Total:   0,
-		}
-
-		return commentsListRes, nil
+		return nil, fmt.Errorf("ShowCommentsListRep -> 查询评论信息失败 -> %s", err)
+		//commentsListRes = &requests.CommentsListRes{
+		//	Comlist: make([]requests.ComList, 0),
+		//	Total:   0,
+		//}
+		//
+		//return commentsListRes, nil
 	}
 
 	// 获取返回评论的总数目
@@ -115,15 +115,15 @@ func ShowCommentsListRep(db *gorm.DB, req *requests.CommentsListReq) (*requests.
 		// 这里要把 user 结构体中存储的上次的查询结果，清空一下，否则会影响下次的查询
 		user = models.User{}
 
-		err := db.Where("id = ?", comment.UserID).First(&user).Error
+		err = db.Where("id = ?", comment.UserID).First(&user).Error
 		if err != nil {
-			//return nil, fmt.Errorf("ShowCommentsListRep -> 查询用户信息失败 -> %s", err)
-			commentsListRes = &requests.CommentsListRes{
-				Comlist: make([]requests.ComList, 0),
-				Total:   0,
-			}
-
-			return commentsListRes, nil
+			return nil, fmt.Errorf("ShowCommentsListRep -> 查询用户信息失败 -> %s", err)
+			//commentsListRes = &requests.CommentsListRes{
+			//	Comlist: make([]requests.ComList, 0),
+			//	Total:   0,
+			//}
+			//
+			//return commentsListRes, nil
 		}
 
 		// 查询文章信息
@@ -132,13 +132,13 @@ func ShowCommentsListRep(db *gorm.DB, req *requests.CommentsListReq) (*requests.
 
 		err = db.Where("id = ?", comment.ArticleID).First(&article).Error
 		if err != nil {
-			//return nil, fmt.Errorf("ShowCommentsListRep -> 查询文章信息失败 -> %s", err)
-			commentsListRes = &requests.CommentsListRes{
-				Comlist: make([]requests.ComList, 0),
-				Total:   0,
-			}
-
-			return commentsListRes, nil
+			return nil, fmt.Errorf("ShowCommentsListRep -> 查询文章信息失败 -> %s", err)
+			//commentsListRes = &requests.CommentsListRes{
+			//	Comlist: make([]requests.ComList, 0),
+			//	Total:   0,
+			//}
+			//
+			//return commentsListRes, nil
 		}
 
 		commentRes := requests.ComList{
@@ -157,14 +157,13 @@ func ShowCommentsListRep(db *gorm.DB, req *requests.CommentsListReq) (*requests.
 		// 查询用户回复对象信息
 		d := db.Where("id = ?", comment.ParentUserID).First(&user)
 		if d.Error != nil {
-			fmt.Println("******************--->", d.RowsAffected)
-			//return nil, fmt.Errorf("ShowCommentsListRep -> 查询用户回复对象信息失败 -> %s", err)
-			commentsListRes = &requests.CommentsListRes{
-				Comlist: make([]requests.ComList, 0),
-				Total:   0,
-			}
-
-			return commentsListRes, nil
+			return nil, fmt.Errorf("ShowCommentsListRep -> 查询用户回复对象信息失败 -> %s", err)
+			//commentsListRes = &requests.CommentsListRes{
+			//	Comlist: make([]requests.ComList, 0),
+			//	Total:   0,
+			//}
+			//
+			//return commentsListRes, nil
 		}
 
 		commentRes.ParentNickname = user.Nickname
@@ -201,7 +200,6 @@ func ShowCommentsListRep(db *gorm.DB, req *requests.CommentsListReq) (*requests.
 			end = length
 		}
 		comList = comList[page:end]
-		fmt.Println("----------->", comList)
 		commentsListRes = &requests.CommentsListRes{
 			Comlist: comList,
 			Total:   length,
@@ -209,7 +207,6 @@ func ShowCommentsListRep(db *gorm.DB, req *requests.CommentsListReq) (*requests.
 		return commentsListRes, nil
 	}
 
-	fmt.Println("==============>")
 	commentsListRes = &requests.CommentsListRes{
 		Comlist: make([]requests.ComList, 0),
 		Total:   0,
