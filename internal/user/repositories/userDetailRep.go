@@ -262,7 +262,7 @@ func UserDataResponse(userID uint, db *gorm.DB) (*requests.UserDataRes, error) {
 
 	err := db.Preload("UserDetail").Preload("Tags").First(&user, userID).Error
 	if err != nil {
-		return nil, fmt.Errorf("UserDataResponse -> %s", err)
+		return nil, fmt.Errorf("UserDataResponse -> 获取用户信息异常 -> %s", err)
 	}
 
 	userDataRes := &requests.UserDataRes{

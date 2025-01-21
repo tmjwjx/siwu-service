@@ -11,91 +11,6 @@ import (
 )
 
 // UpdateTagUserCountReq 更新数据库中标签的关注人数
-//func UpdateTagUserCountReq(userId uint, db *gorm.DB, tagID uint) (*requests.TagFansCountRes, error) {
-//	var tag models.Tag
-//	var fansCount string // 统计现在的人数
-//
-//	// 开启事务
-//	tx := db.Begin()
-//	if tx.Error != nil {
-//		return nil, fmt.Errorf("UpdateTagUserCountReq -> 开启事务失败 -> %s", tx.Error)
-//	}
-//
-//	var userTag models.UserTag
-//	err := tx.Model(&models.UserTag{}).Where("user_id = ? and tag_id = ?", userId, tagID).First(&userTag).Error
-//	if err != nil {
-//		if errors.Is(err, gorm.ErrRecordNotFound) {
-//			// 如果没有找到，说明该用户还没有对该标签点过赞，进行下一步点赞就可以了
-//		} else {
-//			return nil, fmt.Errorf("UpdateTagUserCountReq -> 查询用户是否点赞过该标签异常 -> %s", err)
-//		}
-//	} else {
-//		// 如果找到了就删除UserTag表中的记录(即取消关注)
-//		//db2 := tx.Model(&models.UserTag{}).Delete(&userTag).Debug()
-//		db2 := tx.Where("id = ?", userTag.ID).Delete(&models.UserTag{})
-//
-//		fmt.Println(userTag)
-//		if db2.Error != nil {
-//			tx.Rollback()
-//			return nil, fmt.Errorf("UpdateTagUserCountReq -> 取消关注操作异常 -> %s", db2.Error)
-//		} else if db2.RowsAffected == 0 {
-//			tx.Rollback()
-//			return nil, fmt.Errorf("UpdateTagUserCountReq -> 取消关注失败 -> %s", err)
-//		}
-//
-//		tagFansCountRes := &requests.TagFansCountRes{
-//			TagFansCount: &requests.TagFansCount{},
-//		}
-//		return tagFansCountRes, nil
-//	}
-//
-//	// 查询该标签是否存在
-//	if err = tx.Take(&tag, "id = ?", tagID).Error; err != nil {
-//		//tx.Rollback() // 回滚事务
-//		return nil, fmt.Errorf("UpdateTagUserCountReq -> 查询该标签是否存在失败 -> %s", err)
-//	}
-//
-//	// 向UserTag表中添加记录
-//	uT := &models.UserTag{
-//		UserID: userId,
-//		TagID:  tagID,
-//	}
-//	err = tx.Model(&models.UserTag{}).Create(uT).Error
-//	if err != nil {
-//		tx.Rollback() // 回滚事务
-//		return nil, fmt.Errorf("UpdateTagUserCountReq -> 向UserTag表中添加记录失败 -> %s", err)
-//	}
-//
-//	// 更新该标签的关注人数
-//	if err = tx.Model(&tag).Update("fans_count", tag.FansCount+1).Error; err != nil {
-//		tx.Rollback() // 回滚事务
-//		return nil, fmt.Errorf("UpdateTagUserCountReq -> 更新该标签的关注人数失败 -> %s", err)
-//	}
-//	if tag.FansCount > 1000 {
-//		fansCount = fmt.Sprintf("标签人数: %.1fk", float64(tag.FansCount/1000))
-//	} else {
-//		fansCount = fmt.Sprintf("标签人数: %d", tag.FansCount)
-//	}
-//
-//	tagFansCount := &requests.TagFansCount{
-//		FansCount: fansCount,
-//	}
-//
-//	tagFansCountRes := &requests.TagFansCountRes{
-//		TagFansCount: tagFansCount,
-//	}
-//
-//	// 提交事务
-//	err = tx.Commit().Error
-//	if err != nil {
-//		return nil, fmt.Errorf("UpdateTagUserCountReq -> 提交事务失败 -> %s", err)
-//	}
-//
-//	return tagFansCountRes, nil
-//
-//}
-
-// UpdateTagUserCountReq 更新数据库中标签的关注人数
 func UpdateTagUserCountReq(userId uint, db *gorm.DB, tagID uint) (*requests.TagFansCountRes, error) {
 	var tag models.Tag
 	var fansCount string // 统计现在的人数
@@ -108,78 +23,103 @@ func UpdateTagUserCountReq(userId uint, db *gorm.DB, tagID uint) (*requests.TagF
 
 	// 查询该标签是否存在
 	if err := tx.Take(&tag, "id = ?", tagID).Error; err != nil {
-		tx.Rollback() // 回滚事务
+		//tx.Rollback() // 回滚事务
 		return nil, fmt.Errorf("UpdateTagUserCountReq -> 查询该标签是否存在失败 -> %s", err)
 	}
 
-	// 查询用户是否已经点赞过该标签
 	var userTag models.UserTag
 	err := tx.Model(&models.UserTag{}).Where("user_id = ? and tag_id = ?", userId, tagID).First(&userTag).Error
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		tx.Rollback() // 回滚事务
-		return nil, fmt.Errorf("UpdateTagUserCountReq -> 查询用户是否点赞过该标签异常 -> %s", err)
-	}
-
-	// 如果找到了就删除UserTag表中的记录(即取消关注)
-	if err == nil {
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			// 如果没有找到，说明该用户还没有对该标签点过赞，进行下一步点赞就可以了
+		} else {
+			return nil, fmt.Errorf("UpdateTagUserCountReq -> 查询用户是否点赞过该标签异常 -> %s", err)
+		}
+	} else {
+		// 如果找到了就删除UserTag表中的记录(即取消关注)
+		//db2 := tx.Model(&models.UserTag{}).Delete(&userTag).Debug()
 		db2 := tx.Where("id = ?", userTag.ID).Delete(&models.UserTag{})
 		if db2.Error != nil {
-			tx.Rollback() // 回滚事务
+			tx.Rollback()
 			return nil, fmt.Errorf("UpdateTagUserCountReq -> 取消关注操作异常 -> %s", db2.Error)
 		} else if db2.RowsAffected == 0 {
-			tx.Rollback() // 回滚事务
-			return nil, fmt.Errorf("UpdateTagUserCountReq -> 取消关注失败 -> 没有找到该记录")
+			tx.Rollback()
+			return nil, fmt.Errorf("UpdateTagUserCountReq -> 取消关注失败 -> %s", err)
 		}
 
-		// 取消关注后，直接返回当前标签的关注人数
-		tag.FansCount -= 1 // 减少标签的关注人数
+		if tag.FansCount > 0 {
+			// 更新该标签的关注人数
+			if err = tx.Model(&tag).Update("fans_count", tag.FansCount-1).Error; err != nil {
+				tx.Rollback() // 回滚事务
+				return nil, fmt.Errorf("UpdateTagUserCountReq -> 更新该标签的关注人数失败 -> %s", err)
+			}
+		}
+
+		if tag.FansCount > 1000 {
+			fansCount = fmt.Sprintf("标签人数: %.1fk", float64(tag.FansCount/1000))
+		} else {
+			fansCount = fmt.Sprintf("标签人数: %d", tag.FansCount)
+		}
+
+		tagFansCount := &requests.TagFansCount{
+			FansCount: fansCount,
+		}
+
+		tagFansCountRes := &requests.TagFansCountRes{
+			TagFansCount: tagFansCount,
+		}
+
+		// 提交事务
+		err = tx.Commit().Error
+		if err != nil {
+			return nil, fmt.Errorf("UpdateTagUserCountReq -> 提交事务失败2 -> %s", err)
+		}
+
+		return tagFansCountRes, nil
 	}
 
-	// 如果用户没有关注过该标签，则添加记录
-	if err == gorm.ErrRecordNotFound {
-		uT := &models.UserTag{
-			UserID: userId,
-			TagID:  tagID,
-		}
-		err = tx.Model(&models.UserTag{}).Create(uT).Error
-		if err != nil {
-			tx.Rollback() // 回滚事务
-			return nil, fmt.Errorf("UpdateTagUserCountReq -> 向UserTag表中添加记录失败 -> %s", err)
-		}
-
-		// 增加标签的关注人数
-		tag.FansCount += 1
+	// 向UserTag表中添加记录
+	uT := &models.UserTag{
+		UserID: userId,
+		TagID:  tagID,
+	}
+	err = tx.Model(&models.UserTag{}).Create(uT).Error
+	if err != nil {
+		tx.Rollback() // 回滚事务
+		return nil, fmt.Errorf("UpdateTagUserCountReq -> 向UserTag表中添加记录失败 -> %s", err)
 	}
 
 	// 更新该标签的关注人数
-	if err = tx.Model(&tag).Update("fans_count", tag.FansCount).Error; err != nil {
+	if err = tx.Model(&tag).Update("fans_count", tag.FansCount+1).Error; err != nil {
 		tx.Rollback() // 回滚事务
 		return nil, fmt.Errorf("UpdateTagUserCountReq -> 更新该标签的关注人数失败 -> %s", err)
 	}
-
-	// 判断标签人数格式
 	if tag.FansCount > 1000 {
-		fansCount = fmt.Sprintf("标签人数: %.1fk", float64(tag.FansCount)/1000)
+		fansCount = fmt.Sprintf("标签人数: %.1fk", float64(tag.FansCount/1000))
 	} else {
 		fansCount = fmt.Sprintf("标签人数: %d", tag.FansCount)
+	}
+
+	tagFansCount := &requests.TagFansCount{
+		FansCount: fansCount,
+	}
+
+	tagFansCountRes := &requests.TagFansCountRes{
+		TagFansCount: tagFansCount,
 	}
 
 	// 提交事务
 	err = tx.Commit().Error
 	if err != nil {
-		return nil, fmt.Errorf("UpdateTagUserCountReq -> 提交事务失败 -> %s", err)
+		return nil, fmt.Errorf("UpdateTagUserCountReq -> 提交事务失败2 -> %s", err)
 	}
 
-	// 返回更新后的标签关注人数
-	return &requests.TagFansCountRes{
-		TagFansCount: &requests.TagFansCount{
-			FansCount: fansCount,
-		},
-	}, nil
+	return tagFansCountRes, nil
+
 }
 
 // UpdateTagArticleCountReq 更新前端的标签页
-func UpdateTagArticleCountReq(db *gorm.DB) (*requests.TagRes, error) {
+func UpdateTagArticleCountReq(userId uint, db *gorm.DB) (*requests.TagRes, error) {
 
 	// 查询数据时要用到的结构体
 	var tags []models.Tag
@@ -197,26 +137,31 @@ func UpdateTagArticleCountReq(db *gorm.DB) (*requests.TagRes, error) {
 		t.Name = tag.Name
 		t.Description = tag.Description
 		tag.ArticleCount = len(tag.Articles)
+
 		// 如果标签中文章的数量超过1000，就用 k 来表示，否者用原型
 		if tag.ArticleCount > 1000 {
 			t.ArticleCount = fmt.Sprintf("%.1fk", float64(tag.ArticleCount/1000))
 		} else {
 			t.ArticleCount = fmt.Sprintf("%d", tag.ArticleCount)
 		}
+
 		for _, article := range tag.Articles {
 			tag.Heat = article.LikesCount/2 + article.CollectionsCount + article.CommentsCount
 		}
+
 		// 如果标签的热度超过1000，就用 k 来表示，否者用原型
 		if tag.Heat > 1000 {
 			t.Heat = fmt.Sprintf("%dk", tag.Heat/1000)
 		} else {
 			t.Heat = fmt.Sprintf("%d", tag.Heat)
 		}
+
 		if tag.FansCount > 1000 {
 			t.FansCount = fmt.Sprintf("%.1fk", float64(tag.FansCount/1000))
 		} else {
 			t.FansCount = fmt.Sprintf("%d", tag.FansCount)
 		}
+
 		// 将图片存入结构体 t 中
 		images, err := internalUtils.GetImages(db, globals.TagHome, tag.ID)
 		if err != nil {
@@ -228,7 +173,7 @@ func UpdateTagArticleCountReq(db *gorm.DB) (*requests.TagRes, error) {
 		}
 
 		var userTag models.UserTag
-		err = db.Model(&models.UserTag{}).First(&userTag).Error
+		err = db.Model(&models.UserTag{}).Where("user_id = ? and tag_id = ?", userId, tag.ID).First(&userTag).Error
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				t.Status = 2
