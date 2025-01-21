@@ -240,6 +240,7 @@ func InsertArticlesRep(db *gorm.DB, req requests.ReqPublish, userId uint) (id in
 		// Content:    req.Content,
 		// ImageUrl:   req.ImageUrl,
 	}
+
 	fmt.Println("我进来了")
 
 	// 判断当前用户是否是文章作者
@@ -282,11 +283,14 @@ func InsertArticlesRep(db *gorm.DB, req requests.ReqPublish, userId uint) (id in
 	// 设置标签
 	// 查找传递过来的所有标签
 	var tags []models.Tag
-	if err := db.Where("id IN ?", req.Tags).Find(&tags).Error; err != nil {
+	if err = db.Where("id IN ?", req.Tags).Find(&tags).Error; err != nil {
 		return 0, err // 如果标签不存在，返回错误
 	}
 
 	newArticle.Tags = tags
+
+	// 设置文章status状态
+	newArticle.Status = req.Status
 
 	// 设置发布时间
 	if req.Status == "public" && newArticle.PublishedAt == nil {
@@ -516,12 +520,69 @@ func SearchArticlesListRep(db *gorm.DB, req *requests.ArticleListReq) (data inte
 // @param        db *gorm.DB
 // @param        id string
 // @return       error
-func BanArticlesRep(db *gorm.DB, id string) error {
-	// 修改文章状态
-	if err := db.Model(&models.Article{}).Where("id = ?", id).Update("article_condition", 2).Error; err != nil {
-		globals.Log.Errorf("err = %s", err)
+func BanArticlesRep(db *gorm.DB, idList requests.ArticleOperationListReq) error {
+	// 开始一个事务
+	tx := db.Begin()
+
+	// 确保在函数退出时回滚事务，如果发生错误
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback() // 回滚事务
+			globals.Log.Errorf("Panic occurred: %v", r)
+		}
+	}()
+
+	// 更新文章的状态
+	if err := tx.Model(&models.Article{}).
+		Where("id IN (?)", idList.IdList). // 使用 IN 查询匹配多个 id
+		Update("article_condition", 2).Error; err != nil {
+		tx.Rollback() // 如果更新失败，回滚事务
+		globals.Log.Errorf("Error updating article_condition: %v", err)
 		return err
 	}
+
+	// 提交事务
+	if err := tx.Commit().Error; err != nil {
+		globals.Log.Errorf("Error committing transaction: %v", err)
+		return err
+	}
+
+	return nil
+}
+
+// UnblockArticlesRep
+// @Description: 解封文章
+// @param        db *gorm.DB
+// @param        idList requests.ArticleOperationListReq
+// @return       error
+// @Author tianjiajie 2025-01-21 11:31:35
+func UnblockArticlesRep(db *gorm.DB, idList requests.ArticleOperationListReq) error {
+	// 开始一个事务
+	tx := db.Begin()
+
+	// 确保在函数退出时回滚事务，如果发生错误
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback() // 回滚事务
+			globals.Log.Errorf("Panic occurred: %v", r)
+		}
+	}()
+
+	// 更新文章的状态
+	if err := tx.Model(&models.Article{}).
+		Where("id IN (?)", idList.IdList). // 使用 IN 查询匹配多个 id
+		Update("article_condition", 0).Error; err != nil {
+		tx.Rollback() // 如果更新失败，回滚事务
+		globals.Log.Errorf("Error updating article_condition: %v", err)
+		return err
+	}
+
+	// 提交事务
+	if err := tx.Commit().Error; err != nil {
+		globals.Log.Errorf("Error committing transaction: %v", err)
+		return err
+	}
+
 	return nil
 }
 

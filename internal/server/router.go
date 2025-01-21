@@ -3,6 +3,7 @@ package server
 import (
 	ApiRouter "forum/internal/api/routes"
 	articleRouter "forum/internal/article/routes"
+	bsLoginRouter "forum/internal/backstage/routes"
 	casbinRouter "forum/internal/casbin_r_m_a/routes"
 	dictRouter "forum/internal/dictManage/routes"
 	imageRouter "forum/internal/image/routes"
@@ -11,14 +12,25 @@ import (
 	roleRouter "forum/internal/roleManage/routes"
 	tagRouter "forum/internal/tag/routes"
 	userRouter "forum/internal/user/routes"
+	"forum/pkg/corsMW"
 	"forum/pkg/globals"
+	"forum/pkg/token"
 )
 
 // SetupRouter 启动处理函数
 func SetupRouter() {
-
 	// 处理公共中间件
-	HandlePublicMW(globals.Router)
+	// HandlePublicMW(globals.Router)
+
+	// 跨域
+	globals.Router.Use(corsMW.CorsMiddleware())
+
+	// 空白分组，用于需要 token 验证中间件的接口
+	r := globals.Router.Group("")
+	// token 验证
+	r.Use(token.AuthMiddleware())
+
+	// todo 各个分路由需要传入不同的路由参数
 
 	// 用户分路由
 	userRouter.User(globals.Router)
@@ -57,5 +69,6 @@ func SetupRouter() {
 	casbinRouter.CasbinRMA(globals.Router)
 
 	// 后台登陆分路由
-	// bsLoginRouter.Backstage(globals.Router)
+	bsLoginRouter.Backstage(globals.Router)
+
 }
