@@ -126,7 +126,10 @@ func ArticlesOrder(kind int) string {
 func TimeFormatDaily(t *time.Time) (date string) {
 	duration := time.Since(*t)
 	// 根据时间差判断返回值
-	if duration < time.Hour {
+	if duration < time.Minute {
+		// 小于1分钟
+		return "刚刚"
+	} else if duration < time.Hour {
 		// 小于1小时
 		return fmt.Sprintf("%d分钟前", int(duration.Minutes()))
 	} else if duration < 24*time.Hour {
