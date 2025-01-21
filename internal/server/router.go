@@ -56,6 +56,4 @@ func SetupRouter() {
 	// casbin权限管理分录由
 	casbinRouter.CasbinRMA(globals.Router)
 
-	// 后台登陆分路由
-	// bsLoginRouter.Backstage(globals.Router)
 }
