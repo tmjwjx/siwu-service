@@ -510,6 +510,11 @@ func SearchArticlesListRep(db *gorm.DB, req *requests.ArticleListReq) (data inte
 		return nil, err
 	}
 
+	for i := 0; i < len(articleList); i++ {
+		articleList[i].FormatTime = internalUtils.TimeFormat(articleList[i].PublishedAt)
+		articleList[i].DailyTime = internalUtils.TimeFormatDaily(articleList[i].PublishedAt)
+	}
+
 	// 返回结果
 	data = gin.H{"article_list": articleList, "total": totalCount}
 	return data, nil

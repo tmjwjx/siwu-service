@@ -27,20 +27,22 @@ type ArticleListReq struct {
 // SearchArticleListRes
 // @Description: 获取文章列表响应
 type SearchArticleListRes struct {
-	ID               uint   `json:"id"`                // 文章ID
-	Title            string `json:"title"`             // 文章标题
-	ArticleCondition int    `json:"article_condition"` // 文章状态
-	ViewsCount       int    `json:"views_count"`       // 浏览数
-	LikesCount       int    `json:"likes_count"`       // 点赞数
-	CollectionsCount int    `json:"collections_count"` // 收藏数
-	CommentsCount    int    `json:"comments_count"`    // 评论数
-	Heat             int    `json:"heat"`              // 热度
-	Nickname         string `json:"nickname"`          // 发布人用户名
-	Summary          string `json:"summary"`           // 文章摘要
-	ImageUrl         string `json:"image_url"`         // 文章封面url
-	PublishedAt      string `json:"published_at"`      // 发布时间
-	UpdatedAt        string `json:"updated_at"`        // 更新时间
-	Status           string `json:"status"`            // 文章属性（草稿，私有，公开）
+	ID               uint      `json:"id"`                // 文章ID
+	Title            string    `json:"title"`             // 文章标题
+	ArticleCondition int       `json:"article_condition"` // 文章状态
+	ViewsCount       int       `json:"views_count"`       // 浏览数
+	LikesCount       int       `json:"likes_count"`       // 点赞数
+	CollectionsCount int       `json:"collections_count"` // 收藏数
+	CommentsCount    int       `json:"comments_count"`    // 评论数
+	Heat             int       `json:"heat"`              // 热度
+	Nickname         string    `json:"nickname"`          // 发布人用户名
+	Summary          string    `json:"summary"`           // 文章摘要
+	ImageUrl         string    `json:"image_url"`         // 文章封面url
+	PublishedAt      time.Time `json:"published_at"`      // 发布时间
+	FormatTime       string    `json:"format_time"`       // 格式化时间
+	DailyTime        string    `json:"daily_time"`        // 日常时间
+	UpdatedAt        string    `json:"updated_at"`        // 更新时间
+	Status           string    `json:"status"`            // 文章属性（草稿，私有，公开）
 	//Tags             []Tags `json:"tags" gorm:"many2many:article_tags;joinForeignKey:article_id;table:sw_tags"`
 	Tags []models.Tag `json:"tags" gorm:"many2many:article_tags;joinForeignKey:article_id"`
 }
