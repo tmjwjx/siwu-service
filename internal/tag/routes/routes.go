@@ -11,7 +11,7 @@ import (
 func Tag(e *gin.Engine) {
 
 	// 前台分组
-	r := e.Group("/tag")
+	r := e.Group("/tag").Use(token.AuthMiddleware())
 
 	// 更新标签关注人数
 	r.POST("/fan_count", controllers.UpdateTagUserCount)
