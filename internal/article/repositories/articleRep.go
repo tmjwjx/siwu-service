@@ -15,6 +15,114 @@ import (
 	"time"
 )
 
+// AddArticleViews
+// @Description: 增加文章浏览量
+// @param        db *gorm.DB
+// @param        articleId uint
+// @param        num int
+// @return       err
+// @Author tianjiajie 2025-01-22 19:27:45
+func AddArticleViews(db *gorm.DB, articleId uint, num int) (err error) {
+	if err = db.Model(&models.Article{}).
+		Where("id = ?", articleId).
+		Update("views_count", gorm.Expr("views_count + ?", num)).
+		Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+// AddArticleLikes
+// @Description: 增加文章点赞数量
+// @param        db *gorm.DB
+// @param        articleId uint
+// @param        num int
+// @return       err
+// @Author tianjiajie 2025-01-22 19:27:52
+func AddArticleLikes(db *gorm.DB, articleId uint, num int) (err error) {
+	if err = db.Model(&models.Article{}).
+		Where("id = ?", articleId).
+		Update("likes_count", gorm.Expr("likes_count + ?", num)).
+		Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+// AddArticleCollections
+// @Description: 增加文章收藏数量
+// @param        db *gorm.DB
+// @param        articleId uint
+// @return       err
+// @Author tianjiajie 2025-01-22 19:27:56
+func AddArticleCollections(db *gorm.DB, articleId uint) (err error) {
+	if err = db.Model(&models.Article{}).
+		Where("id = ?", articleId).
+		Update("collections_count", gorm.Expr("collections_count + ?", 1)).
+		Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+// SyncArticleLikes
+// @Description: 同步文章的点赞数量
+// @param        db *gorm.DB
+// @param        articleId uint
+// @return       err
+// @Author tianjiajie 2025-01-22 19:28:00
+func SyncArticleLikes(db *gorm.DB, articleId uint) (err error) {
+	var total int64
+	// 查询关系表中的点赞数量
+	if err = db.Table("sw_article_likes").
+		Where("article_id = ?", articleId).
+		Count(&total).Error; err != nil {
+		return err
+	}
+	// 更新文章表中的点赞数量
+	if err = db.Model(&models.Article{}).Where("id = ?", articleId).Update("likes_count", total).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+// SyncArticleCollections
+// @Description: 同步文章的收藏数量
+// @param        db *gorm.DB
+// @param        articleId uint
+// @return       err
+// @Author tianjiajie 2025-01-22 19:28:06
+func SyncArticleCollections(db *gorm.DB, articleId uint) (err error) {
+	var total int64
+	// 查询关系表中的收藏数量
+	if err = db.Table("sw_article_collections").
+		Where("article_id = ?", articleId).
+		Count(&total).Error; err != nil {
+		return err
+	}
+	// 更新文章表中的收藏数量
+	if err = db.Model(&models.Article{}).Where("id = ?", articleId).Update("collections_count", total).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+// AddArticleHeat
+// @Description: 增加文章热度
+// @param        db *gorm.DB
+// @param        articleId uint
+// @param        num int
+// @return       err
+// @Author tianjiajie 2025-01-22 19:28:10
+func AddArticleHeat(db *gorm.DB, articleId uint, num int) (err error) {
+	if err = db.Model(&models.Article{}).
+		Where("id = ?", articleId).
+		Update("heat", gorm.Expr("heat + ?", num)).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
 // GetFollowingArticleRep
 // @Description: 获取关注的用户的文章
 // @param        db *gorm.DB
@@ -287,15 +395,18 @@ func InsertArticlesRep(db *gorm.DB, req requests.ReqPublish, userId uint) (id in
 	}
 
 	fmt.Println("我进来了")
-
-	// 判断当前用户是否是文章作者
-	if userId != req.UserId {
-		// 如果当前用户不是文章作者
-		return 0, errors.New("当前用户不是文章作者")
-	}
+	fmt.Println(req.Tags)
+	fmt.Println(req)
 
 	// 设置文章ID
 	if req.ArticleId != 0 {
+
+		// 判断当前用户是否是文章作者
+		if userId != req.UserId {
+			// 如果当前用户不是文章作者
+			return 0, errors.New("当前用户不是文章作者")
+		}
+
 		newArticle.ID = uint(req.ArticleId)
 
 		//// 获取数据库文章记录
@@ -332,6 +443,7 @@ func InsertArticlesRep(db *gorm.DB, req requests.ReqPublish, userId uint) (id in
 		return 0, err // 如果标签不存在，返回错误
 	}
 
+	// 设置文章的标签
 	newArticle.Tags = tags
 
 	// 设置文章status状态
@@ -353,17 +465,17 @@ func InsertArticlesRep(db *gorm.DB, req requests.ReqPublish, userId uint) (id in
 }
 
 // UpdatePublishRep 设置文章的发布时间
-func UpdatePublishRep(db *gorm.DB, article *models.Article) error {
-
-	*article.PublishedAt = time.Now()
-
-	// 更新数据库中的文章记录
-	if err := db.Save(article).Error; err != nil {
-		return err // 返回错误
-	}
-
-	return nil
-}
+//func UpdatePublishRep(db *gorm.DB, article *models.Article) error {
+//
+//	*article.PublishedAt = time.Now()
+//
+//	// 更新数据库中的文章记录
+//	if err := db.Save(article).Error; err != nil {
+//		return err // 返回错误
+//	}
+//
+//	return nil
+//}
 
 // QueryTag 返回全部标签
 func QueryTag(db *gorm.DB) (tags []models.Tag, err error) {

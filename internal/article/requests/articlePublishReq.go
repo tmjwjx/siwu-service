@@ -14,7 +14,7 @@ type ReqPublish struct {
 	Content     string     `json:"content" form:"content"`           // 文章内容
 	ImageUrl    string     `json:"image_url" form:"image_url"`       // 图片地址
 	PublishedAt *time.Time `json:"published_at" form:"published_at"` // 发布时间
-	Tags        []int      `json:"tag" form:"tag"`                   // 标签
+	Tags        []int      `json:"tags" form:"tags"`                 // 标签
 }
 
 type TagsReq []struct {
