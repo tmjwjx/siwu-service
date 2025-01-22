@@ -146,6 +146,10 @@ func StoreUrl(u *UrlParam) error {
 
 	for _, url := range u.UrlPath {
 
+		if url == "" {
+			return nil
+		}
+
 		originalURL := url
 
 		// 获取最后一个 '/' 的位置
