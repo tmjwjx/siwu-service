@@ -72,7 +72,7 @@ func GetApiPermCtrl(c *gin.Context) {
 		return
 	}
 
-	d := response.NewAppData(globals.StatusOK, "获取当前角色的菜单权限成功", res)
+	d := response.NewAppData(globals.StatusOK, "获取当前角色的api权限成功", res)
 	response.Success(c, 200, d)
 
 }

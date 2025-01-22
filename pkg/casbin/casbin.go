@@ -79,6 +79,13 @@ func NewCasbinService(db *gorm.DB) (*CasbinService, error) {
 
 // GetApiPerm 获取当前角色的api权限
 func (c *CasbinService) GetApiPerm(id string) ([]uint, error) {
+
+	// 确保最新的策略数据
+	err := c.Enforcer.LoadPolicy()
+	if err != nil {
+		return nil, fmt.Errorf("(c *CasbinService) GetApiPerm -> 策略加载失败， 已有的会忽略 -> %s", err)
+	}
+
 	var resources []uint
 	permissions, err := c.Enforcer.GetPermissionsForUser(id)
 	if err != nil {
