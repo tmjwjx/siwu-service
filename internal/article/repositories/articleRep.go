@@ -46,35 +46,35 @@ func AddArticleViews(db *gorm.DB, articleId uint) (err error) {
 	return
 }
 
-// ReduceArticleViews
-// @Description: 减少文章浏览量
-// @param        db *gorm.DB
-// @param        articleId uint
-// @return       err
-// @Author tianjiajie 2025-01-22 23:04:32
-func ReduceArticleViews(db *gorm.DB, articleId uint) (err error) {
-	// 开启事务
-	tx := db.Begin()
-	if tx.Error != nil { // 检查事务启动是否成功
-		return fmt.Errorf("启动事务失败: %w", tx.Error)
-	}
-	if err = tx.Model(&models.Article{}).
-		Where("id = ?", articleId).
-		Update("views_count", gorm.Expr("GREATEST(views_count - 1, 0)")).Error; err != nil {
-		tx.Rollback() // 发生错误时回滚事务
-		return err
-	}
-	// 减少文章热度
-	if err = ReduceArticleHeat(tx, articleId, 1); err != nil {
-		tx.Rollback() // 发生错误时回滚事务
-		return err
-	}
-	// 提交事务
-	if err = tx.Commit().Error; err != nil {
-		return err
-	}
-	return
-}
+//// ReduceArticleViews
+//// @Description: 减少文章浏览量
+//// @param        db *gorm.DB
+//// @param        articleId uint
+//// @return       err
+//// @Author tianjiajie 2025-01-22 23:04:32
+//func ReduceArticleViews(db *gorm.DB, articleId uint) (err error) {
+//	// 开启事务
+//	tx := db.Begin()
+//	if tx.Error != nil { // 检查事务启动是否成功
+//		return fmt.Errorf("启动事务失败: %w", tx.Error)
+//	}
+//	if err = tx.Model(&models.Article{}).
+//		Where("id = ?", articleId).
+//		Update("views_count", gorm.Expr("GREATEST(views_count - 1, 0)")).Error; err != nil {
+//		tx.Rollback() // 发生错误时回滚事务
+//		return err
+//	}
+//	// 减少文章热度
+//	if err = ReduceArticleHeat(tx, articleId, 1); err != nil {
+//		tx.Rollback() // 发生错误时回滚事务
+//		return err
+//	}
+//	// 提交事务
+//	if err = tx.Commit().Error; err != nil {
+//		return err
+//	}
+//	return
+//}
 
 // AddArticleLikes
 // @Description: 增加文章点赞数量
@@ -1102,6 +1102,8 @@ func UpdateLikeRep(db *gorm.DB, req requests.ArticleLikeReq, userId uint) (err e
 		if err = db.Delete(&like).Error; err != nil {
 			return err
 		}
+		// 减少文章点赞数
+		err = ReduceArticleLikes(db, req.ArticleId)
 	}
 
 	return nil
@@ -1149,14 +1151,17 @@ func UpdateCollectionRep(db *gorm.DB, req requests.ArticleCollectionReq, userId 
 
 		}
 	} else if req.CollectionStatus == false {
-		//// 查询用户是否收藏 如果收藏了 删除收藏记录
-		//if err = db.Where("article_id = ? AND user_id = ?", req.ArticleId, userId).First(&collection).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		//	return err
-		//}
+		// 查询用户是否收藏 如果收藏了 删除收藏记录
+		if err = db.Where("article_id = ? AND user_id = ?", req.ArticleId, userId).First(&collection).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+			return err
+		}
 		// 删除收藏记录
 		if err = db.Where("article_id = ? AND user_id = ?", req.ArticleId, userId).Delete(&collection).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 			return err
 		}
+
+		// 减少文章收藏数
+		err = ReduceArticleCollections(db, req.ArticleId)
 
 	}
 
