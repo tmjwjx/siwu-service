@@ -32,17 +32,24 @@ func NewMessageChan(c *gin.Context) {
 			// "data: %s\n\n" 是SSE协议发送的固定格式
 			data := gin.H{"type": message}
 			response, err := json.Marshal(data)
+			if err != nil {
+				continue
+			}
 			_, err = fmt.Fprintf(c.Writer, "data: %s\n\n", response)
+			//_, err = fmt.Fprintf(c.Writer, "data: %s\n\n", message)
 			if err != nil {
 				continue
 			}
 			c.Writer.Flush()
 		case <-c.Done():
-			// 关闭通道
-			close(notifyChan)
+			// 确保通道的安全性
+			if _, ok := globals.SubscriberChannels[userId]; ok {
+				// 关闭通道
+				close(notifyChan)
 
-			// 删除用户的通道
-			delete(globals.SubscriberChannels, userId)
+				// 删除用户的通道
+				delete(globals.SubscriberChannels, userId)
+			}
 
 			//// 取消注册观察者
 			//globals.SystemMsgSubject.UnRegisterObserver("systemMsg", observer.NewSystemMsgObserver(userId))
