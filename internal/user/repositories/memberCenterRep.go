@@ -15,8 +15,11 @@ func InitUserInfoRep(db *gorm.DB, qid string, gid string) (*requests.InitUserInf
 
 	initUserInfoRes := &requests.InitUserInfoRes{}
 	// 查询 头像，昵称，个签
-	err := db.Model(&models.User{}).Select("sw_users.created_at AS data, sw_users.nickname, sw_user_details.signature, sw_attachments.path").Joins("join sw_user_details on sw_user_details.user_id = sw_users.id").
-		Joins("join sw_attachments on sw_attachments.home_id = sw_users.id").Where("sw_users.id = ?", gid).Scan(initUserInfoRes).Error
+	err := db.Model(&models.User{}).
+		Select("sw_users.created_at AS data, sw_users.nickname, sw_user_details.signature, sw_attachments.path AS head_shot").
+		Joins("join sw_user_details on sw_user_details.user_id = sw_users.id").
+		Joins("join sw_attachments on sw_attachments.home_id = sw_users.id").
+		Where("sw_users.id = ?", gid).Scan(initUserInfoRes).Error
 	if err != nil {
 		return nil, fmt.Errorf("InitUserInfoRep -> 查询 头像，昵称，个签 失败 -> %s", err)
 	}
@@ -42,16 +45,16 @@ func InitUserInfoRep(db *gorm.DB, qid string, gid string) (*requests.InitUserInf
 		initUserInfoRes.CollectionsCount += article.CollectionsCount
 	}
 
-	var followed []int
-	var follower []int
+	var followed []int // 作者关注的用户
+	var follower []int // 关注作者的用户
 	// 查询作者关注了哪些用户
-	err = db.Model(&models.UserFollow{}).Select("followed_id").Where("follower_id = ?", gid).Find(&followed).Error
+	err = db.Model(&models.UserFollow{}).Where("follower_id = ?", qid).Pluck("followed_id", &followed).Error
 	if err != nil {
 		return nil, fmt.Errorf("InitUserInfoRep -> 查询用户关注了哪些用户失败 -> %s", err)
 	}
 	initUserInfoRes.ConcernsCount = len(followed)
 	// 查询哪些用户关注了作者
-	err = db.Model(&models.UserFollow{}).Select("follower_id").Where("followed_id = ?", gid).Find(&follower).Error
+	err = db.Model(&models.UserFollow{}).Where("followed_id = ?", qid).Pluck("follower_id", &follower).Error
 	if err != nil {
 		return nil, fmt.Errorf("InitUserInfoRep -> 查询用户关注了哪些用户失败 -> %s", err)
 	}

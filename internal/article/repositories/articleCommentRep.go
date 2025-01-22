@@ -198,6 +198,12 @@ func GetTopLevelCommentsRep(userId uint, db *gorm.DB, req *requests.TopCommentsR
 		}
 	}
 
+	var ac []models.ArticleComment
+	err = db.Model(&models.ArticleComment{}).Find(&ac).Error
+	if err != nil {
+		return nil, fmt.Errorf("GetTopLevelCommentsRep -> 查询本篇文章所有评论的数量失败 -> %s", err)
+	}
+
 	// 分页返回数据
 	page := (req.Offset - 1) * req.Limit
 	if length > page {
@@ -209,7 +215,7 @@ func GetTopLevelCommentsRep(userId uint, db *gorm.DB, req *requests.TopCommentsR
 		firstCommentsList = firstCommentsList[page:end]
 		res := &requests.TopCommentsRes{
 			FirstCommentsList: firstCommentsList,
-			CommentsTotal:     length,
+			CommentsTotal:     len(ac),
 		}
 
 		return res, nil
@@ -217,7 +223,7 @@ func GetTopLevelCommentsRep(userId uint, db *gorm.DB, req *requests.TopCommentsR
 
 	topCommentsRes := &requests.TopCommentsRes{
 		FirstCommentsList: make([]*requests.FirstComment, 0),
-		CommentsTotal:     len(firstCommentsList),
+		CommentsTotal:     0,
 	}
 
 	return topCommentsRes, nil
