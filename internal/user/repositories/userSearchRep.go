@@ -33,7 +33,7 @@ func QueryUserRank(db *gorm.DB, page int, limit int) ([]*models.User, error) {
 }
 
 // QueryAttentionByPage
-// @Description: 搜索用户关注的人。
+// @Description: 分页搜索用户关注的人。
 // @Author lizhuang 2025-01-17 14:15:42
 // @param        db *gorm.DB
 // @param        keyword string 模糊查询昵称
@@ -62,6 +62,52 @@ func QueryAttentionByPage(db *gorm.DB, followerId uint, keyword string, page, li
 	return newIds, nil
 }
 
+// QueryAttention
+// @Description: 搜索用户关注的全部人
+// @Author lizhuang 2025-01-22 09:08:25
+// @param        db *gorm.DB
+// @param        followerId uint
+// @return       []uint
+// @return       error
+func QueryAttention(db *gorm.DB, followerId uint) ([]uint, error) {
+	var ids []uint
+
+	// 构造查询
+	query := db.Model(&models.UserFollow{}).
+		Where("follower_id = ?", followerId). // 根据关注者id查询
+		Pluck("followed_id", &ids)            // 查询被关注者
+
+	// 执行查询
+	if err := query.Error; err != nil {
+		return nil, fmt.Errorf("QueryAttentionByPage() err: %v", err)
+	}
+
+	return ids, nil
+}
+
+// QueryUserIDArticleNumOfPub
+// @Description: 根据要查询的文章status，查询用户的文章数量
+// @Author lizhuang 2025-01-22 09:17:39
+// @param        db *gorm.DB
+// @param        userId uint
+// @param        status string
+// @return       int64
+// @return       error
+func QueryUserIDArticleNumOfPub(db *gorm.DB, userId uint, status string) (int64, error) {
+	// 构造查询
+	query := db.Model(&models.Article{}).
+		Where("user_id = ?", userId). // 根据关注者id查询
+		Where("status = ?", status)   // 要查询的文章状态
+
+	var count int64
+	// 执行查询
+	if err := query.Count(&count).Error; err != nil {
+		return -1, fmt.Errorf("QueryUserIDArticleNumOfPub() err: %v", err)
+	}
+
+	return count, nil
+}
+
 // QueryUserIdsByNickname 使用模糊查询来查询 nickname 字段里面包含 keyword 的内容。
 func QueryUserIdsByNickname(db *gorm.DB, ids []uint, keyword string) ([]uint, error) {
 	var userIds []uint
@@ -86,7 +132,7 @@ func QueryUserIdsByNickname(db *gorm.DB, ids []uint, keyword string) ([]uint, er
 // @return       []*models.Article
 // @return       error
 // @Author tianjiajie 2025-01-17 17:19:16
-//func QueryUserArticleRep(db *gorm.DB, req requests.UserDataRequest, b bool) ([]article_req.SearchArticleListRes, int64, error) {
+// func QueryUserArticleRep(db *gorm.DB, req requests.UserDataRequest, b bool) ([]article_req.SearchArticleListRes, int64, error) {
 //	var articles []article_req.SearchArticleListRes
 //	query := db.
 //		Model(&models.Article{}).Preload("Tags").
@@ -120,4 +166,4 @@ func QueryUserIdsByNickname(db *gorm.DB, ids []uint, keyword string) ([]uint, er
 //		return nil, 0, fmt.Errorf("QueryUserArticleRep() -> %v", err)
 //	}
 //	return articles, total, nil
-//}
+// }

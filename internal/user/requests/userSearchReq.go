@@ -38,8 +38,13 @@ type AttentionRes struct {
 	Ids []uint `json:"ids"`
 }
 
-// GetBasicInfoReq 通过用户id获取到用户简略信息
+// GetBasicInfoReq 通过ids获取到用户简略信息请求
 type GetBasicInfoReq struct {
+	Ids []uint `json:"ids"`
+}
+
+// GetBasicInfoRes 通过ids获取到用户简略信息响应
+type GetBasicInfoRes struct {
 	ID              uint      `json:"id"`               // id
 	CreatedAt       time.Time `json:"created_at"`       // 创建时间
 	UpdatedAt       time.Time `json:"updated_at"`       // 更新时间
@@ -50,12 +55,15 @@ type GetBasicInfoReq struct {
 	FansCount       int       `json:"fans_count"`       // 粉丝数
 	PrivateSettings string    `json:"private_settings"` // 私信设置
 	Status          int       `json:"status"`           // 用户状态：0全部 1正常 2封禁
-	LastLoginTime   time.Time `json:"last_login_time"`  // 最后一次的登录时间。设置默认值为零值。
+	LastLoginTime   time.Time `json:"last_login_time"`  // 最后一次的登录时间。设置默认值为零值
+	IsFollowed      int       `json:"is_followed"`      // 是否已关注该用户。未关注：0，已关注：1。
+	AvatarPath      string    `json:"avatar_path"`      // 头像路径
+	AuthorArticles  int       `json:"author_articles"`  // 拥有文章数
 }
 
-//// UserDataRequest 用户 文章 请求
-//type UserDataRequest struct {
+// // UserDataRequest 用户 文章 请求
+// type UserDataRequest struct {
 //	Id    uint `json:"id" form:"id"`
 //	Page  int  `json:"page" form:"page"`
 //	Limit int  `json:"limit" form:"limit"`
-//}
+// }
