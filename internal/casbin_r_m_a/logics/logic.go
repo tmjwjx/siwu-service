@@ -38,7 +38,11 @@ func AssignApiPermLogic(db *gorm.DB, req *requests.AssignApiPermReq) error {
 }
 
 // GetPermCodeLogic 获取当前角色的所有权限标识
-func GetPermCodeLogic(db *gorm.DB, id string) (*requests.GetPermCodeRes, error) {
-	res, err := repositories.GetPermCodeRep(db, id)
+func GetPermCodeLogic(e *casbin2.Enforcer, db *gorm.DB, id string) (*requests.GetPermCodeRes, error) {
+
+	casbinService := &casbin.CasbinService{
+		Enforcer: e,
+	}
+	res, err := repositories.GetPermCodeRep(casbinService, db, id)
 	return res, err
 }
