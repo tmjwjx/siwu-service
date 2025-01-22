@@ -68,6 +68,7 @@ type GetArticleByTagReq struct {
 type GetFollowArticleReq struct {
 	Page  int `json:"page" form:"page"`   // 分页页码
 	Limit int `json:"limit" form:"limit"` // 每页条数
+	Kind  int `json:"kind" form:"kind"`   // 类型
 }
 
 type ArticleOperationListReq struct {

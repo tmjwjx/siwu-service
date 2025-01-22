@@ -32,8 +32,12 @@ func GetFollowingArticleRep(db *gorm.DB, req requests.GetFollowArticleReq, userI
 		Where("sw_user_follows.follower_id = ?", userId).
 		//Debug().
 		Limit(req.Limit).
-		Offset((req.Page - 1) * req.Limit).
-		Order("sw_articles.published_at DESC")
+		Offset((req.Page - 1) * req.Limit)
+
+	condition := internalUtils.ArticlesOrder(req.Kind) // 选择排序方式  0热度 1时间
+	query = query.Order(condition)
+
+	//Order("sw_articles.published_at DESC")
 
 	// 状态 0公开1全部2封禁
 	query = query.Where("article_condition = ?", 0)
