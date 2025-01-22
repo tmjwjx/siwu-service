@@ -4,6 +4,7 @@ import (
 	"forum/internal/api/controlles"
 	"forum/pkg/casbin"
 	"forum/pkg/globals"
+	"forum/pkg/token"
 	"github.com/gin-gonic/gin"
 )
 
@@ -14,13 +15,14 @@ func Api(e *gin.Engine) {
 	//	fmt.Println("Api(e *gin.Engine) -> 创建 casbinService 失败, err = ", err)
 	//}
 
+	r0 := e.Group("/acl").Use(token.AuthMiddleware())
 	// 获取当前api详情
-	e.GET("/acl/api/detail", controlles.GetApiDetailsCtrl)
+	r0.GET("/api/detail", controlles.GetApiDetailsCtrl)
 
 	// 获取所有api列表
-	e.GET("/acl/api/list", controlles.GetAllApiCtrl)
+	r0.GET("/api/list", controlles.GetAllApiCtrl)
 
-	r := e.Group("/api").Use(casbin.CasbinAuth(globals.CasbinEnforcer))
+	r := e.Group("/api").Use(token.AuthMiddleware()).Use(casbin.CasbinAuth(globals.CasbinEnforcer))
 	{
 		// 获取所有api分组列表
 		r.GET("/groups", controlles.GetGroupListCtrl)

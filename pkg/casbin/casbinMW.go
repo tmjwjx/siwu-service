@@ -14,7 +14,7 @@ func CasbinAuth(e *casbin.Enforcer) gin.HandlerFunc {
 		// 加载策略文件
 		err := e.LoadPolicy()
 		if err != nil {
-			e := response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("NewCasbinAuth -> 加载策略文件失败"), nil)
+			e := response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("NewCasbinAuth -> 加载策略文件失败 -> %s", err), nil)
 			response.Failed(c, 500, e)
 			c.Abort()
 			return

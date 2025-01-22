@@ -68,7 +68,7 @@ func MenuSearchRep(db *gorm.DB, req *requests.MenuSearchReq) (*requests.MenuSear
 	var apiIds []uint
 	for _, menu := range menus {
 
-		err = db.Model(models.MenuApi{}).Where("menu_id = ?", menu.ID).Pluck("api_id", apiIds).Error
+		err = db.Model(&models.MenuApi{}).Where("menu_id = ?", menu.ID).Pluck("api_id", &apiIds).Error
 		if err != nil {
 			return nil, fmt.Errorf("MenuSearchRep -> 查询 menuApi 表失败 -> %s", err)
 		}

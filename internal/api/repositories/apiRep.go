@@ -32,7 +32,7 @@ func GetAllApiRep(db *gorm.DB) (*requests.GetAllApiRes, error) {
 		}
 		var apiIDs []uint
 		// 查询每个分组下面拥有的apiID
-		err = db.Model(&models.ApiGroup{}).Select("api_id").Where("group_id = ?", group.ID).Find(&apiIDs).Error
+		err = db.Model(&models.ApiGroup{}).Where("group_id = ?", group.ID).Pluck("api_id", &apiIDs).Error
 		if err != nil {
 			return nil, fmt.Errorf("GetAllApiRep -> 查询每个分组下面拥有的apiID失败 -> %s", err)
 		}
