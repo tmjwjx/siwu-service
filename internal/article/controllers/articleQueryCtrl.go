@@ -59,10 +59,6 @@ func GetFollowingArticleCtrl(c *gin.Context) {
 		response.Failed(c, http.StatusBadRequest, data)
 		return // 结束函数执行
 	}
-	fmt.Println("9999999999999999999999999999999999")
-	fmt.Println(userId)
-	fmt.Println(req.Limit)
-	fmt.Println(req.Page)
 
 	// 进入业务层
 	articleList, err := logics.GetFollowingArticleLogic(db, req, userId.(uint))
