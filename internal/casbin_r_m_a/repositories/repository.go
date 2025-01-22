@@ -122,12 +122,17 @@ func GetApiPermRep(casbinService *casbin.CasbinService, id string) (req *request
 // AssignApiPermRep 为角色分配api权限
 func AssignApiPermRep(db *gorm.DB, req *requests.AssignApiPermReq) error {
 
+	var apiIds []string
 	casbinService, err := casbin.NewCasbinService(db)
 	if err != nil {
 		return fmt.Errorf("AssignApiPermRep -> 为角色分配api权限失败 -> %s", err)
 	}
+	for _, apiId := range req.Apis {
+		id := fmt.Sprintf("%v", apiId)
+		apiIds = append(apiIds, id)
+	}
 	// 为角色分配api权限
-	err = casbinService.ModifyRolePolicy(req.ID, req.Apis)
+	err = casbinService.ModifyRolePolicy(fmt.Sprintf("%v", req.ID), apiIds)
 	if err != nil {
 		return fmt.Errorf("AssignApiPermRep -> 为角色分配api权限失败 -> %s", err)
 	}
@@ -139,7 +144,10 @@ func GetPermCodeRep(db *gorm.DB, id string) (*requests.GetPermCodeRes, error) {
 
 	var codeList []string
 	err := db.Model(&models.RoleMenu{}).
-		Joins("join sw_menus on sw_menus.id = sw_role_menus.menu_id").Where("role_id = ?", id).Pluck("sw_menus.code", &codeList).Error
+		Joins("join sw_menus on sw_menus.id = sw_role_menus.menu_id").
+		Where("role_id = ?", id).
+		Distinct("sw_menus.code").
+		Pluck("sw_menus.code", &codeList).Error
 	if err != nil {
 		return nil, fmt.Errorf("GetPermCodeRep -> 获取当前角色的所有权限标识失败 -> %s", err)
 	}
