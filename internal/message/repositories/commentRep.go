@@ -43,6 +43,7 @@ func CommentRep(db *gorm.DB, req *requests.MessageReq, userId uint) (res []reque
 		Joins("left join sw_comment_likes on sw_comment_likes.comment_id = sw_article_comments.id").
 		Joins("left join sw_article_comments sac on sac.id = sw_article_comments.parent_id").
 		Order("sw_article_comments.created_at DESC").
+		Debug().
 		Limit(req.Limit).
 		Offset((req.Page - 1) * req.Limit)
 
@@ -54,7 +55,7 @@ func CommentRep(db *gorm.DB, req *requests.MessageReq, userId uint) (res []reque
 		Joins("left join sw_attachments on sw_attachments.home_id = sw_article_comments.user_id AND sw_attachments.home = ?", "user")
 
 	// 选择
-	query = query.Select("sw_article_comments.user_id, " +
+	query = query.Select("DISTINCT sw_article_comments.user_id, " +
 		"sw_users.nickname, " +
 		"sw_articles.title, " +
 		"sw_articles.id as article_id, " +
