@@ -46,8 +46,8 @@ type GetApiPermRes struct {
 
 // AssignApiPermReq 为角色分配api权限
 type AssignApiPermReq struct {
-	ID   string   `json:"id"`
-	Apis []string `json:"apis"`
+	ID   uint   `json:"id"`
+	Apis []uint `json:"apis"`
 }
 
 // GetPermCodeRes 获取当前角色的所有权限标识
