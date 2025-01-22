@@ -117,6 +117,49 @@ func ArticlesOrder(kind int) string {
 	return condition
 }
 
+// TimeFormatDaily
+// @Description: 格式化标准时间为日常时间
+// @param        time.Time
+// @return       date
+// @return       err
+// @Author tianjiajie 2025-01-21 11:35:28
+func TimeFormatDaily(t *time.Time) (date string) {
+	if t == nil {
+		return ""
+	}
+	duration := time.Since(*t)
+	// 根据时间差判断返回值
+	if duration < time.Minute {
+		// 小于1分钟
+		return "刚刚"
+	} else if duration < time.Hour {
+		// 小于1小时
+		return fmt.Sprintf("%d分钟前", int(duration.Minutes()))
+	} else if duration < 24*time.Hour {
+		// 小于1天
+		return fmt.Sprintf("%d小时前", int(duration.Hours()))
+	} else if duration < 7*24*time.Hour {
+		// 小于1周
+		return fmt.Sprintf("%d天前", int(duration.Hours()/24))
+	} else {
+		// 大于1周
+		return t.Format("2006-01-02")
+	}
+}
+
+// TimeFormat
+// @Description: 格式化时间
+// @param        t *time.Time
+// @return       format
+// @Author tianjiajie 2025-01-22 12:07:57
+func TimeFormat(t *time.Time) (format string) {
+	if t == nil {
+		return ""
+	}
+	format = t.Format("2006-01-02")
+	return format
+}
+
 // MessagePush
 // @Description: 向用户实时发送更新数据
 // @param        data string
@@ -166,6 +209,8 @@ func ChangeStringToInt(str string) (int, error) {
 // TimeAgo 函数根据传入的 time.Time 和当前时间计算差值并返回相应的时间描述
 func TimeAgo(t time.Time) string {
 	duration := time.Since(t) // 计算传入时间和当前时间的差值
+	y, m, d := t.Date()
+	fmt.Println(y, m, d)
 
 	seconds := int(duration.Seconds())
 	minutes := int(duration.Minutes())
@@ -189,11 +234,11 @@ func TimeAgo(t time.Time) string {
 	}
 }
 
-// TimeFormat 格式化 CreatedAt 为 年-月-日 时:分:秒
-func TimeFormat(t time.Time) string {
-	formattedTime := t.Format("2006-01-02 15:04:05")
-	return formattedTime
-}
+//// TimeFormat 格式化 CreatedAt 为 年-月-日 时:分:秒
+//func TimeFormat(t time.Time) string {
+//	formattedTime := t.Format("2006-01-02 15:04:05")
+//	return formattedTime
+//}
 
 // ChangeAnyToUint
 // @Description: 将Any类型转换成Uint类型

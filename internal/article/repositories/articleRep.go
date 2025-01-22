@@ -15,6 +15,51 @@ import (
 	"time"
 )
 
+// GetFollowingArticleRep
+// @Description: 获取关注的用户的文章
+// @param        db *gorm.DB
+// @param        userId uint
+// @return       articleList
+// @return       err
+// @Author tianjiajie 2025-01-22 10:55:49
+func GetFollowingArticleRep(db *gorm.DB, req requests.GetFollowArticleReq, userId uint) (articleList []requests.SearchArticleListRes, err error) {
+	// 查询关注的用户的文章列表
+	query := db.Model(&models.Article{}).Preload("Tags").
+		Select("DISTINCT sw_articles.*, sw_users.nickname").
+		Joins("JOIN sw_user_follows ON sw_articles.user_id = sw_user_follows.followed_id").
+		Joins("LEFT JOIN sw_users ON sw_users.id = sw_articles.user_id").
+		Joins("LEFT JOIN sw_article_tags ON sw_article_tags.article_id = sw_articles.id").
+		Where("sw_user_follows.follower_id = ?", userId).
+		//Debug().
+		Limit(req.Limit).
+		Offset((req.Page - 1) * req.Limit)
+
+	condition := internalUtils.ArticlesOrder(req.Kind) // 选择排序方式  0热度 1时间
+	query = query.Order(condition)
+
+	//Order("sw_articles.published_at DESC")
+
+	// 状态 0公开1全部2封禁
+	query = query.Where("article_condition = ?", 0)
+
+	// 公开文章
+	query = query.Where("sw_articles.status = ?", "public")
+
+	// 执行查询
+	if err = query.Find(&articleList).Error; err != nil {
+		globals.Log.Errorf("err = %s", err)
+		return nil, err
+	}
+
+	// 格式化时间
+	for i := 0; i < len(articleList); i++ {
+		articleList[i].FormatTime = internalUtils.TimeFormat(articleList[i].PublishedAt)
+		articleList[i].DailyTime = internalUtils.TimeFormatDaily(articleList[i].PublishedAt)
+	}
+
+	return articleList, nil
+}
+
 // GetTodayViewsRep
 // @Description: 获取今日浏览量
 // @param        db *gorm.DB
@@ -410,6 +455,12 @@ func SearchArticlesRep(db *gorm.DB, req *requests.ArticleSearchReq) (articles []
 		return // 结束函数执行
 	}
 
+	// 格式化时间
+	for i := 0; i < len(articles); i++ {
+		articles[i].FormatTime = internalUtils.TimeFormat(articles[i].PublishedAt)
+		articles[i].DailyTime = internalUtils.TimeFormatDaily(articles[i].PublishedAt)
+	}
+
 	return articles, err
 }
 
@@ -432,6 +483,10 @@ func SearchArticlesListRep(db *gorm.DB, req *requests.ArticleListReq) (data inte
 	if req.ArticleCondition != 1 {
 		query = query.Where("article_condition = ?", req.ArticleCondition)
 	}
+	//// 公开/封禁文章过滤
+	//if req.ArticleCondition != 1 {
+	//	query = query.Where("article_condition = ?", req.ArticleCondition)
+	//}
 
 	// 时间范围过滤
 	if !req.StartTime.IsZero() && !req.EndTime.IsZero() {
@@ -447,11 +502,6 @@ func SearchArticlesListRep(db *gorm.DB, req *requests.ArticleListReq) (data inte
 
 	// 公开文章
 	query = query.Where("sw_articles.status = ?", "public")
-
-	// 公开/封禁文章过滤
-	if req.ArticleCondition != 1 {
-		query = query.Where("article_condition = ?", req.ArticleCondition)
-	}
 
 	// 关键字过滤
 	if req.Keyword != "" {
@@ -508,6 +558,12 @@ func SearchArticlesListRep(db *gorm.DB, req *requests.ArticleListReq) (data inte
 	if err = query.Find(&articleList).Error; err != nil {
 		globals.Log.Errorf("err = %s", err)
 		return nil, err
+	}
+
+	// 格式化时间
+	for i := 0; i < len(articleList); i++ {
+		articleList[i].FormatTime = internalUtils.TimeFormat(articleList[i].PublishedAt)
+		articleList[i].DailyTime = internalUtils.TimeFormatDaily(articleList[i].PublishedAt)
 	}
 
 	// 返回结果
@@ -641,6 +697,9 @@ func ArticleDetailRep(db *gorm.DB, id string) (requests.ArticleDetailRes, error)
 	// query = query.Joins("LEFT JOIN sw_users ON sw_users.id = sw_articles.user_id")
 
 	query.Find(&articleDetail)
+
+	articleDetail.FormatTime = internalUtils.TimeFormat(articleDetail.PublishedAt)
+	articleDetail.DailyTime = internalUtils.TimeFormatDaily(articleDetail.PublishedAt)
 
 	return articleDetail, nil
 }
@@ -869,6 +928,12 @@ func GetArticlesByTagRep(db *gorm.DB, req *requests.GetArticleByTagReq) (article
 		return // 结束函数执行
 	}
 
+	// 格式化时间
+	for i := 0; i < len(articles); i++ {
+		articles[i].FormatTime = internalUtils.TimeFormat(articles[i].PublishedAt)
+		articles[i].DailyTime = internalUtils.TimeFormatDaily(articles[i].PublishedAt)
+	}
+
 	return articles, nil
 }
 
@@ -930,6 +995,12 @@ func GetUserArticleOrCollectionRep(db *gorm.DB, req *requests.UserArticleOrColle
 	if err = query.Find(&articles).Error; err != nil {
 		globals.Log.Errorf("err = %s", err)
 		return // 结束函数执行
+	}
+
+	// 格式化时间
+	for i := 0; i < len(articles); i++ {
+		articles[i].FormatTime = internalUtils.TimeFormat(articles[i].PublishedAt)
+		articles[i].DailyTime = internalUtils.TimeFormatDaily(articles[i].PublishedAt)
 	}
 
 	return articles, total, nil

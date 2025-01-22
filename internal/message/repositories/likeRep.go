@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"forum/internal/internalPkg/internalUtils"
 	"forum/internal/message/requests"
 	"forum/internal/models"
 	"gorm.io/gorm"
@@ -31,6 +32,12 @@ func LikeRep(db *gorm.DB, req requests.MessageReq, id uint) (res []requests.Like
 
 	if err = query.Find(&res).Error; err != nil {
 		return nil, err
+	}
+
+	// 格式化时间
+	for i := range res {
+		res[i].FormatTime = internalUtils.TimeFormat(res[i].CreatedAt)
+		res[i].DailyTime = internalUtils.TimeFormatDaily(res[i].CreatedAt)
 	}
 
 	return res, nil
