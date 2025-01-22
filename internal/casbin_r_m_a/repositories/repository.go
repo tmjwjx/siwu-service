@@ -155,20 +155,66 @@ func AssignApiPermRep(db *gorm.DB, req *requests.AssignApiPermReq) error {
 }
 
 // GetPermCodeRep 获取当前角色的所有权限标识
-func GetPermCodeRep(db *gorm.DB, id string) (*requests.GetPermCodeRes, error) {
+func GetPermCodeRep(casbinService *casbin.CasbinService, db *gorm.DB, id string) (*requests.GetPermCodeRes, error) {
 
-	var codeList []string
-	err := db.Model(&models.RoleMenu{}).
-		Joins("join sw_menus on sw_menus.id = sw_role_menus.menu_id").
-		Where("role_id = ?", id).
-		Distinct("sw_menus.code").
-		Pluck("sw_menus.code", &codeList).Error
+	// 获取当前角色的api权限
+	apiIds, err := casbinService.GetApiPerm(id)
 	if err != nil {
-		return nil, fmt.Errorf("GetPermCodeRep -> 获取当前角色的所有权限标识失败 -> %s", err)
+		return nil, fmt.Errorf("GetApiPermRep -> 获取当前角色的api权限失败 -> %s", err)
 	}
 
+	// 获取type为3的菜单(即按钮)
+	var menuIds []uint
+	err = db.Model(&models.Menu{}).Where("type = ?", 3).Pluck("id", &menuIds).Error
+	if err != nil {
+		return nil, fmt.Errorf("GetPermCodeRep -> 获取type为3的菜单(即按钮)失败 -> %s", err)
+	}
+
+	// 通过菜单id查询其拥有的api的id
+	//menuApi := make(map[uint]uint)
+	var endMenuId []uint
+	var apiID []uint
+	for _, menuId := range menuIds {
+		err = db.Model(&models.MenuApi{}).Where("menu_id = ?", menuId).Pluck("api_id", &apiID).Error
+		if err != nil {
+			return nil, fmt.Errorf("GetPermCodeRep -> 通过菜单id查询其拥有的api的id失败 -> %s", err)
+		}
+
+		// 通过查询到的菜单拥有的api,去角色拥有的api权限中寻找相等的api，如果相等，这该菜单(即按钮)属于该角色
+		for _, mApi := range apiID {
+			flag := 0
+			for _, rApi := range apiIds {
+				if rApi == mApi {
+					endMenuId = append(endMenuId, menuId)
+					flag = 1
+					break
+				}
+			}
+			if flag == 1 {
+				break
+			}
+		}
+	}
+
+	//通过查到的角色拥有的菜单(即按钮),去查询菜单的code字段
+	var codes []string
+	err = db.Model(&models.Menu{}).Where("id IN ?", endMenuId).Pluck("code", &codes).Error
+	if err != nil {
+		return nil, fmt.Errorf("GetPermCodeRep -> 通过菜单id查询其拥有的api的id失败 -> %s", err)
+	}
+
+	//var codeList []string
+	//err = db.Model(&models.RoleMenu{}).
+	//	Joins("join sw_menus on sw_menus.id = sw_role_menus.menu_id").
+	//	Where("sw_role_menus.role_id = ? and sw_menus.type = ?", id, 3).
+	//	Distinct("sw_menus.code").
+	//	Pluck("sw_menus.code", &codeList).Error
+	//if err != nil {
+	//	return nil, fmt.Errorf("GetPermCodeRep -> 获取当前角色的所有权限标识失败 -> %s", err)
+	//}
+
 	res := &requests.GetPermCodeRes{
-		CodeList: codeList,
+		CodeList: codes,
 	}
 
 	return res, nil

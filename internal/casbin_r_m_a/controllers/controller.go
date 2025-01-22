@@ -110,7 +110,7 @@ func GetPermCodeCtrl(c *gin.Context) {
 	id := c.Query("id")
 
 	// 业务处理
-	res, err := logics.GetPermCodeLogic(globals.DB, id)
+	res, err := logics.GetPermCodeLogic(globals.CasbinEnforcer, globals.DB, id)
 
 	// 返回响应
 	if err != nil {
