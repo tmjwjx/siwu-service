@@ -40,6 +40,44 @@ import (
 	response.Success(c, http.StatusOK, data)
 */
 
+func GetFollowingArticleCtrl(c *gin.Context) {
+	// 初始化需要的变量
+	db := globals.DB
+	req := requests.GetFollowArticleReq{}
+
+	// 绑定查询参数到 req 变量，如果绑定失败，返回错误信息
+	userId, ok := c.Get("id")
+	if !ok {
+		response.Failed(c, http.StatusUnauthorized, response.NewAppErr(globals.StatusUnauthorized, fmt.Errorf("无法获取 id"), nil))
+		return
+	}
+	if err := c.ShouldBindQuery(&req); err != nil {
+		// 日志记录错误信息
+		globals.Log.Errorf("绑定req失败 err = %s", err)
+		// 返回错误响应
+		data := response.NewAppErr(globals.StatusBadRequest, err, nil)
+		response.Failed(c, http.StatusBadRequest, data)
+		return // 结束函数执行
+	}
+	fmt.Println("9999999999999999999999999999999999")
+	fmt.Println(userId)
+	fmt.Println(req.Limit)
+	fmt.Println(req.Page)
+
+	// 进入业务层
+	articleList, err := logics.GetFollowingArticleLogic(db, req, userId.(uint))
+	if err != nil {
+		globals.Log.Errorf("获取数据失败 err = %s", err)
+		data := response.NewAppErr(globals.StatusInternalServerError, err, nil)
+		response.Failed(c, http.StatusInternalServerError, data)
+		return
+	}
+
+	// 返回响应
+	data := response.NewAppData(globals.StatusOK, "成功", articleList)
+	response.Success(c, http.StatusOK, data)
+}
+
 // ArticleListCtrl
 // @Description: 检索获取已经发布的文章列表
 // @param        c *gin.Context

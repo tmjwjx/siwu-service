@@ -46,6 +46,9 @@ func Article(e *gin.Engine) {
 
 		// 会员中心 获取用户文章或收藏列表
 		articleGroup.GET("/get_type_data", controllers.GetUserArticleOrCollectionCtrl)
+
+		// 关注的用户的文章
+		articleGroup.GET("/get_following_article", controllers.GetFollowingArticleCtrl)
 	}
 
 	//// token 校验

@@ -11,6 +11,23 @@ import (
 	"time"
 )
 
+// GetFollowingArticleLogic
+// @Description: 获取关注的用户的文章
+// @param        db *gorm.DB
+// @param        req requests.GetFollowArticleReq
+// @param        userId uint
+// @return       data
+// @return       err
+// @Author tianjiajie 2025-01-22 11:37:55
+func GetFollowingArticleLogic(db *gorm.DB, req requests.GetFollowArticleReq, userId uint) (data interface{}, err error) {
+	articleList, err := repositories.GetFollowingArticleRep(db, req, userId)
+	if err != nil {
+		return nil, err
+	}
+	data = gin.H{"article_list": articleList}
+	return data, nil
+}
+
 // ArticleSearchLogic 搜索文章
 func ArticleSearchLogic(db *gorm.DB, req *requests.ArticleSearchReq) (data interface{}, err error) {
 

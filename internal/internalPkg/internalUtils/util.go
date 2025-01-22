@@ -124,6 +124,9 @@ func ArticlesOrder(kind int) string {
 // @return       err
 // @Author tianjiajie 2025-01-21 11:35:28
 func TimeFormatDaily(t *time.Time) (date string) {
+	if t == nil {
+		return ""
+	}
 	duration := time.Since(*t)
 	// 根据时间差判断返回值
 	if duration < time.Minute {
@@ -144,7 +147,15 @@ func TimeFormatDaily(t *time.Time) (date string) {
 	}
 }
 
+// TimeFormat
+// @Description: 格式化时间
+// @param        t *time.Time
+// @return       format
+// @Author tianjiajie 2025-01-22 12:07:57
 func TimeFormat(t *time.Time) (format string) {
+	if t == nil {
+		return ""
+	}
 	format = t.Format("2006-01-02")
 	return format
 }
