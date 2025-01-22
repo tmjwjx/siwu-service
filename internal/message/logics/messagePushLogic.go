@@ -1,6 +1,7 @@
 package logics
 
 import (
+	"encoding/json"
 	"fmt"
 	"forum/pkg/globals"
 	"github.com/gin-gonic/gin"
@@ -29,7 +30,9 @@ func NewMessageChan(c *gin.Context) {
 		select {
 		case message := <-notifyChan:
 			// "data: %s\n\n" 是SSE协议发送的固定格式
-			_, err := fmt.Fprintf(c.Writer, "data: %s\n\n", message)
+			data := gin.H{"type": message}
+			response, err := json.Marshal(data)
+			_, err = fmt.Fprintf(c.Writer, "data: %s\n\n", response)
 			if err != nil {
 				continue
 			}
