@@ -2,9 +2,9 @@ package repositories
 
 import (
 	"fmt"
-	"forum/internal/internalPkg/internalUtils"
 	"forum/internal/models"
 	"forum/internal/user/requests"
+	"forum/pkg/utils"
 	"gorm.io/gorm"
 )
 
@@ -45,8 +45,8 @@ func InitUserInfoRep(db *gorm.DB, qid string, gid string) (*requests.InitUserInf
 		initUserInfoRes.CollectionsCount += article.CollectionsCount
 	}
 
-	var followed []int // 作者关注的用户
-	var follower []int // 关注作者的用户
+	var followed []uint // 作者关注的用户
+	var follower []uint // 关注作者的用户
 	// 查询作者关注了哪些用户
 	err = db.Model(&models.UserFollow{}).Where("follower_id = ?", qid).Pluck("followed_id", &followed).Error
 	if err != nil {
@@ -65,8 +65,8 @@ func InitUserInfoRep(db *gorm.DB, qid string, gid string) (*requests.InitUserInf
 	if qid == gid {
 		initUserInfoRes.ConcernStatus = 2
 	} else {
-		// 将string类型的值转换成int类型
-		gid2, err := internalUtils.ChangeStringToInt(gid)
+		// 将string类型的值转换成uint类型
+		gid2, err := utils.ChangeStringToUint(gid)
 		if err != nil {
 			return nil, fmt.Errorf("InitUserInfoRep -> %s", err)
 		}
@@ -77,7 +77,7 @@ func InitUserInfoRep(db *gorm.DB, qid string, gid string) (*requests.InitUserInf
 				break
 			}
 		}
-		initUserInfoRes.ConcernStatus = 0
+		//initUserInfoRes.ConcernStatus = 0
 	}
 
 	return initUserInfoRes, nil
@@ -95,8 +95,6 @@ func EditSignatureRep(db *gorm.DB, req *requests.EditSignatureReq, id uint) erro
 	userDetail := &models.UserDetail{
 		UserID: id,
 	}
-	// 查询该用户详细信息是否存在
-	err := db.First(userDetail).Error
 
 	// 开启事务
 	tx := db.Begin()
@@ -104,6 +102,8 @@ func EditSignatureRep(db *gorm.DB, req *requests.EditSignatureReq, id uint) erro
 		return fmt.Errorf("EditSignatureRep -> 开启事务失败 -> %s", tx.Error)
 	}
 
+	// 查询该用户详细信息是否存在
+	err := tx.First(userDetail).Error
 	if err != nil {
 		// 该用户详细信息不存在，插入个签
 		userDetail.Signature = req.Signature
@@ -111,7 +111,7 @@ func EditSignatureRep(db *gorm.DB, req *requests.EditSignatureReq, id uint) erro
 		if err != nil {
 			// 回滚事务
 			tx.Rollback()
-			return fmt.Errorf("EditSignatureRep -> 编辑个签失败 -> %s", err)
+			return fmt.Errorf("EditSignatureRep -> 插入个签失败 -> %s", err)
 		}
 	} else {
 		// 该用户详细信息存在，只更新 个签 这一个字段
@@ -119,7 +119,7 @@ func EditSignatureRep(db *gorm.DB, req *requests.EditSignatureReq, id uint) erro
 		if err != nil {
 			// 回滚事务
 			tx.Rollback()
-			return fmt.Errorf("EditSignatureRep -> 编辑个签失败 -> %s", err)
+			return fmt.Errorf("EditSignatureRep -> 更新个签失败 -> %s", err)
 		}
 	}
 

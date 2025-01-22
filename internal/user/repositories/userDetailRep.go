@@ -33,7 +33,7 @@ func QueryPersonEmail(userAccountReq *requests.UserAccountReq, db *gorm.DB) erro
 }
 
 // UserDataRequest 更新用户个人资料
-func UserDataRequest(userDataReq *requests.UserDataReq, db *gorm.DB) error {
+func UserDataRequest(userId uint, userDataReq *requests.UserDataReq, db *gorm.DB) error {
 
 	var user models.User
 
@@ -44,7 +44,7 @@ func UserDataRequest(userDataReq *requests.UserDataReq, db *gorm.DB) error {
 	}
 
 	// 查询该用户是否存在
-	err := tx.Model(&models.User{}).Where("id = ?", userDataReq.ID).First(&user).Error
+	err := tx.Model(&models.User{}).Where("id = ?", userId).First(&user).Error
 	if err != nil {
 		tx.Rollback() // 回滚事务
 		return fmt.Errorf("UserDataRequest -> 用户表中用户不存在 -> %s", err)
@@ -62,10 +62,10 @@ func UserDataRequest(userDataReq *requests.UserDataReq, db *gorm.DB) error {
 
 	var userDetail models.UserDetail
 	// 查询该用户的外键是否存在
-	err = tx.Where("user_id", userDataReq.ID).First(&userDetail).Error
+	err = tx.Where("user_id", userId).First(&userDetail).Error
 
 	if err != nil {
-		userDetail.ID = userDataReq.ID
+		userDetail.ID = userId
 		userDetail.CareerDirection = userDataReq.CareerDirection
 		userDetail.HomePage = userDataReq.HomePage
 		userDetail.Signature = userDataReq.Signature
@@ -105,7 +105,7 @@ func UserDataRequest(userDataReq *requests.UserDataReq, db *gorm.DB) error {
 	}
 
 	// 清除旧的用户标签关联
-	err = tx.Where("user_id = ?", userDataReq.ID).Delete(&models.UserTag{}).Error
+	err = tx.Where("user_id = ?", userId).Delete(&models.UserTag{}).Error
 	if err != nil {
 		tx.Rollback() // 回滚事务
 		return fmt.Errorf("UserDataRequest -> 清除旧的用户标签关联失败 -> %s", err)
@@ -113,7 +113,7 @@ func UserDataRequest(userDataReq *requests.UserDataReq, db *gorm.DB) error {
 
 	// 添加新的用户标签关联
 	for _, tagID := range tagIDs {
-		err := tx.Create(&models.UserTag{UserID: userDataReq.ID, TagID: tagID}).Error
+		err := tx.Create(&models.UserTag{UserID: userId, TagID: tagID}).Error
 		if err != nil {
 			tx.Rollback() // 回滚事务
 			return fmt.Errorf("UserDataRequest -> 添加新的用户标签关联失败 -> %s", err)

@@ -199,7 +199,7 @@ func GetTopLevelCommentsRep(userId uint, db *gorm.DB, req *requests.TopCommentsR
 	}
 
 	var ac []models.ArticleComment
-	err = db.Model(&models.ArticleComment{}).Find(&ac).Error
+	err = db.Model(&models.ArticleComment{}).Where("id = ?", req.ArticleID).Find(&ac).Error
 	if err != nil {
 		return nil, fmt.Errorf("GetTopLevelCommentsRep -> 查询本篇文章所有评论的数量失败 -> %s", err)
 	}
