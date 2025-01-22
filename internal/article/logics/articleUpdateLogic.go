@@ -18,6 +18,7 @@ func LikeArticleLogic(db *gorm.DB, req requests.ArticleLikeReq, userId uint) (er
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 

@@ -34,6 +34,7 @@ func Article(e *gin.Engine) {
 		articleGroup.POST("/delete", controllers.DeleteArticlesCtrl)
 		// 用户 删除文章
 		articleGroup.GET("/delete_article", controllers.UserDeleteArticlesCtrl)
+
 		// 获取文章详情
 		articleGroup.GET("/detail", controllers.ArticleDetailCtrl)
 		// 点赞

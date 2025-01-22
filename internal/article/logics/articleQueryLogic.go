@@ -8,6 +8,7 @@ import (
 	"forum/pkg/globals"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"strconv"
 	"time"
 )
 
@@ -67,12 +68,19 @@ func ArticleDetailLogic(db *gorm.DB, articleId string, userId uint) (data interf
 		return nil, err
 	}
 
+	//// 增加点击量(redis)
+	//err = repositories.AddArticleClickRep(db, articleId)
+	//if err != nil {
+	//	globals.Log.Errorf("err = %s", err)
+	//	return nil, err
+	//}
+
 	// 增加点击量
-	err = repositories.AddArticleClickRep(db, articleId)
+	id, err := strconv.Atoi(articleId)
 	if err != nil {
-		globals.Log.Errorf("err = %s", err)
 		return nil, err
 	}
+	err = repositories.AddArticleViews(db, uint(id))
 
 	// 增加当天的访问量
 	rdb := globals.RDB
