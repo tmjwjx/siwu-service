@@ -159,45 +159,82 @@ func (u *UserReqContext) Attention(req requests.AttentionReq) (*requests.Attenti
 	// 查询
 	ids, err := repositories.QueryAttentionByPage(u.DB, req.UserId, req.Keyword, req.Page, req.Limit)
 	if err != nil {
-		return nil, fmt.Errorf("DictReqContext.GetType() err: %v", err)
+		return nil, fmt.Errorf("UserReqContext.Attention() err: %v", err)
 	}
 
-	// 筛除数据（避免 ids 里面存在 user.Id ）
-	for k, v := range ids {
-		if v == req.UserId {
-			ids = append(ids[:k], ids[k+1:]...)
-		}
-	}
+	// // 筛除数据（避免 ids 里面存在 user.Id ）
+	// for k, v := range ids {
+	// 	if v == req.UserId {
+	// 		ids = append(ids[:k], ids[k+1:]...)
+	// 	}
+	// }
 
 	res := &requests.AttentionRes{Ids: ids}
 
 	return res, nil
 }
 
-// GetBasicInfo 通过用户id获取到用户简略信息
-func (u *UserReqContext) GetBasicInfo(id uint) (*requests.GetBasicInfoReq, error) {
-	// 查找该用户
-	user := repositories.QueryUserById(u.DB, id)
-	if user == nil {
-		return nil, fmt.Errorf("GetBasicInfo.Attention() : id为%d的用户不存在", id)
+// GetBasicInfo 通过ids获取到用户简略信息
+func (u *UserReqContext) GetBasicInfo(userId uint, req requests.GetBasicInfoReq) ([]*requests.GetBasicInfoRes, error) {
+	// 存放结果
+	var res = make([]*requests.GetBasicInfoRes, 0)
+
+	// 查询 userId 全部关注的人
+	ids, err := repositories.QueryAttention(u.DB, userId)
+	if err != nil {
+		return nil, fmt.Errorf("UserReqContext.GetBasicInfo() err: %v", err)
 	}
 
-	// 获取信息
-	req := &requests.GetBasicInfoReq{
-		ID:              user.ID,
-		CreatedAt:       user.CreatedAt,
-		UpdatedAt:       user.UpdatedAt,
-		Nickname:        user.Nickname,
-		Email:           user.Email,
-		Heat:            user.Heat,
-		AttentionCount:  user.AttentionCount,
-		FansCount:       user.FansCount,
-		PrivateSettings: user.PrivateSettings,
-		Status:          user.Status,
-		LastLoginTime:   user.LastLoginTime,
-	}
+	for _, id := range req.Ids {
+		// 查找用户id
+		user := repositories.QueryUserById(u.DB, id)
+		if user == nil {
+			return nil, fmt.Errorf("UserReqContext.GetBasicInfo() : id为%d的用户不存在", userId)
+		}
 
-	return req, nil
+		// 查询用户的头像路径
+		userImages, err := internalUtils.GetImages(u.DB, globals.UserHome, id)
+		if err != nil {
+			return nil, fmt.Errorf("UserReqContext.GetBasicInfo() %v", err)
+		}
+		// 没有图片
+		if userImages == nil {
+			return nil, fmt.Errorf("UserReqContext.GetBasicInfo() err = 无法找到id为%d的用户头像图片", userId)
+		}
+		avatarPath := (*userImages)[0]
+
+		// 判断 userID 是否关注 id。未关注：0，已关注：1。
+		isFollowed := 0
+		for _, v := range ids {
+			if v == id {
+				isFollowed = 1
+			}
+		}
+
+		// 查询用户的文章数量
+		authorArticles, err := repositories.QueryUserIDArticleNumOfPub(u.DB, id, "public")
+		if err != nil {
+			return nil, fmt.Errorf("UserReqContext.GetBasicInfo() err: %v", err)
+		}
+
+		res = append(res, &requests.GetBasicInfoRes{
+			ID:              user.ID,
+			CreatedAt:       user.CreatedAt,
+			UpdatedAt:       user.UpdatedAt,
+			Nickname:        user.Nickname,
+			Email:           user.Email,
+			Heat:            user.Heat,
+			AttentionCount:  user.AttentionCount,
+			FansCount:       user.FansCount,
+			PrivateSettings: user.PrivateSettings,
+			Status:          user.Status,
+			LastLoginTime:   user.LastLoginTime,
+			IsFollowed:      isFollowed,
+			AvatarPath:      avatarPath,
+			AuthorArticles:  int(authorArticles),
+		})
+	}
+	return res, nil
 }
 
 // GetUserArticleLogic
@@ -209,7 +246,7 @@ func (u *UserReqContext) GetBasicInfo(id uint) (*requests.GetBasicInfoReq, error
 // @return       []*models.Article
 // @return       error
 // @Author tianjiajie 2025-01-17 17:12:57
-//func GetUserArticleLogic(db *gorm.DB, req requests.UserDataRequest, b bool) (data interface{}, err error) {
+// func GetUserArticleLogic(db *gorm.DB, req requests.UserDataRequest, b bool) (data interface{}, err error) {
 //	// 查询用户的文章
 //	articles, total, err := repositories.QueryUserArticleRep(db, req, b)
 //	if err != nil {
@@ -223,4 +260,4 @@ func (u *UserReqContext) GetBasicInfo(id uint) (*requests.GetBasicInfoReq, error
 //	}
 //
 //	return data, nil
-//}
+// }
