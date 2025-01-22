@@ -267,10 +267,11 @@ func UpdateApiRep(db *gorm.DB, req *requests.UpdateApiReq) error {
 		return fmt.Errorf("UpdateApiRep -> 更新 Api 表中的 path , brief_introduction失败 -> %s", err)
 	}
 
-	// 查询 group_id
+	// 查询新的分组的id
 	var groupId uint
-	err = tx.Model(&models.Group{}).Select("ID").First(&groupId).Error
+	err = tx.Model(&models.Group{}).Select("ID").Where("name = ?", req.Grouping).First(&groupId).Error
 	if err != nil {
+		tx.Rollback() // 回滚事务
 		return fmt.Errorf("UpdateApiRep -> 查询 group_id失败 -> %s", err)
 	}
 
@@ -283,8 +284,9 @@ func UpdateApiRep(db *gorm.DB, req *requests.UpdateApiReq) error {
 
 	// 查询 request_method_id
 	var reqMethodId uint
-	err = tx.Model(&models.RequestMethod{}).Select("ID").First(&reqMethodId).Error
+	err = tx.Model(&models.RequestMethod{}).Select("ID").Where("name = ?", req.RequestMethod).First(&reqMethodId).Error
 	if err != nil {
+		tx.Rollback() // 回滚事务
 		return fmt.Errorf("UpdateApiRep -> 查询 group_id失败 -> %s", err)
 	}
 
