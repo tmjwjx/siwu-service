@@ -20,11 +20,12 @@ func InsertCommentRep(userId uint, articleCommentReq *requests.ArticleCommentReq
 
 	// 构建要插入的结构体
 	articleComment := &models.ArticleComment{
-		ArticleID: articleCommentReq.ArticleID,
-		UserID:    userId,
-		HighestID: articleCommentReq.HighestID,
-		ParentID:  articleCommentReq.ParentID,
-		Content:   articleCommentReq.Content,
+		ArticleID:    articleCommentReq.ArticleID,
+		UserID:       userId,
+		HighestID:    articleCommentReq.HighestID,
+		ParentID:     articleCommentReq.ParentID,
+		ParentUserID: articleCommentReq.ParentUserID,
+		Content:      articleCommentReq.Content,
 	}
 
 	// 插入评论
@@ -54,7 +55,7 @@ func InsertCommentRep(userId uint, articleCommentReq *requests.ArticleCommentReq
 	}
 	err = internalUtils.StoreUrl(u)
 	if err != nil {
-		return fmt.Errorf("AddTagRep -> 存储图片的相关信息失败 -> %s", err), 500
+		return fmt.Errorf("InsertCommentRep -> 存储图片的相关信息失败 -> %s", err), 500
 	}
 
 	// 提交事务
@@ -257,9 +258,9 @@ func GetRepliesRep2Rep(userId uint, db *gorm.DB, req *requests.RepliesReq2) (*re
 	var articleComments []models.ArticleComment
 	var commentId []uint
 
-	err := db.Where("highest_id = ?", req.HighestID).Order("created_at asc").Find(&articleComments).Error
+	err := db.Model(&models.ArticleComment{}).Where("highest_id = ?", req.HighestID).Order("created_at asc").Find(&articleComments).Error
 	if err != nil {
-		return nil, fmt.Errorf("GetRepliesRep2Rep -> %s", err)
+		return nil, fmt.Errorf("GetRepliesRep2Rep -> 查询 ArticleComment 表失败 -> %s", err)
 	}
 
 	length := len(articleComments)
@@ -307,13 +308,13 @@ func GetRepliesRep2Rep(userId uint, db *gorm.DB, req *requests.RepliesReq2) (*re
 		// 查询用户名字
 		err := db.Model(&models.User{}).Select("Nickname").Where("id = ?", comment.UserID).First(&comment.Nickname).Error
 		if err != nil {
-			return nil, fmt.Errorf("GetRepliesRep2Rep -> %s", err)
+			return nil, fmt.Errorf("GetRepliesRep2Rep -> 查询用户名字失败 -> %s", err)
 		}
 
 		// 查询用户头像
 		images, err := internalUtils.GetImages(db, globals.UserHome, comment.ID)
 		if err != nil {
-			return nil, fmt.Errorf("GetRepliesRep2Rep -> %s", err)
+			return nil, fmt.Errorf("GetRepliesRep2Rep -> 查询用户头像失败 -> %s", err)
 		} else {
 			for _, path := range *images {
 				comment.Path = path
@@ -321,15 +322,15 @@ func GetRepliesRep2Rep(userId uint, db *gorm.DB, req *requests.RepliesReq2) (*re
 		}
 
 		// 查询用户回复对象的名字
-		err = db.Model(&models.User{}).Select("Nickname").Where("id = ?", comment.ParentID).First(&comment.ParentNickname).Error
+		err = db.Model(&models.User{}).Select("Nickname").Where("id = ?", comment.ParentUserID).First(&comment.ParentNickname).Error
 		if err != nil {
-			return nil, fmt.Errorf("GetRepliesRep2Rep -> %s", err)
+			return nil, fmt.Errorf("GetRepliesRep2Rep -> 查询用户回复对象的名字失败 -> %s", err)
 		}
 
 		// 查询用户回复对象的头像
-		images2, err := internalUtils.GetImages(db, globals.UserHome, *comment.ParentUserID)
+		images2, err := internalUtils.GetImages(db, globals.UserHome, comment.ParentUserID)
 		if err != nil {
-			return nil, fmt.Errorf("GetRepliesRep2Rep -> %s", err)
+			return nil, fmt.Errorf("GetRepliesRep2Rep -> 查询用户回复对象的头像失败 -> %s", err)
 		} else {
 			for _, path := range *images2 {
 				comment.ParentPath = path
@@ -339,7 +340,7 @@ func GetRepliesRep2Rep(userId uint, db *gorm.DB, req *requests.RepliesReq2) (*re
 		// 用户发的评论中的图片
 		CommentImages, err := internalUtils.GetImages(db, globals.CommentHome, comment.ID)
 		if err != nil {
-			return nil, fmt.Errorf("GetRepliesRep2Rep -> %s", err)
+			return nil, fmt.Errorf("GetRepliesRep2Rep -> 用户发的评论中的图片失败 ->%s", err)
 		} else {
 			for _, path := range *CommentImages {
 				comment.CommentPath = path
