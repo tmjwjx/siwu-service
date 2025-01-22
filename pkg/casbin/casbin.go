@@ -40,25 +40,6 @@ func NewCasbinService(db *gorm.DB) (*CasbinService, error) {
 	}
 
 	// 创建模型
-	//	m, err1 := model.NewModelFromString(`
-	//[request_definition]
-	//r = sub, obj
-	//
-	//[policy_definition]
-	//p = sub, obj
-	//
-	//[role_definition]
-	//g = _,_
-	//
-	//[policy_effect]
-	//e = some(where (p.eft == allow))
-	//
-	//[matchers]
-	//m = g(r.sub, p.sub) && r.obj == p.obj
-	//`)
-	//	if err1 != nil {
-	//		return nil, fmt.Errorf("NewCasbinService -> 创建模型失败 -> %s", err1)
-	//	}
 	modelString := `
     [request_definition]
     r = sub, obj
@@ -85,30 +66,10 @@ func NewCasbinService(db *gorm.DB) (*CasbinService, error) {
 		return nil, fmt.Errorf("NewCasbinService -> 创建模型失败，模型为空")
 	}
 
-	//log.Printf("m[\"p\"] 的类型: %T", m["p"])
-
-	//// 获取模型中的策略定义 (p)，并检查它的类型
-	//if pDef, ok := m["p"].(model.AssertionMap); ok {
-	//	log.Println("策略定义 (p) 是 AssertionMap 类型")
-	//	for key, assertion := range pDef {
-	//		log.Printf("策略 key: %s, 对应的 Assertion: %v", key, assertion)
-	//
-	//		// 获取并打印每个 Assertion 的具体值
-	//		if assertion != nil {
-	//			log.Printf("策略定义内容: %v", assertion.Value)
-	//		}
-	//	}
-	//} else {
-	//	log.Println("m[\"p\"] 不是 AssertionMap 类型")
-	//}
-
-	fmt.Println("***************************************************************")
-	fmt.Println(m)
-	fmt.Println("****************************************************************")
 	// 创建执行器
 	e, err2 := casbin.NewEnforcer(m, a)
 	if err2 != nil {
-		return nil, fmt.Errorf(" ----------------------------》 NewCasbinService -> 创建执行器失败 -> %s", err2)
+		return nil, fmt.Errorf("NewCasbinService -> 创建执行器失败 -> %s", err2)
 	}
 
 	return &CasbinService{
