@@ -425,7 +425,8 @@ func InsertArticlesRep(db *gorm.DB, req requests.ReqPublish, userId uint) (id in
 	}
 
 	{
-		newArticle.UserID = req.UserId
+		//newArticle.UserID = req.UserId
+		newArticle.UserID = userId
 		newArticle.Title = req.Title
 		newArticle.Status = req.Status
 		newArticle.CategoryID = req.CategoryID
