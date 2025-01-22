@@ -10,6 +10,7 @@ import (
 	"forum/pkg/globals"
 	"github.com/samber/lo"
 	"gorm.io/gorm"
+	"strconv"
 )
 
 // ClickAttention 点击关注和点击取消关注。followerId 关注 followedId
@@ -81,6 +82,9 @@ func (u *UserReqContext) ClickAttention(req requests.ClickAttentionReq) error {
 			return fmt.Errorf("UserReqContext.ClickAttention() -> %v", err)
 		}
 	}
+
+	// 通知用户关注消息
+	internalUtils.MessagePush("follow", strconv.Itoa(int(followedId)))
 
 	return nil
 }
