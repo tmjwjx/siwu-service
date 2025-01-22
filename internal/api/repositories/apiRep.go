@@ -17,6 +17,7 @@ func GetAllApiRep(db *gorm.DB) (*requests.GetAllApiRes, error) {
 
 	var res requests.GetAllApiRes
 	var groups []models.Group
+
 	// 查询所有的分组id
 	err := db.Model(models.Group{}).Find(&groups).Error
 	if err != nil {
