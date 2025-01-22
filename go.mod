@@ -8,7 +8,6 @@ require (
 	github.com/casbin/gorm-adapter/v3 v3.32.0
 	github.com/disintegration/imaging v1.6.2
 	github.com/fogleman/gg v1.3.0
-	github.com/gin-contrib/cors v1.7.2
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/golang-jwt/jwt/v5 v5.2.1

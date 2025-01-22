@@ -116,7 +116,7 @@ func GetTopLevelCommentsRep(userId uint, db *gorm.DB, req *requests.TopCommentsR
 	var commentId []uint
 
 	// 查询顶级评论
-	err := db.Where("article_id = ? AND parent_id IS NULL", req.ArticleID).
+	err := db.Where("article_id = ? AND highest_id = ?", req.ArticleID, 0).
 		Order("created_at asc").Find(&articleComments).Error
 	if err != nil {
 		return nil, fmt.Errorf("GetTopLevelCommentsRep -> %s", err)
