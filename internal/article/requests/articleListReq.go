@@ -62,6 +62,14 @@ type GetArticleByTagReq struct {
 	Limit int `json:"limit" form:"limit"` // 每页条数
 }
 
+// GetFollowArticleReq
+// @Description: 获取关注用户的文章列表请求
+// @Author tianjiajie 2025-01-22 11:19:20
+type GetFollowArticleReq struct {
+	Page  int `json:"page" form:"page"`   // 分页页码
+	Limit int `json:"limit" form:"limit"` // 每页条数
+}
+
 type ArticleOperationListReq struct {
 	IdList []int `json:"id_list"`
 }
