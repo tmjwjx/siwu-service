@@ -396,6 +396,7 @@ func InsertArticlesRep(db *gorm.DB, req requests.ReqPublish, userId uint) (id in
 
 	fmt.Println("我进来了")
 	fmt.Println(req.Tags)
+	fmt.Println(req)
 
 	// 设置文章ID
 	if req.ArticleId != 0 {
@@ -442,6 +443,7 @@ func InsertArticlesRep(db *gorm.DB, req requests.ReqPublish, userId uint) (id in
 		return 0, err // 如果标签不存在，返回错误
 	}
 
+	// 设置文章的标签
 	newArticle.Tags = tags
 
 	// 设置文章status状态
