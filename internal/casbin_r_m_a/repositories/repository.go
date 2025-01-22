@@ -11,6 +11,21 @@ import (
 // AssignMenuPermRep 为角色分配菜单权限
 func AssignMenuPermRep(db *gorm.DB, req *requests.AssignMenuPermReq) error {
 
+	// 查询表中的所有旧数据
+	var rm []models.RoleMenu
+	err := db.Model(models.RoleMenu{}).Where("role_id = ?", req.ID).Find(&rm).Error
+	if err != nil {
+		return fmt.Errorf("AssignMenuPermRep -> 查询 RoleMenu 表失败 -> %s", err)
+	}
+
+	// 删除表中的所有旧数据
+	for _, rm2 := range rm {
+		err = db.Model(&models.RoleMenu{}).Where("role_id = ? and menu_id = ?", rm2.RoleId, rm2.MenuId).Delete(nil).Error
+		if err != nil {
+			return fmt.Errorf("AssignMenuPermRep -> 删除 RoleMenu 表中旧数据失败 -> %s", err)
+		}
+	}
+
 	for _, menuId := range req.PermIds {
 
 		roleMenu := &models.RoleMenu{
