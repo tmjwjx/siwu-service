@@ -220,12 +220,35 @@ func InsertFile(db *gorm.DB, attachment *models.Attachment) error {
 		return fmt.Errorf("InsertFile -> 开启事务失败 -> %s", tx.Error)
 	}
 
+	// 删除旧的图片记录
+	//d := tx.Model(&models.Attachment{}).Where("home = ? and home_id = ?", attachment.Home, attachment.HomeID).Delete(nil)
+	//if d.Error != nil {
+	//	tx.Rollback() // 回滚事务
+	//	return fmt.Errorf("InsertFile -> 删除旧的图片记录异常 -> %s", d.Error)
+	//} else if d.RowsAffected == 0 {
+	//	tx.Rollback() // 回滚事务
+	//	return fmt.Errorf("InsertFile -> 没有找到匹配的记录或记录已经被删除")
+	//}
+
+	// 查询记录是否存在
+	var existingAttachment models.Attachment
+	if tx.Model(&models.Attachment{}).Where("home = ? AND home_id = ?", attachment.Home, attachment.HomeID).First(&existingAttachment).Error == nil {
+		// 如果记录存在，设置 ID
+		attachment.ID = existingAttachment.ID
+	}
+
 	// 向数据库中存入文件数据
-	result := tx.Model(&models.Attachment{}).Where("home = ? and home_id = ?", attachment.Home, attachment.HomeID).Save(attachment)
+	result := tx.Model(&models.Attachment{}).Save(attachment)
 	if result.Error != nil {
-		tx.Rollback() // 回滚事务
+		tx.Rollback()
 		return fmt.Errorf("InsertFile -> 向数据库中存入文件数据 -> %s", result.Error)
 	}
+
+	//result := tx.Model(&models.Attachment{}).Where("home = ? and home_id = ?", attachment.Home, attachment.HomeID).Save(attachment)
+	//if result.Error != nil {
+	//	tx.Rollback() // 回滚事务
+	//	return fmt.Errorf("InsertFile -> 向数据库中存入文件数据 -> %s", result.Error)
+	//}
 
 	//提交事务
 	err := tx.Commit().Error
