@@ -59,6 +59,7 @@ type FirstComment struct {
 	CommentPath  string `json:"comment_path"`   // 用户发的评论中的图片
 	Status       int    `json:"status"`         // 判断用户对评论的点赞情况
 	ParentUserID uint   `json:"parent_user_id"` // 上一条评论的发布用户ID
+	//LikeStatus   bool `json:"like_status"`    // 判断用户对评论的点赞情况
 }
 
 type RepliesReq2 struct {
@@ -97,7 +98,7 @@ type DelComment struct {
 }
 
 type PraiseCount struct {
-	ID     uint `json:"id"`      // 评论ID
-	Status uint `json:"status"`  // 用于判断是增加还是减少点赞数量，(1 : 代表增加， 2 : 代表减少)
-	UserID uint `json:"user_id"` // 点赞人ID
+	ID     uint `json:"id"`     // 评论ID
+	Status uint `json:"status"` // 用于判断是增加还是减少点赞数量，(1 : 代表增加， 2 : 代表减少)
+	//UserID uint `json:"user_id"` // 点赞人ID
 }
