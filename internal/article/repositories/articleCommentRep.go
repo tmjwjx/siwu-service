@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"errors"
 	"fmt"
 	"forum/internal/article/requests"
 	"forum/internal/internalPkg/internalUtils"
@@ -8,6 +9,27 @@ import (
 	"forum/pkg/globals"
 	"gorm.io/gorm"
 )
+
+// GetCommentStatusRep
+// @Description: 查询用户对评论的点赞状态
+// @param        db *gorm.DB
+// @param        userId uint
+// @param        commentId uint
+// @return       int
+// @return       error
+// @Author tianjiajie 2025-01-23 09:02:15
+func GetCommentStatusRep(db *gorm.DB, userId uint, commentId uint) (bool, error) {
+	var commentLike models.CommentLike
+	err := db.Where("comment_id = ? and user_id = ?", commentId, userId).First(&commentLike).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return false, nil
+		}
+		globals.Log.Errorf("GetCommentStatusRep -> 查询失败 err: %v", err)
+		return false, err
+	}
+	return true, nil
+}
 
 // InsertCommentRep 将评论存入数据库中
 func InsertCommentRep(userId uint, articleCommentReq *requests.ArticleCommentReq, db *gorm.DB) (error, int) {
@@ -152,12 +174,12 @@ func GetTopLevelCommentsRep(userId uint, db *gorm.DB, req *requests.TopCommentsR
 		for _, id := range commentId {
 			if comment.ID == id {
 				// 1 表示对该评论该用户已经点过赞了
-				topComment.Status = 1
+				topComment.Status = true
 				break
 			}
 		}
 		// 2 表示对该评论该用户从没有点过赞
-		topComment.Status = 2
+		topComment.Status = false
 
 		firstCommentsList = append(firstCommentsList, topComment)
 	}
@@ -408,7 +430,7 @@ func DeleteCommentRep(req *requests.DelComment, db *gorm.DB) error {
 }
 
 // UpdatePraiseCountRep 更新点赞的数量
-func UpdatePraiseCountRep(req *requests.PraiseCount, db *gorm.DB) error {
+func UpdatePraiseCountRep(req *requests.PraiseCount, db *gorm.DB, userId uint) error {
 
 	// 开启事务
 	tx := db.Begin()
@@ -419,7 +441,7 @@ func UpdatePraiseCountRep(req *requests.PraiseCount, db *gorm.DB) error {
 	// 更新 comment_likes 表中的数据
 	commentLike := &models.CommentLike{
 		CommentID: req.ID,
-		UserID:    req.UserID,
+		UserID:    userId,
 	}
 
 	if req.Status == 1 || req.Status == 2 {
@@ -434,7 +456,7 @@ func UpdatePraiseCountRep(req *requests.PraiseCount, db *gorm.DB) error {
 			}
 
 			// 每个用户只能对一个评论点赞一次，所以先查询一下，该用户是否已经点赞过该评论了。
-			err = tx.Where("comment_id = ? and user_id = ?", req.ID, req.UserID).First(&commentLike).Error
+			err = tx.Where("comment_id = ? and user_id = ?", req.ID, userId).First(&commentLike).Error
 			if err != nil {
 				// 如果没有查询到，说明该用户没对该评论点赞过，可以点赞，否则，直接跳过。
 				err := tx.Create(&commentLike).Error
@@ -452,7 +474,7 @@ func UpdatePraiseCountRep(req *requests.PraiseCount, db *gorm.DB) error {
 			}
 
 			// 每个用户只能对一个评论点赞一次，所以先查询一下，该用户是否已经点赞过该评论了。
-			err = tx.Where("comment_id = ? and user_id = ?", req.ID, req.UserID).First(&commentLike).Error
+			err = tx.Where("comment_id = ? and user_id = ?", req.ID, userId).First(&commentLike).Error
 			if err == nil {
 				// 如果查询到了，说明该用户对该评论点赞过，可以删除点赞，否则，直接跳过。
 				err := tx.Delete(&commentLike).Error

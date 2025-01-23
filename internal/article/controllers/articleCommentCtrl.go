@@ -8,6 +8,7 @@ import (
 	"forum/pkg/globals"
 	"forum/pkg/response"
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
 // InsertCommentCtrl 将评论存入数据库中
@@ -195,9 +196,15 @@ func UpdatePraiseCountCtrl(c *gin.Context) {
 		response.Failed(c, 400, e)
 		return
 	}
+	userId, ok := c.Get("id")
+	if ok != true {
+		data := response.NewAppErr(globals.StatusBadRequest, nil, nil)
+		response.Failed(c, http.StatusBadRequest, data)
+		return
+	}
 
 	// 逻辑处理
-	err = logics.UpdatePraiseCountLogic(&req, globals.DB)
+	err = logics.UpdatePraiseCountLogic(&req, globals.DB, userId.(uint))
 
 	//返回响应
 	if err != nil {

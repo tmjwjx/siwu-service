@@ -150,7 +150,12 @@ func ArticleDetailCtrl(c *gin.Context) {
 	db := globals.DB
 	articleId := c.Query("id")
 
-	userId, _ := c.Get("id")
+	userId, ok := c.Get("id")
+	if ok != true {
+		data := response.NewAppErr(globals.StatusBadRequest, nil, nil)
+		response.Failed(c, http.StatusBadRequest, data)
+		return
+	}
 
 	// 进入业务层
 	articleDetail, err := logics.ArticleDetailLogic(db, articleId, userId.(uint))

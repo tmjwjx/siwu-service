@@ -3,6 +3,7 @@ package logics
 import (
 	"forum/internal/article/repositories"
 	"forum/internal/article/requests"
+	"forum/pkg/globals"
 	"gorm.io/gorm"
 )
 
@@ -30,7 +31,24 @@ func GetRepliesLogic(req *requests.RepliesReq) (*[]models.ArticleComment, error)
 // GetTopLevelCommentsLogic 返回顶级评论
 func GetTopLevelCommentsLogic(userId uint, db *gorm.DB, req *requests.TopCommentsReq) (*requests.TopCommentsRes, error) {
 	topCommentsRes, err := repositories.GetTopLevelCommentsRep(userId, db, req)
-	return topCommentsRes, err
+	if err != nil {
+		return nil, err
+	}
+
+	// 查询点赞状态
+	for i := 0; i < len(topCommentsRes.FirstCommentsList); i++ {
+		status, err := repositories.GetCommentStatusRep(db, userId, topCommentsRes.FirstCommentsList[i].ID)
+		if err != nil {
+			return topCommentsRes, err
+		}
+		globals.Log.Info("id: ", topCommentsRes.FirstCommentsList[i].ID)
+		globals.Log.Info("status: ", topCommentsRes.FirstCommentsList[i].Status)
+		globals.Log.Info("status: ", status)
+		topCommentsRes.FirstCommentsList[i].Status = status
+		globals.Log.Info("status: ", topCommentsRes.FirstCommentsList[i].Status)
+	}
+
+	return topCommentsRes, nil
 }
 
 // GetRepliesRep2Logic 返回评论回复
@@ -46,7 +64,7 @@ func DeleteCommentLogic(req *requests.DelComment, db *gorm.DB) error {
 }
 
 // UpdatePraiseCountLogic 更新点赞的数量
-func UpdatePraiseCountLogic(req *requests.PraiseCount, db *gorm.DB) error {
-	err := repositories.UpdatePraiseCountRep(req, db)
+func UpdatePraiseCountLogic(req *requests.PraiseCount, db *gorm.DB, userId uint) error {
+	err := repositories.UpdatePraiseCountRep(req, db, userId)
 	return err
 }
