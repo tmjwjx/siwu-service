@@ -14,7 +14,7 @@ type InitUserInfoRes struct {
 	CollectionsCount int    `json:"attentions_count"` // 所有文章总收藏数量
 	ConcernsCount    int    `json:"concerns_count"`   // 关注者
 	FansCount        int    `json:"fans_count"`       // 被关注者
-	Date             string `json:"data"`             // 注册时间
+	Date             string `json:"date"`             // 注册时间
 	Tag              string `json:"tag"`              // 网站的名称
 	ConcernStatus    int    `json:"concern_status"`   // 关注状态 0：未关注 1：关注 2：用户本人页面
 	ArticleCount     int    `json:"article_count"`    // 用户的总文章数量

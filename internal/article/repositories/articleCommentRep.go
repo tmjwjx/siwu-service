@@ -410,7 +410,65 @@ func DeleteCommentRep(req *requests.DelComment, db *gorm.DB) error {
 		return fmt.Errorf("DeleteCommentRep -> 开启事务失败 -> %s", tx.Error)
 	}
 
-	// 删除评论
+	// 检查该评论是否是顶级评论或者是父级评论
+	var ac models.ArticleComment
+	err := tx.Model(&models.ArticleComment{}).
+		Select("highest_id, parent_id").
+		Where("id = ?", req.ID).Scan(&ac).Error
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("DeleteCommentRep -> 检查该评论是否是顶级评论或者是父级评论失败 -> %s", err)
+	}
+
+	// 如果该评论是顶级评论，删除其所有子评论
+	if ac.HighestID == 0 {
+
+		// 查询顶级评论的子评论
+		var hac []models.ArticleComment
+		err = tx.Model(&models.ArticleComment{}).Where("highest_id = ?", req.ID).Find(&hac).Error
+		if err != nil {
+			tx.Rollback()
+			return fmt.Errorf("DeleteCommentRep -> 查询顶级评论的子评论失败 -> %s", err)
+		}
+
+		// 删除顶级评论的子评论
+		for _, articleId := range hac {
+			result := tx.Model(&models.ArticleComment{}).Where("id = ?", articleId).Delete(nil)
+			if result.Error != nil {
+				tx.Rollback() // 回滚事务
+				return fmt.Errorf("DeleteCommentRep -> 删除顶级评论的子评论异常 -> %s", result.Error)
+			} else if result.RowsAffected == 0 {
+				tx.Rollback() // 回滚事务
+				return fmt.Errorf("没有找到匹配的记录或记录已经被删除1")
+			}
+		}
+	}
+
+	// 如果该评论是父级评论，删除其所有子评论
+	if ac.ParentID == 0 {
+
+		// 查询父级评论的子评论
+		var pac []models.ArticleComment
+		err = tx.Model(&models.ArticleComment{}).Where("parent_id = ?", req.ID).Find(&pac).Error
+		if err != nil {
+			tx.Rollback()
+			return fmt.Errorf("DeleteCommentRep -> 查询顶级评论的子评论失败 -> %s", err)
+		}
+
+		// 删除父级评论的子评论
+		for _, articleId := range pac {
+			result := tx.Model(&models.ArticleComment{}).Where("id = ?", articleId).Delete(nil)
+			if result.Error != nil {
+				tx.Rollback() // 回滚事务
+				return fmt.Errorf("DeleteCommentRep -> 删除父级评论的子评论异常 -> %s", result.Error)
+			} else if result.RowsAffected == 0 {
+				tx.Rollback() // 回滚事务
+				return fmt.Errorf("没有找到匹配的记录或记录已经被删除2")
+			}
+		}
+	}
+
+	// 删除普通评论
 	result := tx.Model(&models.ArticleComment{}).Where("id = ?", req.ID).Delete(nil)
 	if result.Error != nil {
 		tx.Rollback() // 回滚事务
@@ -421,7 +479,7 @@ func DeleteCommentRep(req *requests.DelComment, db *gorm.DB) error {
 	}
 
 	// 提交事务
-	err := tx.Commit().Error
+	err = tx.Commit().Error
 	if err != nil {
 		return fmt.Errorf("DeleteCommentRep -> 提交事务失败 -> %s", err)
 	}
@@ -485,7 +543,6 @@ func UpdatePraiseCountRep(req *requests.PraiseCount, db *gorm.DB, userId uint) e
 			}
 
 		}
-
 	} else {
 		return fmt.Errorf("UpdatePraiseCountRep -> 更新点赞的数量失败 -> status 的值只能是 1 或 2, 1:代表增加点赞, 2:代表取消点赞")
 	}
