@@ -297,12 +297,12 @@ func GetRepliesRep2Rep(userId uint, db *gorm.DB, req *requests.RepliesReq2) (*re
 
 	length := len(articleComments)
 
-	// 查询用户对该篇文章中的评论的点赞情况
-	err = db.Model(models.ArticleComment{}).Joins("join sw_comment_likes on sw_comment_likes.comment_id = sw_article_comments.id").
-		Where("sw_article_comments.highest_id = ? and sw_comment_likes.user_id = ?", req.HighestID, userId).Find(&commentId).Error
-	if err != nil {
-		return nil, fmt.Errorf("GetTopLevelCommentsRep -> 查询用户对该篇文章中的评论的点赞情况失败 -> %s", err)
-	}
+	//// 查询用户对该篇文章中的评论的点赞情况
+	//err = db.Model(models.ArticleComment{}).Joins("join sw_comment_likes on sw_comment_likes.comment_id = sw_article_comments.id").
+	//	Where("sw_article_comments.highest_id = ? and sw_comment_likes.user_id = ?", req.HighestID, userId).Find(&commentId).Error
+	//if err != nil {
+	//	return nil, fmt.Errorf("GetTopLevelCommentsRep -> 查询用户对该篇文章中的评论的点赞情况失败 -> %s", err)
+	//}
 
 	for _, comment := range articleComments {
 

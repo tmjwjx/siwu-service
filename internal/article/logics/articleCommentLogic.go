@@ -54,6 +54,24 @@ func GetTopLevelCommentsLogic(userId uint, db *gorm.DB, req *requests.TopComment
 // GetRepliesRep2Logic 返回评论回复
 func GetRepliesRep2Logic(userId uint, db *gorm.DB, req *requests.RepliesReq2) (*requests.RepliesRes, error) {
 	repliesRes, err := repositories.GetRepliesRep2Rep(userId, db, req)
+
+	if err != nil {
+		return nil, err
+	}
+
+	// 查询点赞状态
+	for i := 0; i < len(repliesRes.SecondCommentsList); i++ {
+		status, err := repositories.GetCommentStatusRep(db, userId, repliesRes.SecondCommentsList[i].ID)
+		if err != nil {
+			return repliesRes, err
+		}
+		globals.Log.Info("id: ", repliesRes.SecondCommentsList[i].ID)
+		globals.Log.Info("status: ", repliesRes.SecondCommentsList[i].Status)
+		globals.Log.Info("status: ", status)
+		repliesRes.SecondCommentsList[i].Status = status
+		globals.Log.Info("status: ", repliesRes.SecondCommentsList[i].Status)
+	}
+
 	return repliesRes, err
 }
 
