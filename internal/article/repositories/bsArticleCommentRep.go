@@ -51,10 +51,13 @@ func ShowCommentsListRep(db *gorm.DB, req *requests.CommentsListReq) (*requests.
 	var comList []requests.ComList
 	var user models.User
 	var article models.Article
-	examines := make([]int, 2)
+	var examines []int
 
 	query := db.Model(&models.ArticleComment{}).Joins("left join sw_users on sw_users.id = sw_article_comments.user_id").
 		Joins("left join sw_articles on sw_articles.id = sw_article_comments.article_id")
+
+	//fmt.Println("########################")
+	//fmt.Println(req.Type)
 
 	if req.Type == 1 {
 		examines = append(examines, 0, 1)
@@ -93,6 +96,11 @@ func ShowCommentsListRep(db *gorm.DB, req *requests.CommentsListReq) (*requests.
 	//	if err != nil {
 	//		return nil, fmt.Errorf("ShowCommentsListRep -> 查询评论信息失败 -> %s", err)
 	//	}
+	//}
+
+	//fmt.Println("------------------***********************---------->")
+	//for _, num := range examines {
+	//	fmt.Println(num)
 	//}
 
 	err := query.Where("examine IN ?", examines).Scan(&comments).Error
@@ -151,22 +159,26 @@ func ShowCommentsListRep(db *gorm.DB, req *requests.CommentsListReq) (*requests.
 			Summary:   article.Summary,
 		}
 
-		// 这里要把 user 结构体中存储的上次的查询结果，清空一下，否则会影响下次的查询
-		user = models.User{}
+		if comment.ParentUserID == 0 {
+			// 如果是顶级评论，没有回复的评论，就不用查回复的评论的发布者的信息了
+		} else {
+			// 这里要把 user 结构体中存储的上次的查询结果，清空一下，否则会影响下次的查询
+			user = models.User{}
 
-		// 查询用户回复对象信息
-		d := db.Where("id = ?", comment.ParentUserID).First(&user)
-		if d.Error != nil {
-			return nil, fmt.Errorf("ShowCommentsListRep -> 查询用户回复对象信息失败 -> %s", err)
-			//commentsListRes = &requests.CommentsListRes{
-			//	Comlist: make([]requests.ComList, 0),
-			//	Total:   0,
-			//}
-			//
-			//return commentsListRes, nil
+			// 查询用户回复对象信息
+			d := db.Where("id = ?", comment.ParentUserID).First(&user)
+			if d.Error != nil {
+				return nil, fmt.Errorf("ShowCommentsListRep -> 查询用户回复对象信息失败 -> %s", err)
+				//commentsListRes = &requests.CommentsListRes{
+				//	Comlist: make([]requests.ComList, 0),
+				//	Total:   0,
+				//}
+				//
+				//return commentsListRes, nil
+			}
+
+			commentRes.ParentNickname = user.Nickname
 		}
-
-		commentRes.ParentNickname = user.Nickname
 
 		// 查询用户头像
 		images, err := internalUtils.GetImages(db, globals.UserHome, comment.UserID)
