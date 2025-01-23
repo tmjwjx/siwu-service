@@ -25,7 +25,7 @@ func GetCommentStatusRep(db *gorm.DB, userId uint, commentId uint) (bool, error)
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return false, nil
 		}
-		globals.Log.Errorf("GetCommentStatusRep -> 查询失败: %v", err)
+		globals.Log.Errorf("GetCommentStatusRep -> 查询失败 err: %v", err)
 		return false, err
 	}
 	return true, nil
