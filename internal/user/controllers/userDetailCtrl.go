@@ -24,6 +24,22 @@ func UserDataRequestCtrl(c *gin.Context) {
 		return
 	}
 
+	userID, exists := c.Get("id")
+	if !exists {
+		// 返回错误响应
+		e := response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("UserDataResponseCtrl -> 从token中获取用户ID失败"), nil)
+		response.Failed(c, 500, e)
+		return
+	}
+
+	uintValue, err := internalUtils.ChangeAnyToUint(userID)
+	if err != nil {
+		// 返回错误响应
+		e := response.NewAppErr(globals.StatusInternalServerError, err, nil)
+		response.Failed(c, 500, e)
+		return
+	}
+
 	// 验证参数
 
 	// 验证用户名是否合法
@@ -35,7 +51,7 @@ func UserDataRequestCtrl(c *gin.Context) {
 	}
 
 	// 业务处理
-	err, status := logics.PersonalDataLogic(&userDataReq, c, globals.DB)
+	err, status := logics.PersonalDataLogic(uintValue, &userDataReq, c, globals.DB)
 
 	// 返回响应
 	if err != nil {

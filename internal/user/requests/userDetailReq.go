@@ -2,7 +2,6 @@ package requests
 
 // UserDataReq 用户个人资料更新
 type UserDataReq struct {
-	ID              uint     `json:"id" form:"id"`                             // 用户ID
 	Nickname        string   `json:"nickname" form:"nickname"`                 // 用户名
 	CareerDirection string   `json:"career_direction" form:"career_direction"` // 职业方向
 	HomePage        string   `json:"user_home_page" form:"user_home_page"`     // 个人主页

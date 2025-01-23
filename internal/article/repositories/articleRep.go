@@ -22,15 +22,59 @@ import (
 // @param        num int
 // @return       err
 // @Author tianjiajie 2025-01-22 19:27:45
-func AddArticleViews(db *gorm.DB, articleId uint, num int) (err error) {
-	if err = db.Model(&models.Article{}).
+func AddArticleViews(db *gorm.DB, articleId uint) (err error) {
+	// 开启事务
+	tx := db.Begin()
+	if tx.Error != nil { // 检查事务启动是否成功
+		return fmt.Errorf("启动事务失败: %w", tx.Error)
+	}
+	if err = tx.Model(&models.Article{}).
 		Where("id = ?", articleId).
-		Update("views_count", gorm.Expr("views_count + ?", num)).
+		Update("views_count", gorm.Expr("views_count + ?", 1)).
 		Error; err != nil {
 		return err
 	}
-	return nil
+	// 增加文章热度
+	if err = AddArticleHeat(tx, articleId, 1); err != nil {
+		tx.Rollback() // 发生错误时回滚事务
+		return err
+	}
+	// 提交事务
+	if err = tx.Commit().Error; err != nil {
+		return err
+	}
+	return
 }
+
+//// ReduceArticleViews
+//// @Description: 减少文章浏览量
+//// @param        db *gorm.DB
+//// @param        articleId uint
+//// @return       err
+//// @Author tianjiajie 2025-01-22 23:04:32
+//func ReduceArticleViews(db *gorm.DB, articleId uint) (err error) {
+//	// 开启事务
+//	tx := db.Begin()
+//	if tx.Error != nil { // 检查事务启动是否成功
+//		return fmt.Errorf("启动事务失败: %w", tx.Error)
+//	}
+//	if err = tx.Model(&models.Article{}).
+//		Where("id = ?", articleId).
+//		Update("views_count", gorm.Expr("GREATEST(views_count - 1, 0)")).Error; err != nil {
+//		tx.Rollback() // 发生错误时回滚事务
+//		return err
+//	}
+//	// 减少文章热度
+//	if err = ReduceArticleHeat(tx, articleId, 1); err != nil {
+//		tx.Rollback() // 发生错误时回滚事务
+//		return err
+//	}
+//	// 提交事务
+//	if err = tx.Commit().Error; err != nil {
+//		return err
+//	}
+//	return
+//}
 
 // AddArticleLikes
 // @Description: 增加文章点赞数量
@@ -39,11 +83,55 @@ func AddArticleViews(db *gorm.DB, articleId uint, num int) (err error) {
 // @param        num int
 // @return       err
 // @Author tianjiajie 2025-01-22 19:27:52
-func AddArticleLikes(db *gorm.DB, articleId uint, num int) (err error) {
-	if err = db.Model(&models.Article{}).
+func AddArticleLikes(db *gorm.DB, articleId uint) (err error) {
+	// 开启事务
+	tx := db.Begin()
+	if tx.Error != nil { // 检查事务启动是否成功
+		return fmt.Errorf("启动事务失败: %w", tx.Error)
+	}
+	if err = tx.Model(&models.Article{}).
 		Where("id = ?", articleId).
-		Update("likes_count", gorm.Expr("likes_count + ?", num)).
+		Update("likes_count", gorm.Expr("likes_count + ?", 1)).
 		Error; err != nil {
+		return err
+	}
+	// 增加文章热度
+	if err = AddArticleHeat(tx, articleId, 5); err != nil {
+		tx.Rollback() // 发生错误时回滚事务
+		return err
+	}
+	// 提交事务
+	if err = tx.Commit().Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+// ReduceArticleLikes
+// @Description: 减少文章点赞数量
+// @param        db *gorm.DB
+// @param        articleId uint
+// @return       err
+// @Author tianjiajie 2025-01-22 23:05:00
+func ReduceArticleLikes(db *gorm.DB, articleId uint) (err error) {
+	// 开启事务
+	tx := db.Begin()
+	if tx.Error != nil { // 检查事务启动是否成功
+		return fmt.Errorf("启动事务失败: %w", tx.Error)
+	}
+	if err = tx.Model(&models.Article{}).
+		Where("id = ?", articleId).
+		Update("likes_count", gorm.Expr("GREATEST(likes_count - 1, 0)")).Error; err != nil {
+		tx.Rollback() // 发生错误时回滚事务
+		return err
+	}
+	// 减少文章热度
+	if err = ReduceArticleHeat(tx, articleId, 5); err != nil {
+		tx.Rollback() // 发生错误时回滚事务
+		return err
+	}
+	// 提交事务
+	if err = tx.Commit().Error; err != nil {
 		return err
 	}
 	return nil
@@ -56,13 +144,58 @@ func AddArticleLikes(db *gorm.DB, articleId uint, num int) (err error) {
 // @return       err
 // @Author tianjiajie 2025-01-22 19:27:56
 func AddArticleCollections(db *gorm.DB, articleId uint) (err error) {
-	if err = db.Model(&models.Article{}).
+	// 开启事务
+	tx := db.Begin()
+	if tx.Error != nil { // 检查事务启动是否成功
+		return fmt.Errorf("启动事务失败: %w", tx.Error)
+	}
+	if err = tx.Model(&models.Article{}).
 		Where("id = ?", articleId).
 		Update("collections_count", gorm.Expr("collections_count + ?", 1)).
 		Error; err != nil {
+		tx.Rollback() // 发生错误时回滚事务
 		return err
 	}
-	return nil
+	// 增加文章热度
+	if err = AddArticleHeat(tx, articleId, 10); err != nil {
+		tx.Rollback() // 发生错误时回滚事务
+		return err
+	}
+	// 提交事务
+	if err = tx.Commit().Error; err != nil {
+		return err
+	}
+	return
+}
+
+// ReduceArticleCollections
+// @Description: 减少文章收藏数量
+// @param        db *gorm.DB
+// @param        articleId uint
+// @return       err
+// @Author tianjiajie 2025-01-22 23:05:28
+func ReduceArticleCollections(db *gorm.DB, articleId uint) (err error) {
+	// 开启事务
+	tx := db.Begin()
+	if tx.Error != nil { // 检查事务启动是否成功
+		return fmt.Errorf("启动事务失败: %w", tx.Error)
+	}
+	if err = tx.Model(&models.Article{}).
+		Where("id = ?", articleId).
+		Update("collections_count", gorm.Expr("GREATEST(collections_count - 1, 0)")).Error; err != nil {
+		tx.Rollback() // 发生错误时回滚事务
+		return err
+	}
+	// 减少文章热度
+	if err = ReduceArticleHeat(tx, articleId, 10); err != nil {
+		tx.Rollback() // 发生错误时回滚事务
+		return err
+	}
+	// 提交事务
+	if err = tx.Commit().Error; err != nil {
+		return err
+	}
+	return
 }
 
 // SyncArticleLikes
@@ -119,6 +252,23 @@ func AddArticleHeat(db *gorm.DB, articleId uint, num int) (err error) {
 		Where("id = ?", articleId).
 		Update("heat", gorm.Expr("heat + ?", num)).Error; err != nil {
 		return err
+	}
+	return nil
+}
+
+// ReduceArticleHeat
+// @Description: 减少文章热度
+// @param        db *gorm.DB
+// @param        articleId uint
+// @param        num int
+// @return       err
+// @Author tianjiajie 2025-01-22 23:03:55
+func ReduceArticleHeat(db *gorm.DB, articleId uint, num int) (err error) {
+	// 使用 GREATEST 函数，确保热度至少为 0
+	if err = db.Model(&models.Article{}).
+		Where("id = ?", articleId).
+		Update("heat", gorm.Expr("GREATEST(heat - ?, 0)", num)).Error; err != nil {
+		return fmt.Errorf("减少文章热度失败: %w", err)
 	}
 	return nil
 }
@@ -425,7 +575,8 @@ func InsertArticlesRep(db *gorm.DB, req requests.ReqPublish, userId uint) (id in
 	}
 
 	{
-		newArticle.UserID = req.UserId
+		//newArticle.UserID = req.UserId
+		newArticle.UserID = userId
 		newArticle.Title = req.Title
 		newArticle.Status = req.Status
 		newArticle.CategoryID = req.CategoryID
@@ -931,6 +1082,10 @@ func UpdateLikeRep(db *gorm.DB, req requests.ArticleLikeReq, userId uint) (err e
 				// 通知文章作者
 				authorId := strconv.Itoa(int(article.UserID))
 				internalUtils.MessagePush("like", authorId)
+
+				// 增加文章点赞数
+				err = AddArticleLikes(db, article.ID)
+
 			} else {
 				return err
 			}
@@ -947,6 +1102,8 @@ func UpdateLikeRep(db *gorm.DB, req requests.ArticleLikeReq, userId uint) (err e
 		if err = db.Delete(&like).Error; err != nil {
 			return err
 		}
+		// 减少文章点赞数
+		err = ReduceArticleLikes(db, req.ArticleId)
 	}
 
 	return nil
@@ -984,20 +1141,27 @@ func UpdateCollectionRep(db *gorm.DB, req requests.ArticleCollectionReq, userId 
 				// 通知文章作者
 				authorId := strconv.Itoa(int(article.UserID))
 				internalUtils.MessagePush("collection", authorId)
+
+				// 增加文章收藏数
+				err = AddArticleCollections(db, article.ID)
+
 			} else {
 				return err
 			}
 
 		}
 	} else if req.CollectionStatus == false {
-		//// 查询用户是否收藏 如果收藏了 删除收藏记录
-		//if err = db.Where("article_id = ? AND user_id = ?", req.ArticleId, userId).First(&collection).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		//	return err
-		//}
+		// 查询用户是否收藏 如果收藏了 删除收藏记录
+		if err = db.Where("article_id = ? AND user_id = ?", req.ArticleId, userId).First(&collection).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+			return err
+		}
 		// 删除收藏记录
 		if err = db.Where("article_id = ? AND user_id = ?", req.ArticleId, userId).Delete(&collection).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 			return err
 		}
+
+		// 减少文章收藏数
+		err = ReduceArticleCollections(db, req.ArticleId)
 
 	}
 

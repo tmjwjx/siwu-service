@@ -178,7 +178,7 @@ func GetTopLevelCommentsRep(userId uint, db *gorm.DB, req *requests.TopCommentsR
 		}
 
 		// 查询用户头像
-		images, err := internalUtils.GetImages(db, globals.UserHome, comment.ID)
+		images, err := internalUtils.GetImages(db, globals.UserHome, comment.UserID)
 		if err != nil {
 			return nil, fmt.Errorf("GetTopLevelCommentsRep -> %s", err)
 		} else {
@@ -199,10 +199,14 @@ func GetTopLevelCommentsRep(userId uint, db *gorm.DB, req *requests.TopCommentsR
 	}
 
 	var ac []models.ArticleComment
-	err = db.Model(&models.ArticleComment{}).Find(&ac).Error
+	err = db.Model(&models.ArticleComment{}).Where("article_id = ?", req.ArticleID).Find(&ac).Error
 	if err != nil {
 		return nil, fmt.Errorf("GetTopLevelCommentsRep -> 查询本篇文章所有评论的数量失败 -> %s", err)
 	}
+	//fmt.Println("--------------------------|||||||||||||||||||___________>")
+	//for _, ac2 := range ac {
+	//	fmt.Println(ac2.ID)
+	//}
 
 	// 分页返回数据
 	page := (req.Offset - 1) * req.Limit

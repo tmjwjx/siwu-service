@@ -11,9 +11,9 @@ import (
 )
 
 // PersonalDataLogic 将用户信息存入数据库
-func PersonalDataLogic(userDataReq *requests.UserDataReq, c *gin.Context, db *gorm.DB) (error, int) {
+func PersonalDataLogic(userId uint, userDataReq *requests.UserDataReq, c *gin.Context, db *gorm.DB) (error, int) {
 	// 将除图片文件外的数据存入数据库
-	err := repositories.UserDataRequest(userDataReq, db)
+	err := repositories.UserDataRequest(userId, userDataReq, db)
 	if err != nil {
 		return err, 500
 	}
@@ -22,7 +22,7 @@ func PersonalDataLogic(userDataReq *requests.UserDataReq, c *gin.Context, db *go
 	u := &internalUtils.UrlParam{
 		UrlPath: []string{userDataReq.Path},
 		Home:    globals.UserHome,
-		HomeID:  userDataReq.ID,
+		HomeID:  userId,
 		DB:      db,
 	}
 	err = internalUtils.StoreUrl(u)
