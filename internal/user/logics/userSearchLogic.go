@@ -58,7 +58,7 @@ func (u *UserReqContext) ClickAttention(req requests.ClickAttentionReq) error {
 			FollowedId: followedId,
 		}
 		// 插入关注数据
-		if err := sqlUtils.InsertObject(u.DB, userFollow); err != nil {
+		if err = sqlUtils.InsertObject(u.DB, userFollow); err != nil {
 			return fmt.Errorf("UserReqContext.ClickAttention() -> %v", err)
 		}
 
@@ -67,6 +67,11 @@ func (u *UserReqContext) ClickAttention(req requests.ClickAttentionReq) error {
 			return fmt.Errorf("UserReqContext.ClickAttention() -> %v", err)
 		}
 		if err = sqlUtils.UpdateObjects(u.DB, &models.User{Model: gorm.Model{ID: followedId}}, map[string]interface{}{"fans_count": len(followerIDSli) + 1}); err != nil {
+			return fmt.Errorf("UserReqContext.ClickAttention() -> %v", err)
+		}
+
+		// user2 的热度+10
+		if err = sqlUtils.UpdateObjects(u.DB, &models.User{Model: gorm.Model{ID: followedId}}, map[string]interface{}{"heat": user2.Heat + 10}); err != nil {
 			return fmt.Errorf("UserReqContext.ClickAttention() -> %v", err)
 		}
 
@@ -79,6 +84,11 @@ func (u *UserReqContext) ClickAttention(req requests.ClickAttentionReq) error {
 			return fmt.Errorf("UserReqContext.ClickAttention() -> %v", err)
 		}
 		if err = sqlUtils.UpdateObjects(u.DB, &models.User{Model: gorm.Model{ID: followedId}}, map[string]interface{}{"fans_count": len(followerIDSli) - 1}); err != nil {
+			return fmt.Errorf("UserReqContext.ClickAttention() -> %v", err)
+		}
+
+		// user2 的热度-10
+		if err = sqlUtils.UpdateObjects(u.DB, &models.User{Model: gorm.Model{ID: followedId}}, map[string]interface{}{"heat": user2.Heat - 10}); err != nil {
 			return fmt.Errorf("UserReqContext.ClickAttention() -> %v", err)
 		}
 	}
