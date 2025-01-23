@@ -18,17 +18,17 @@ import (
 // @return       int
 // @return       error
 // @Author tianjiajie 2025-01-23 09:02:15
-func GetCommentStatusRep(db *gorm.DB, userId uint, commentId uint) (bool, error) {
+func GetCommentStatusRep(db *gorm.DB, userId uint, commentId uint) (int, error) {
 	var commentLike models.CommentLike
 	err := db.Where("comment_id = ? and user_id = ?", commentId, userId).First(&commentLike).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return false, nil
+			return 2, nil
 		}
 		globals.Log.Errorf("GetCommentStatusRep -> 查询失败 err: %v", err)
-		return false, err
+		return 2, err
 	}
-	return true, nil
+	return 1, nil
 }
 
 // InsertCommentRep 将评论存入数据库中
@@ -174,12 +174,12 @@ func GetTopLevelCommentsRep(userId uint, db *gorm.DB, req *requests.TopCommentsR
 		for _, id := range commentId {
 			if comment.ID == id {
 				// 1 表示对该评论该用户已经点过赞了
-				topComment.Status = true
+				topComment.Status = 1
 				break
 			}
 		}
 		// 2 表示对该评论该用户从没有点过赞
-		topComment.Status = false
+		topComment.Status = 2
 
 		firstCommentsList = append(firstCommentsList, topComment)
 	}

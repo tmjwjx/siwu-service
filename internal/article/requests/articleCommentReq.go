@@ -57,7 +57,7 @@ type FirstComment struct {
 	RepliesCount int64  `json:"replies_count"`  // 回复数量
 	Path         string `json:"path"`           // 用户头像
 	CommentPath  string `json:"comment_path"`   // 用户发的评论中的图片
-	Status       bool   `json:"status"`         // 判断用户对评论的点赞情况
+	Status       int    `json:"status"`         // 判断用户对评论的点赞情况
 	ParentUserID uint   `json:"parent_user_id"` // 上一条评论的发布用户ID
 	//LikeStatus   bool `json:"like_status"`    // 判断用户对评论的点赞情况
 }
