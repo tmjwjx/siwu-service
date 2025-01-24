@@ -6,6 +6,8 @@ import (
 	"reflect"
 )
 
+// 封装了数据库增、删、改操作方法（只适用于操作一个表）
+
 // InsertObject
 // @Description: 插入一条数据。
 // @Author lizhuang 2024-10-04 21:01:19
