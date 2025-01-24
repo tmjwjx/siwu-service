@@ -304,7 +304,7 @@ func UserPrivateSetRequest(userID uint, userPrivateSetReq *requests.UserPrivateS
 func UserDataResponse(userID uint, db *gorm.DB) (*requests.UserDataRes, error) {
 	var user models.User
 
-	err := db.Preload("UserDetail").Preload("Tags").First(&user, userID).Error
+	err := db.Preload("UserDetail").First(&user, userID).Error
 	if err != nil {
 		return nil, fmt.Errorf("UserDataResponse -> 获取用户信息异常 -> %s", err)
 	}
@@ -317,9 +317,26 @@ func UserDataResponse(userID uint, db *gorm.DB) (*requests.UserDataRes, error) {
 		Signature:       user.UserDetail.Signature,
 	}
 
-	for _, tag := range user.Tags {
-		userDataRes.UserTags = append(userDataRes.UserTags, tag.Name)
+	// 查询用户选择的标签id
+	var newTag []uint
+	err = db.Model(&models.UserTag{}).Where("user_id = ?", userID).Pluck("tag_id", &newTag).Error
+	if err != nil {
+		return nil, fmt.Errorf("UserDataResponse -> 查询用户选择的标签异常 -> %s", err)
 	}
+
+	// 查询用户选择的标签的名字
+	var tagName []string
+	err = db.Model(&models.Tag{}).Where("id IN ?", newTag).Pluck("name", &tagName).Error
+	if err != nil {
+		return nil, fmt.Errorf("UserDataResponse -> 查询用户选择的标签的名字异常 -> %s", err)
+	}
+
+	userDataRes.UserTags = tagName
+
+	//for _, tag := range user.Tags {
+	//	userDataRes.UserTags = append(userDataRes.UserTags, tag.Name)
+	//	fmt.Println("------------------>", tag.ID, tag.Name)
+	//}
 
 	// 查询所有 Tags 的名字
 	var allTags []models.Tag
