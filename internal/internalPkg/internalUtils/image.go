@@ -238,7 +238,7 @@ func InsertFile(db *gorm.DB, attachment *models.Attachment) error {
 	}
 
 	// 向数据库中存入文件数据
-	result := tx.Model(&models.Attachment{}).Save(attachment)
+	result := tx.Model(&models.Attachment{}).Where("id = ?", attachment.ID).Omit("created_at").Save(attachment).Debug()
 	if result.Error != nil {
 		tx.Rollback()
 		return fmt.Errorf("InsertFile -> 向数据库中存入文件数据 -> %s", result.Error)

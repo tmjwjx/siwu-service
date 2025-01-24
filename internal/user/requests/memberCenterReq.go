@@ -1,5 +1,7 @@
 package requests
 
+import "time"
+
 type ArticleInfo struct {
 	LikesCount       int `json:"likes_count"`       // 点赞数量
 	ViewsCount       int `json:"views_count"`       // 浏览量
@@ -18,6 +20,12 @@ type InitUserInfoRes struct {
 	Tag              string `json:"tag"`              // 网站的名称
 	ConcernStatus    int    `json:"concern_status"`   // 关注状态 0：未关注 1：关注 2：用户本人页面
 	ArticleCount     int    `json:"article_count"`    // 用户的总文章数量
+}
+type MiddleInfo struct {
+	Date      time.Time `json:"date"`      // 注册时间
+	Nickname  string    `json:"nickname"`  // 昵称
+	Signature string    `json:"signature"` // 个人签名
+	HeadShot  string    `json:"head_shot"` // 用户头像
 }
 
 //// 用户

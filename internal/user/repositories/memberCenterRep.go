@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"fmt"
+	"forum/internal/internalPkg/internalUtils"
 	"forum/internal/models"
 	"forum/internal/user/requests"
 	"forum/pkg/utils"
@@ -13,16 +14,27 @@ import (
 // @Author wangyulong 2024-10-09 16:00:48
 func InitUserInfoRep(db *gorm.DB, qid string, gid string) (*requests.InitUserInfoRes, error) {
 
-	initUserInfoRes := &requests.InitUserInfoRes{}
+	middleInfo := requests.MiddleInfo{}
+
 	// 查询 头像，昵称，个签
 	err := db.Model(&models.User{}).
-		Select("sw_users.created_at AS data, sw_users.nickname, sw_user_details.signature, sw_attachments.path AS head_shot").
+		Select("sw_users.created_at AS date, sw_users.nickname, sw_user_details.signature, sw_attachments.path AS head_shot").
 		Joins("join sw_user_details on sw_user_details.user_id = sw_users.id").
 		Joins("join sw_attachments on sw_attachments.home_id = sw_users.id").
-		Where("sw_users.id = ?", gid).Scan(initUserInfoRes).Error
+		Where("sw_users.id = ?", gid).Scan(&middleInfo).Error
 	if err != nil {
 		return nil, fmt.Errorf("InitUserInfoRep -> 查询 头像，昵称，个签 失败 -> %s", err)
 	}
+
+	initUserInfoRes := &requests.InitUserInfoRes{
+		Nickname:  middleInfo.Nickname,
+		Signature: middleInfo.Signature,
+		HeadShot:  middleInfo.HeadShot,
+	}
+
+	// 转化时间格式
+	initUserInfoRes.Date = internalUtils.TimeFormat(&middleInfo.Date)
+
 	// 查询
 	var articleInfo []requests.ArticleInfo
 	// Select("likes_count, views_count, collections_count").
