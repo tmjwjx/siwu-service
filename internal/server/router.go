@@ -19,9 +19,6 @@ import (
 
 // SetupRouter 启动处理函数
 func SetupRouter() {
-	// 处理公共中间件
-	// HandlePublicMW(globals.Router)
-
 	// 跨域
 	globals.Router.Use(corsMW.CorsMiddleware())
 
