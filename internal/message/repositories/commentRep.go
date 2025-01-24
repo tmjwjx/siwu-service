@@ -66,7 +66,8 @@ func CommentRep(db *gorm.DB, req *requests.MessageReq, userId uint) (res []reque
 		"IF(sw_comment_likes.user_id = ?, 1, 0) AS status", userId)
 
 	// 查询条件 文章下的评论
-	query = query.Where("sw_articles.user_id = ? or sw_article_comments.parent_id IN (SELECT id FROM sw_article_comments WHERE user_id = ?)", userId, userId)
+	query = query.Where("sw_articles.user_id = ? or sw_article_comments.parent_id IN (SELECT id FROM sw_article_comments WHERE user_id = ?)", userId, userId).
+		Where("sw_article_comments.user_id != ?", userId)
 
 	// 查询条件 评论下的评论
 	//query = query.Where("sw_article_comments.parent_id IN (SELECT id FROM sw_article_comments WHERE user_id = ?)", userId)
