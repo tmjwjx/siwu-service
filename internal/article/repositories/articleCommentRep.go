@@ -157,7 +157,8 @@ func GetTopLevelCommentsRep(userId uint, db *gorm.DB, req *requests.TopCommentsR
 	for _, comment := range articleComments {
 
 		// 转换一下时间格式
-		pastTime := internalUtils.TimeAgo(comment.CreatedAt)
+		//pastTime := internalUtils.TimeAgo(comment.CreatedAt)
+		pastTime := internalUtils.TimeFormatDaily(&comment.CreatedAt)
 
 		topComment := &requests.FirstComment{
 			ID:           comment.ID,
@@ -307,7 +308,7 @@ func GetRepliesRep2Rep(userId uint, db *gorm.DB, req *requests.RepliesReq2) (*re
 	for _, comment := range articleComments {
 
 		// 转换一下时间格式
-		pastTime := internalUtils.TimeAgo(comment.CreatedAt)
+		pastTime := internalUtils.TimeFormatDaily(&comment.CreatedAt)
 
 		replies := &requests.SecondComment{
 			ID:           comment.ID,

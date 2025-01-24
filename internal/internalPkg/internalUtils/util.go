@@ -209,8 +209,8 @@ func ChangeStringToInt(str string) (int, error) {
 // TimeAgo 函数根据传入的 time.Time 和当前时间计算差值并返回相应的时间描述
 func TimeAgo(t time.Time) string {
 	duration := time.Since(t) // 计算传入时间和当前时间的差值
-	y, m, d := t.Date()
-	fmt.Println(y, m, d)
+	//y, m, d := t.Date()
+	//fmt.Println(y, m, d)
 
 	seconds := int(duration.Seconds())
 	minutes := int(duration.Minutes())
@@ -222,7 +222,7 @@ func TimeAgo(t time.Time) string {
 	if seconds < 60 {
 		return fmt.Sprintf("%d秒前", seconds)
 	} else if minutes < 60 {
-		return fmt.Sprintf("%d分钟前", seconds)
+		return fmt.Sprintf("%d分钟前", minutes)
 	} else if hours < 24 {
 		return fmt.Sprintf("%d小时前", hours)
 	} else if days < 30 {
