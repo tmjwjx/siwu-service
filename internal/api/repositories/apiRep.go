@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"forum/internal/api/requests"
 	"forum/internal/models"
+	"forum/pkg/casbin"
+	casbin2 "github.com/casbin/casbin/v2"
 	"gorm.io/gorm"
 )
 
@@ -196,7 +198,7 @@ func GetRequestMethodRep(db *gorm.DB) (*requests.ApiReqMethodRes, error) {
 }
 
 // DeleteApiRep 删除api
-func DeleteApiRep(req *requests.DeleteApiReq, db *gorm.DB) error {
+func DeleteApiRep(e *casbin2.Enforcer, req *requests.DeleteApiReq, db *gorm.DB) error {
 
 	// 开启事务
 	tx := db.Begin()
@@ -227,6 +229,18 @@ func DeleteApiRep(req *requests.DeleteApiReq, db *gorm.DB) error {
 		if result3.Error != nil {
 			tx.Rollback() // 回滚事务
 			return fmt.Errorf("DeleteApiRep ->  删除api_request_method表中的信息失败 -> %s", result3.Error)
+		}
+	}
+
+	// 删除casbin_rule表中的信息
+	for _, id := range req.ID {
+		casbinServer := &casbin.CasbinService{
+			Enforcer: e,
+		}
+
+		err := casbinServer.DeletePermForUser(fmt.Sprintf("%v", id))
+		if err != nil {
+			return fmt.Errorf("DeleteApiRep ->  删除casbin_rule表中的信息失败 -> %s", err)
 		}
 	}
 

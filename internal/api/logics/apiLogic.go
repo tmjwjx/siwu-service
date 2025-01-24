@@ -3,6 +3,7 @@ package logics
 import (
 	"forum/internal/api/repositories"
 	"forum/internal/api/requests"
+	casbin2 "github.com/casbin/casbin/v2"
 	"gorm.io/gorm"
 )
 
@@ -41,8 +42,8 @@ func GetRequestMethodLogic(db *gorm.DB) (*requests.ApiReqMethodRes, error) {
 }
 
 // DeleteApiLogic 删除api
-func DeleteApiLogic(req *requests.DeleteApiReq, db *gorm.DB) error {
-	err := repositories.DeleteApiRep(req, db)
+func DeleteApiLogic(e *casbin2.Enforcer, req *requests.DeleteApiReq, db *gorm.DB) error {
+	err := repositories.DeleteApiRep(e, req, db)
 	return err
 }
 

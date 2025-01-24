@@ -344,7 +344,7 @@ func GetRepliesRep2Rep(userId uint, db *gorm.DB, req *requests.RepliesReq2) (*re
 		}
 
 		// 查询用户头像
-		images, err := internalUtils.GetImages(db, globals.UserHome, userId)
+		images, err := internalUtils.GetImages(db, globals.UserHome, comment.UserID)
 		if err != nil {
 			return nil, fmt.Errorf("GetRepliesRep2Rep -> 查询用户头像失败 -> %s", err)
 		} else {
