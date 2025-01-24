@@ -1232,15 +1232,14 @@ func GetUserArticleOrCollectionRep(db *gorm.DB, req *requests.UserArticleOrColle
 
 	query := db.Model(&models.Article{}).Preload("Tags").
 		Select("DISTINCT sw_articles.*, sw_users.nickname").
-		Joins("LEFT JOIN sw_users ON sw_users.id = sw_articles.user_id")
-	// 获取未封禁的文章
-	//Where("sw_articles.article_condition = ?", 0)
+		Joins("LEFT JOIN sw_users ON sw_users.id = sw_articles.user_id").
+		Debug()
 
 	// 判断是发布的文章还是收藏的文章
 	switch req.Type {
 	case "收藏":
-		query = query.Joins("Left JOIN sw_article_collections ON sw_articles.id = sw_article_collections.article_id").
-			Where("sw_article_collections.user_id = ?", req.Id)
+		query = query.Joins("JOIN sw_article_collections ON sw_articles.id = sw_article_collections.article_id").
+			Where("sw_article_collections.user_id = ? AND sw_article_collections.deleted_at is NULL", req.Id)
 	case "文章":
 		query = query.Where("sw_articles.user_id = ?", req.Id)
 	}
