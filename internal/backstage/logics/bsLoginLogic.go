@@ -9,6 +9,7 @@ import (
 	"forum/internal/models"
 	"forum/pkg/casbin"
 	"forum/pkg/globals"
+	"forum/pkg/token"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"math"
@@ -124,11 +125,25 @@ func (b *BsManageContext) BsLogin(msg requests.BackstageLoginReq) (*requests.Bac
 	return nil, fmt.Errorf("用户id为%d的用户没有权限进入后台", user.ID)
 }
 
-// // BsLogout 后台登出
-// func (b *BsManageContext) BsLogout(tokenString string) error {
-// 	// 使token无效
-// 	if err := token.InvalidateToken(tokenString); err != nil {
-// 		return fmt.Errorf("BsManageContext.BsLogout() err = %v", err)
-// 	}
-// 	return nil
-// }
+// BsLogout 后台登出
+func (b *BsManageContext) BsLogout(tokenString string) error {
+
+	// 设置过期时间为 Token 剩余时间
+	claims, err := token.ValidateToken(tokenString)
+	if err != nil {
+		return fmt.Errorf("BsManageContext.BsLogout() : 无效的 token")
+		// response.Failed(c, http.StatusUnauthorized, response.NewAppErr(globals.StatusUnauthorized, fmt.Errorf("Logout() : 无效的 token"), nil))
+		// return
+	}
+
+	expiration := time.Until(claims.ExpiresAt.Time)
+	// 如果该token还没有失效，就把它添加到黑名单中，让它失效
+	if expiration > 0 {
+		if err = token.AddTokenToBlacklist(globals.RDB, tokenString, expiration); err != nil {
+			return fmt.Errorf("BsManageContext.BsLogout() : err -> %v", err)
+			// response.Failed(c, http.StatusUnauthorized, response.NewAppErr(globals.StatusUnauthorized, fmt.Errorf("Logout() : err -> %v", err), nil))
+			// return
+		}
+	}
+	return nil
+}
