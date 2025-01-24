@@ -16,18 +16,18 @@ func CommentMesLogic(db *gorm.DB, req *requests.MessageReq, userId uint) (data i
 	if err != nil {
 		return nil, err
 	}
-	// 查询是否点赞
-	for i, v := range res {
-		like, err := repositories.IsCommentLikeRep(db, userId, v.CommentId)
-		if err != nil {
-			return nil, err
-		}
-		if like {
-			res[i].Status = 1
-		} else {
-			res[i].Status = 0
-		}
-	}
+	//// 查询是否点赞
+	//for i, v := range res {
+	//	like, err := repositories.IsCommentLikeRep(db, userId, v.CommentId)
+	//	if err != nil {
+	//		return nil, err
+	//	}
+	//	if like {
+	//		res[i].Status = 1
+	//	} else {
+	//		res[i].Status = 0
+	//	}
+	//}
 	data = gin.H{"comment_list": res}
 	return data, err
 }

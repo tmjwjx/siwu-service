@@ -548,14 +548,14 @@ func InsertArticlesRep(db *gorm.DB, req requests.ReqPublish, userId uint) (id in
 	fmt.Println(req.Tags)
 	fmt.Println(req)
 
+	// 判断当前用户是否是文章作者
+	if userId != req.UserId {
+		// 如果当前用户不是文章作者
+		return 0, errors.New("当前用户不是文章作者")
+	}
+
 	// 设置文章ID
 	if req.ArticleId != 0 {
-
-		// 判断当前用户是否是文章作者
-		if userId != req.UserId {
-			// 如果当前用户不是文章作者
-			return 0, errors.New("当前用户不是文章作者")
-		}
 
 		newArticle.ID = uint(req.ArticleId)
 
@@ -565,6 +565,11 @@ func InsertArticlesRep(db *gorm.DB, req requests.ReqPublish, userId uint) (id in
 
 		if err = db.First(&newArticle, req.ArticleId).Error; err != nil {
 			return 0, fmt.Errorf("未找到指定文章: %w", err)
+		}
+
+		if newArticle.UserID != userId {
+			// 如果当前用户不是文章作者
+			return 0, errors.New("当前用户不是文章作者")
 		}
 
 		// 更新文章的标签关联
