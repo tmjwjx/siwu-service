@@ -234,7 +234,7 @@ func TimeAgo(t time.Time) string {
 	}
 }
 
-//// TimeFormat 格式化 CreatedAt 为 年-月-日 时:分:秒
+// TimeFormat 格式化 CreatedAt 为 年-月-日 时:分:秒
 //func TimeFormat(t time.Time) string {
 //	formattedTime := t.Format("2006-01-02 15:04:05")
 //	return formattedTime
