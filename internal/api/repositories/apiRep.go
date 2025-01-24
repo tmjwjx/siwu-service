@@ -455,7 +455,7 @@ func SearchApiListRep(db *gorm.DB, req *requests.SearchApiListReq) (*requests.Se
 		query = query.Where("sw_apis.brief_introduction = ?", req.BriefIntroduction)
 	}
 
-	query = query.Where("sw_apis.deleted_at IS NULL")
+	query = query.Where("sw_apis.deleted_at IS NULL").Order("sw_apis.created_at DESC")
 
 	//err := query.Limit(req.Limit).Offset(req.Page).Scan(&searchApiRes).Error
 	err := query.Scan(&searchApiRes).Error

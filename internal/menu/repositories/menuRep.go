@@ -125,7 +125,10 @@ func GetMenuIconRep(db *gorm.DB) (*requests.GetMenuIconRes, error) {
 
 	var icons []string
 	var iconList []*requests.IconRes
-	err := db.Model(models.Menu{}).Select("Icon").Find(&icons).Error
+	err := db.Model(models.Menu{}).
+		Where("icon <> ?", "").
+		Distinct("icon").
+		Pluck("Icon", &icons).Error
 	if err != nil {
 		return nil, fmt.Errorf("GetMenuIconRep -> 获取所有菜单图标 -> %s", err)
 	}
