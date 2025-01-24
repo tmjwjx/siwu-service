@@ -90,35 +90,79 @@ func UserDataRequest(userId uint, userDataReq *requests.UserDataReq, db *gorm.DB
 			return fmt.Errorf("UserDataRequest -> 用户详情表中没有更新任何记录 -> %s", err)
 		}
 	}
+	//// 更新用户标签
+	//var existingTags []models.Tag
+	//err = tx.Where("name IN ?", userDataReq.UserTags).Find(&existingTags).Error
+	//if err != nil {
+	//	tx.Rollback() // 回滚事务
+	//	return fmt.Errorf("UserDataRequest -> 更新用户标签失败 -> %s", err)
+	//}
+	//
+	//// 找到所有传递过来的标签的ID
+	//var tagIDs []uint
+	//for _, tag := range existingTags {
+	//	tagIDs = append(tagIDs, tag.ID)
+	//}
+
 	// 更新用户标签
-	var existingTags []models.Tag
-	err = tx.Where("name IN ?", userDataReq.UserTags).Find(&existingTags).Error
+
+	// 查询该用户旧的标签
+	var ut []models.UserTag
+	err = tx.Model(&models.UserTag{}).Where("user_id = ?", userId).Find(&ut).Error
+	if err != nil {
+		tx.Rollback() // 回滚事务
+		return fmt.Errorf("UserDataRequest -> 用户详情表中没有更新任何记录 -> %s", err)
+	}
+	fmt.Println(len(ut))
+
+	// 删除用户旧的标签
+	for _, userTag := range ut {
+		//fmt.Println("-----------------------------------------------删除")
+		result := tx.Delete(&userTag)
+		if result.Error != nil {
+			tx.Rollback() // 回滚事务
+			return fmt.Errorf("UserDataRequest -> 清除旧的用户标签异常 -> %s", err)
+		} else if result.RowsAffected == 0 {
+			tx.Rollback() // 回滚事务
+			return fmt.Errorf("UserDataRequest -> 清除旧的用户标签失败 -> %s", err)
+		}
+	}
+	//fmt.Println("*************************************************1111111")
+
+	// 查询用户选择的标签的id
+	var tagIDs []uint
+	err = tx.Model(models.Tag{}).Where("name IN ?", userDataReq.UserTags).Pluck("id", &tagIDs).Error
 	if err != nil {
 		tx.Rollback() // 回滚事务
 		return fmt.Errorf("UserDataRequest -> 更新用户标签失败 -> %s", err)
 	}
 
-	// 找到所有传递过来的标签的ID
-	var tagIDs []uint
-	for _, tag := range existingTags {
-		tagIDs = append(tagIDs, tag.ID)
-	}
-
-	// 清除旧的用户标签关联
-	err = tx.Where("user_id = ?", userId).Delete(&models.UserTag{}).Error
-	if err != nil {
-		tx.Rollback() // 回滚事务
-		return fmt.Errorf("UserDataRequest -> 清除旧的用户标签关联失败 -> %s", err)
-	}
-
 	// 添加新的用户标签关联
-	for _, tagID := range tagIDs {
-		err := tx.Create(&models.UserTag{UserID: userId, TagID: tagID}).Error
-		if err != nil {
+	for _, tagId := range tagIDs {
+		//fmt.Println("-----------------------------------------------------------插入")
+		userTag := models.UserTag{
+			UserID: userId,
+			TagID:  tagId,
+		}
+
+		result := tx.Create(&userTag)
+		//fmt.Println("---------->", userTag)
+		if result.Error != nil {
 			tx.Rollback() // 回滚事务
 			return fmt.Errorf("UserDataRequest -> 添加新的用户标签关联失败 -> %s", err)
+		} else if result.RowsAffected == 0 {
+			fmt.Println("------------>无数据插入")
 		}
 	}
+
+	//// 添加新的用户标签关联
+	//for _, tagID := range tagIDs {
+	//	err := tx.Create(&models.UserTag{UserID: userId, TagID: tagID}).Error
+	//	if err != nil {
+	//		tx.Rollback() // 回滚事务
+	//		return fmt.Errorf("UserDataRequest -> 添加新的用户标签关联失败 -> %s", err)
+	//	}
+	//}
 
 	// 提交事务
 	err = tx.Commit().Error
