@@ -51,6 +51,9 @@ func GetImages(db *gorm.DB, home globals.Home, homeID uint) (*[]string, error) {
 	if err != nil {
 		return nil, fmt.Errorf("GetImages -> 查询出数据库中相应的所有图片路径失败 -> %s", err)
 	} else if len(images) == 0 {
+		if home == globals.CommentHome {
+			return &images, nil
+		}
 		// 数据库中没有图片，直接使用默认的图片
 		AssignDefaultValue(home, &images)
 	}
