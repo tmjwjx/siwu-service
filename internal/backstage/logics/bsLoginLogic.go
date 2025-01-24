@@ -83,11 +83,11 @@ func (b *BsManageContext) BsLogin(msg requests.BackstageLoginReq) (*requests.Bac
 	// 获取该用户对应的全部角色id
 	casbinService, err := casbin.NewCasbinService(globals.DB)
 	if err != nil {
-		return nil, fmt.Errorf("UserReqContext.List() %v", err)
+		return nil, fmt.Errorf("UserReqContext.BsLogin() %v", err)
 	}
 	roleIds, err := casbinService.GetRolesForUser(user.ID)
 	if err != nil {
-		return nil, fmt.Errorf("UserReqContext.List() %v", err)
+		return nil, fmt.Errorf("UserReqContext.BsLogin() %v", err)
 	}
 
 	for _, v := range roleIds {
@@ -112,7 +112,16 @@ func (b *BsManageContext) BsLogin(msg requests.BackstageLoginReq) (*requests.Bac
 		AvatarPath: avatarPath,
 		Code:       code,
 	}
-	return backstageLoginRes, nil
+
+	// return backstageLoginRes, nil
+
+	// 补丁：只允许管理者进入后台
+	for _, v := range backstageLoginRes.RoleNames {
+		if v == "管理员" || v == "超级管理员" {
+			return backstageLoginRes, nil
+		}
+	}
+	return nil, fmt.Errorf("用户id为%d的用户没有权限进入后台", user.ID)
 }
 
 // // BsLogout 后台登出

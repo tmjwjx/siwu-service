@@ -46,8 +46,7 @@ func Register(c *gin.Context) {
 
 	// 业务逻辑
 	userReqContext := logics.NewUserReqContext(globals.DB, c, globals.SendEmailCfg)
-	err := userReqContext.Register(registerMsg)
-	if err != nil {
+	if err := userReqContext.Register(registerMsg); err != nil {
 		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("Register() -> %v", err), nil))
 		return
 	}
@@ -96,11 +95,6 @@ func Login(c *gin.Context) {
 		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("Login() : 邮箱不合法"), nil))
 		return
 	}
-	// // 检验密码是否合法
-	// if !internalUtils.IsValidPassword(logicMsg.Password) {
-	// 	response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("Login() : 密码必须要同时包含字母、数字、特殊字符，长度在8到16位之间"), nil))
-	// 	return
-	// }
 
 	// 业务逻辑
 	userReqContext := logics.NewUserReqContext(globals.DB, c, globals.SendEmailCfg)

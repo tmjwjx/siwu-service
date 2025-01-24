@@ -11,6 +11,7 @@ import (
 	"forum/pkg/token"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"time"
 )
 
 // BsLogin
@@ -61,18 +62,29 @@ func BsLogin(c *gin.Context) {
 	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", gin.H{"token": tok, "userInfo": backstageLoginRes}))
 }
 
-// BsLogout 后台登出
-// func BsLogout(c *gin.Context) {
-// 	// 获取token
-// 	tokenString := c.GetHeader("Authorization")
-//
-// 	// 业务逻辑
-// 	bsManageContext := logics.NewBsManageContext(globals.DB, c)
-// 	if err := bsManageContext.BsLogout(tokenString[len("Bearer "):]); err != nil {
-// 		response.Failed(c, http.StatusUnauthorized, response.NewAppErr(globals.StatusUnauthorized, fmt.Errorf("BsLogout() err = %v", err), nil))
-// 		return
-// 	}
-//
-// 	// 成功
-// 	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", nil))
-// }
+func BsLogout(c *gin.Context) {
+	tokenString := c.GetHeader("Authorization")
+	if tokenString == "" {
+		response.Failed(c, http.StatusUnauthorized, response.NewAppErr(globals.StatusUnauthorized, fmt.Errorf("Logout() : 缺少授权标头"), nil))
+		return
+	}
+	tokenString = tokenString[len("Bearer "):]
+
+	// 设置过期时间为 Token 剩余时间
+	claims, err := token.ValidateToken(tokenString)
+	if err != nil {
+		response.Failed(c, http.StatusUnauthorized, response.NewAppErr(globals.StatusUnauthorized, fmt.Errorf("Logout() : 无效的 token"), nil))
+		return
+	}
+
+	expiration := time.Until(claims.ExpiresAt.Time)
+	// 如果该token还没有失效，就把它添加到黑名单中，让它失效
+	if expiration > 0 {
+		if err = token.AddTokenToBlacklist(globals.RDB, tokenString, expiration); err != nil {
+			response.Failed(c, http.StatusUnauthorized, response.NewAppErr(globals.StatusUnauthorized, fmt.Errorf("Logout() : err -> %v", err), nil))
+			return
+		}
+	}
+
+	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", nil))
+}
