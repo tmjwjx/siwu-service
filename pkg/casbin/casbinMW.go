@@ -31,27 +31,53 @@ func CasbinAuth(e *casbin.Enforcer) gin.HandlerFunc {
 
 		//权限验证
 
-		// 获取apiId
-		apiId, err := utils.SelApiId(c.Request.URL.Path)
-		if err != nil {
+		// 查询超级管理员对应的id
+		superAdminID, err := utils.SelIdForSuperAdmin()
+		if superAdminID == "" && err != nil {
 			e := response.NewAppErr(globals.StatusBadRequest, err, nil)
 			response.Failed(c, 400, e)
 			c.Abort()
 			return
 		}
 
-		ok, err := e.Enforce(fmt.Sprintf("%v", id), fmt.Sprintf("%v", apiId))
+		// 验证用户是否是超级管理员
+		casbinServer := &CasbinService{
+			Enforcer: e,
+		}
+
+		ok, err := casbinServer.VerifySuperAdministrator(fmt.Sprintf("%v", id), superAdminID)
 		if err != nil {
-			e := response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("NewCasbinAuth -> 权限验证失败"), nil)
-			response.Failed(c, 500, e)
-			c.Abort()
-			return
-		} else if !ok {
-			e := response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("NewCasbinAuth -> 该用户没有该权限"), nil)
+			e := response.NewAppErr(globals.StatusBadRequest, err, nil)
 			response.Failed(c, 400, e)
 			c.Abort()
 			return
 		}
-		c.Next()
+		if ok {
+			// 如果用户是超级管理员，就不用进行权限验证了，直接结束即可
+			c.Next()
+		} else {
+			// 获取apiId
+			apiId, err := utils.SelApiId(c.Request.URL.Path)
+			if err != nil {
+				e := response.NewAppErr(globals.StatusBadRequest, err, nil)
+				response.Failed(c, 400, e)
+				c.Abort()
+				return
+			}
+
+			ok, err = e.Enforce(fmt.Sprintf("%v", id), fmt.Sprintf("%v", apiId))
+			if err != nil {
+				e := response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("NewCasbinAuth -> 权限验证失败"), nil)
+				response.Failed(c, 500, e)
+				c.Abort()
+				return
+			} else if !ok {
+				e := response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("NewCasbinAuth -> 该用户没有该权限"), nil)
+				response.Failed(c, 400, e)
+				c.Abort()
+				return
+			}
+			c.Next()
+		}
 	}
 }

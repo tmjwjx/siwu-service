@@ -119,7 +119,7 @@ func DeleteApiCtrl(c *gin.Context) {
 	}
 
 	// 逻辑处理
-	err = logics.DeleteApiLogic(&req, globals.DB)
+	err = logics.DeleteApiLogic(globals.CasbinEnforcer, &req, globals.DB)
 	// 返回响应
 	if err != nil {
 		e := response.NewAppErr(globals.StatusInternalServerError, err, nil)

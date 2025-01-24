@@ -306,3 +306,51 @@ func (c *CasbinService) UpdateRoleForUser(userId uint, ids []uint) error {
 
 	return nil
 }
+
+// VerifySuperAdministrator
+// @Description: 验证用户是否是超级管理员
+// @Author wangyulong 2025-01-24 18:28:02
+// @receiver     c
+// @param        userId string
+// @param        roleId string
+// @return       bool
+// @return       error
+func (c *CasbinService) VerifySuperAdministrator(userId string, roleId string) (bool, error) {
+	// 确保最新的策略数据
+	err := c.Enforcer.LoadPolicy()
+	if err != nil {
+		return false, fmt.Errorf("(c *CasbinService) VerifySuperAdministrator -> 策略加载失败， 已有的会忽略 -> %s", err)
+	}
+
+	// 验证用户是否是超级管理员
+	ok, err := c.Enforcer.HasRoleForUser(userId, roleId)
+	if err != nil {
+		return false, fmt.Errorf("(c *CasbinService) VerifySuperAdministrator -> 验证用户是否是超级管理员异常 -> %s", err)
+	}
+	if ok {
+		return true, nil
+	} else {
+		return false, nil
+	}
+}
+
+// DeletePermForUser
+// @Description: 删除角色拥有的权限
+// @Author wangyulong 2025-01-24 20:26:47
+// @receiver     c
+// @param        roleId string
+// @return       error
+func (c *CasbinService) DeletePermForUser(roleId string) error {
+	// 确保最新的策略数据
+	err := c.Enforcer.LoadPolicy()
+	if err != nil {
+		return fmt.Errorf("(c *CasbinService) DeletePermForUser -> 策略加载失败， 已有的会忽略 -> %s", err)
+	}
+
+	// 删除角色拥有的权限
+	_, err = c.Enforcer.DeletePermissionForUser(roleId)
+	if err != nil {
+		return fmt.Errorf("(c *CasbinService) DeletePermForUser -> 删除角色拥有的权限异常 -> %s", err)
+	}
+	return nil
+}

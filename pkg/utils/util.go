@@ -40,3 +40,21 @@ func SelApiId(requestUrl string) (uint, error) {
 	}
 	return apiId, nil
 }
+
+// SelIdForSuperAdmin
+// @Description: 查询超级管理员对应的ID
+// @Author wangyulong 2025-01-24 18:44:49
+// @return       string
+// @return       error
+func SelIdForSuperAdmin() (string, error) {
+	var superAdmin models.Role
+
+	// 查询超级管理员对应的ID
+	result := globals.DB.Model(models.Role{}).Select("id").Where("name = ?", "超级管理员").First(&superAdmin)
+	if result.Error != nil {
+		return "", fmt.Errorf("SelApiId -> 查询超级管理员对应的ID异常 -> %s", result.Error)
+	} else if result.RowsAffected == 0 {
+		return "", fmt.Errorf("SelApiId -> 没有查询到超级管理员对应的ID")
+	}
+	return fmt.Sprintf("%v", superAdmin.ID), nil
+}
