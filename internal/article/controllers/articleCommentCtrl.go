@@ -54,8 +54,13 @@ func InsertCommentCtrl(c *gin.Context) {
 		e := response.NewAppErr(state, err, nil)
 		response.Failed(c, status, e)
 	} else {
-		d := response.NewAppData(globals.StatusOK, "评论存入数据库成功", nil)
-		response.Success(c, 200, d)
+		if status == 500 {
+			d := response.NewAppData(globals.StatusOK, "评论内容不能为空", nil)
+			response.Success(c, 200, d)
+		} else {
+			d := response.NewAppData(globals.StatusOK, "评论存入数据库成功", nil)
+			response.Success(c, 200, d)
+		}
 	}
 
 }
