@@ -34,6 +34,9 @@ func GetCommentStatusRep(db *gorm.DB, userId uint, commentId uint) (int, error) 
 // InsertCommentRep 将评论存入数据库中
 func InsertCommentRep(userId uint, articleCommentReq *requests.ArticleCommentReq, db *gorm.DB) (error, int) {
 
+	if articleCommentReq.Content == "" {
+		return nil, 500
+	}
 	// 开启事务
 	tx := db.Begin()
 	if tx.Error != nil {
