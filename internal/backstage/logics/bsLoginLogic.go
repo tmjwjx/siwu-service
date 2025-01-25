@@ -118,7 +118,7 @@ func (b *BsManageContext) BsLogin(msg requests.BackstageLoginReq) (*requests.Bac
 
 	// 补丁：只允许管理者进入后台（以后要额外添加一张表用来存储管理者）
 	for _, v := range backstageLoginRes.RoleNames {
-		if v == "管理员" || v == "超级管理员" {
+		if v == "管理员" || v == "超级管理员" || v == "测试" {
 			return backstageLoginRes, nil
 		}
 	}
