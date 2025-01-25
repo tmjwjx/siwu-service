@@ -494,6 +494,7 @@ func UpdatePraiseCountRep(req *requests.PraiseCount, db *gorm.DB, userId uint) e
 	// 开启事务
 	tx := db.Begin()
 	if tx.Error != nil {
+		tx.Rollback() // 回滚事务
 		return fmt.Errorf("UpdatePraiseCountRep -> 开启事务失败 -> %s", tx.Error)
 	}
 
@@ -503,56 +504,69 @@ func UpdatePraiseCountRep(req *requests.PraiseCount, db *gorm.DB, userId uint) e
 		UserID:    userId,
 	}
 
+	// 更新评论的点赞数量
 	if req.Status == 1 || req.Status == 2 {
-
-		// 更新评论的点赞数量
 		if req.Status == 1 {
-
-			err := tx.Model(&models.ArticleComment{}).Where("id = ?", req.ID).UpdateColumn("likes_count", gorm.Expr("likes_count + ?", 1)).Error
-			if err != nil {
-				tx.Rollback() // 回滚事务
-				return fmt.Errorf("UpdatePraiseCountRep1 -> 更新评论的点赞数量 -> %s", err)
-			}
+			// 将要进行点赞
 
 			// 每个用户只能对一个评论点赞一次，所以先查询一下，该用户是否已经点赞过该评论了。
-			err = tx.Where("comment_id = ? and user_id = ?", req.ID, userId).First(&commentLike).Error
+			err := tx.Where("comment_id = ? and user_id = ?", req.ID, userId).First(&commentLike).Error
 			if err != nil {
-				// 如果没有查询到，说明该用户没对该评论点赞过，可以点赞，否则，直接跳过。
-				err := tx.Create(&commentLike).Error
-				if err != nil {
-					tx.Rollback() // 回滚事务
-					return fmt.Errorf("DeleteCommentRep1 -> 更新 comment_likes 表中的数据失败 -> %s", err)
+				if errors.Is(err, gorm.ErrRecordNotFound) {
+					// 如果没有查询到，说明该用户没对该评论点赞过，可以点赞，否则，直接跳过。
+					err = tx.Create(&commentLike).Error
+					if err != nil {
+						tx.Rollback() // 回滚事务
+						return fmt.Errorf("DeleteCommentRep1 -> 向 comment_likes 表中插入记录 失败 -> %s", err)
+					}
+					// 更新评论的点赞数量+1
+					err = tx.Model(&models.ArticleComment{}).Where("id = ?", req.ID).UpdateColumn("likes_count", gorm.Expr("likes_count + ?", 1)).Error
+					if err != nil {
+						tx.Rollback() // 回滚事务
+						return fmt.Errorf("UpdatePraiseCountRep1 -> 更新评论的点赞数量+1 异常 -> %s", err)
+					}
+				} else {
+					tx.Rollback()
+					return fmt.Errorf("DeleteCommentRep1 -> 进行点赞 异常 -> %s", err)
 				}
 			}
-
 		} else if req.Status == 2 {
-			err := tx.Model(&models.ArticleComment{}).Where("id = ?", req.ID).UpdateColumn("likes_count", gorm.Expr("likes_count - ?", 1)).Error
-			if err != nil {
-				tx.Rollback() // 回滚事务
-				return fmt.Errorf("UpdatePraiseCountRep2 -> 更新评论的点赞数量 -> %s", err)
-			}
+			// 将要取消点赞
 
 			// 每个用户只能对一个评论点赞一次，所以先查询一下，该用户是否已经点赞过该评论了。
-			err = tx.Where("comment_id = ? and user_id = ?", req.ID, userId).First(&commentLike).Error
+			err := tx.Where("comment_id = ? and user_id = ?", req.ID, userId).First(&commentLike).Error
 			if err == nil {
 				// 如果查询到了，说明该用户对该评论点赞过，可以删除点赞，否则，直接跳过。
-				err := tx.Delete(&commentLike).Error
+				err = tx.Delete(&commentLike).Error
 				if err != nil {
 					tx.Rollback() // 回滚事务
 					return fmt.Errorf("DeleteCommentRep2 -> 更新 comment_likes 表中的数据失败 -> %s", err)
 				}
+				// 更新评论的点赞数量-1
+				err = tx.Model(&models.ArticleComment{}).Where("id = ? and likes_count > ?", req.ID, 0).UpdateColumn("likes_count", gorm.Expr("likes_count - ?", 1)).Error
+				if err != nil {
+					tx.Rollback() // 回滚事务
+					return fmt.Errorf("UpdatePraiseCountRep2 -> 更新评论的点赞数量-1 异常-> %s", err)
+				}
+			} else {
+				if errors.Is(err, gorm.ErrRecordNotFound) {
+					// 如果是没有查到，就什么也不用管了
+				} else {
+					tx.Rollback()
+					return fmt.Errorf("DeleteCommentRep -> 取消点赞 异常 -> %s", err)
+				}
 			}
-
 		}
 	} else {
+		tx.Rollback()
 		return fmt.Errorf("UpdatePraiseCountRep -> 更新点赞的数量失败 -> status 的值只能是 1 或 2, 1:代表增加点赞, 2:代表取消点赞")
 	}
 
 	// 提交事务
 	err := tx.Commit().Error
 	if err != nil {
+		tx.Rollback() // 回滚事务
 		return fmt.Errorf("DeleteCommentRep -> 提交事务失败 -> %s", err)
 	}
-
 	return nil
 }
