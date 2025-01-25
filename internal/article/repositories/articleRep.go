@@ -595,7 +595,10 @@ func InsertArticlesRep(db *gorm.DB, req requests.ReqPublish, userId uint) (id in
 	// 设置标签
 	// 查找传递过来的所有标签
 	var tags []models.Tag
-	if err = db.Where("id IN ?", req.Tags).Find(&tags).Error; err != nil {
+	//if err = db.Where("id IN ?", req.Tags).Debug().Find(&tags).Error; err != nil {
+	//	return 0, err // 如果标签不存在，返回错误
+	//}
+	if err = db.Where("name IN ?", req.Tags).Debug().Find(&tags).Error; err != nil {
 		return 0, err // 如果标签不存在，返回错误
 	}
 
