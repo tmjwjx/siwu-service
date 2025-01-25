@@ -2,27 +2,132 @@ package routes
 
 import (
 	"forum/internal/article/controllers"
+	"forum/pkg/casbin"
 	"forum/pkg/globals"
+	"forum/pkg/token"
+	"github.com/gin-gonic/gin"
 )
 
-func Search() {
-	// 搜索
-	userGroup := globals.Router.Group("/search")
-	{
-		userGroup.GET("/query", controllers.ArticleSearchCtrl)
-	}
-
-}
-
-func Publish() {
+// Article
+// @Description: 文章
+// @param        e *gin.Engine
+func Article(e *gin.Engine) {
 
 	// 搜索
-	articleGroup := globals.Router.Group("/article")
+	articleGroup := e.Group("/article")
+	// token 校验
+	articleGroup.Use(token.AuthMiddleware())
 	{
+		// 文章搜索框
+		articleGroup.GET("/search_box", controllers.ArticleSearchCtrl)
 		// 编辑界面
 		articleGroup.GET("/edit", controllers.ArticleEditCtrl)
 		// 发布文章
 		articleGroup.POST("/publish", controllers.ArticlePublishCtrl)
+		// 获取文章列表
+		articleGroup.POST("/get_list", controllers.ArticleListCtrl)
+		// 封禁文章
+		articleGroup.POST("/ban", controllers.ArticleBanCtrl)
+		// 解封文章
+		articleGroup.POST("/unblock", controllers.ArticleUnblockCtrl)
+		// 管理员 删除文章
+		articleGroup.POST("/delete", controllers.DeleteArticlesCtrl)
+		// 用户 删除文章
+		articleGroup.GET("/delete_article", controllers.UserDeleteArticlesCtrl)
+
+		// 获取文章详情
+		articleGroup.GET("/detail", controllers.ArticleDetailCtrl)
+		// 点赞
+		articleGroup.POST("/like", controllers.LikeArticleCtrl)
+		// 收藏
+		articleGroup.POST("/collection", controllers.CollectionCtrl)
+
+		// 获取标签下的文章
+		articleGroup.GET("/get_article_by_tag", controllers.GetArticlesByTagCtrl)
+
+		// 会员中心 获取用户文章或收藏列表
+		articleGroup.GET("/get_type_data", controllers.GetUserArticleOrCollectionCtrl)
+
+		// 关注的用户的文章
+		articleGroup.GET("/get_following_article", controllers.GetFollowingArticleCtrl)
 	}
+
+	//// token 校验
+	//e.Use(token.AuthMiddleware())
+	//// 会员中心 获取用户文章或收藏列表
+	//e.GET("/get_type_data", controllers.GetUserArticleOrCollectionCtrl)
+
+}
+
+// Workplace
+// @Description: 工作台路由
+// @param        e *gin.Engine
+// @Author tianjiajie 2025-01-15 09:11:06
+func Workplace(e *gin.Engine) {
+	workplaceGroup := e.Group("/workplace")
+	// token 校验
+	workplaceGroup.Use(token.AuthMiddleware())
+	{
+		// 查询近两周文章发布数量
+		workplaceGroup.GET("/article_sum", controllers.GetTwoWeeksArticleSumCtrl)
+		// 查询前五篇热门文章数据
+		workplaceGroup.GET("/hot_articles", controllers.GetHotArticleCtrl)
+		// 前五个热门标签的文章量
+		workplaceGroup.GET("/pielist", controllers.GetHotTagsCtrl)
+		// 获取工作台首页计算数据
+		workplaceGroup.GET("data", controllers.GetWorkplaceDataCtrl)
+	}
+
+}
+
+// Comment 评论
+func Comment(e *gin.Engine) {
+
+	//casbinService, err := casbin.NewCasbinService(globals.DB)
+	//if err != nil {
+	//	fmt.Println("Api(e *gin.Engine) -> 创建 casbinService 失败, err = ", err)
+	//}
+
+	// 前台
+	r := e.Group("/comment").Use(token.AuthMiddleware())
+
+	// 保存评论
+	r.POST("/create", controllers.InsertCommentCtrl)
+
+	// 返回顶级评论 列表
+	r.POST("/top_level", controllers.GetTopLevelCommentsCtrl)
+
+	// 返回评论回复 列表
+	r.POST("/replies", controllers.GetRepliesRep2Ctrl)
+
+	// 删除评论
+	r.POST("/delete", controllers.DeleteCommentCtrl)
+
+	// 更新点赞的数量
+	r.POST("/praise", controllers.UpdatePraiseCountCtrl)
+
+	// 后台
+	r2 := e.Group("/backstage_comment").Use(token.AuthMiddleware()).Use(casbin.CasbinAuth(globals.CasbinEnforcer))
+
+	// 展示评论列表(检索api获取列表)
+	r2.POST("/list", controllers.ShowCommentsListCtrl)
+
+	// 添加评论
+	r2.POST("/add", controllers.AddCommentCtrl)
+
+	// 删除评论
+	r2.DELETE("/delete", controllers.BsDeleteCommentCtrl)
+
+	// 批量删除评论
+	r2.DELETE("/batch_delete", controllers.BatchDelTagCtrl)
+
+	// 批量审核
+	r2.POST("/query", controllers.BatchReviewCtrl)
+
+	// 更新评论
+	r2.POST("/update", controllers.UpdateCommentCtrl)
+
+	// 查询某个用户的全部评论
+	//r2.GET("/query", controllers.QueryCommentCtrl)
 
 }

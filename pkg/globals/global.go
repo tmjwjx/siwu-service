@@ -1,6 +1,7 @@
 package globals
 
 import (
+	"github.com/casbin/casbin/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
 	"go.uber.org/zap"
@@ -8,8 +9,12 @@ import (
 )
 
 var (
-	// AppConfig 项目的mysql，redis配置
+
+	// AppConfig 项目总配置
 	AppConfig Config
+
+	// SConfig 静态文件配置
+	SConfig StaticConfig
 
 	// DB mysql链接
 	DB *gorm.DB
@@ -26,6 +31,14 @@ var (
 	// Env 环境配置文件
 	Env string
 
-	// VerifyCode 验证码配置
-	VerifyCode *VerifyCodeConfig
+	// SendEmailCfg 发送邮件配置
+	SendEmailCfg *SendEmailConfig
+
+	// SubscriberChannels 全局 map，用于存储各文章 ID 的 SSE 订阅者通道
+	SubscriberChannels = make(map[string]chan string)
+
+	CasbinEnforcer *casbin.Enforcer
+
+	// // SystemMsgSubject 系统消息主题
+	// SystemMsgSubject = observer.NewSystemMsgSubject()
 )

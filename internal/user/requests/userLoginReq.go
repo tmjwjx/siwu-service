@@ -1,20 +1,30 @@
 package requests
 
-// RegisterMsg 注册消息
-type RegisterMsg struct {
+// RegisterReq 注册请求
+type RegisterReq struct {
 	Email      string `json:"email"`       // 邮箱
 	VerifyCode string `json:"verify_code"` // 验证码
 	Password   string `json:"password"`    // 密码
 	RePassword string `json:"re_password"` // 重复密码
 }
 
-// LogicMsg 登录消息
-type LogicMsg struct {
+// LogicReq 登录请求
+type LogicReq struct {
 	Email    string `json:"email"`    // 邮箱
 	Password string `json:"password"` // 密码
 }
 
-// ReqVerifyCode 请求验证码
-type ReqVerifyCode struct {
-	Email string `json:"email" form:"email"` // 邮箱
+// LogicRes 登录响应
+type LogicRes struct {
+	Id         uint   `json:"id"`
+	Nickname   string `json:"nickname"`
+	AvatarPath string `json:"avatar_path"`
+}
+
+// ForgotPasswordReq 忘记验证码请求
+type ForgotPasswordReq struct {
+	Email      string `json:"email"`       // 邮箱
+	VerifyCode string `json:"verify_code"` // 验证码
+	Password   string `json:"password"`    // 密码
+	RePassword string `json:"re_password"` // 重复密码
 }
