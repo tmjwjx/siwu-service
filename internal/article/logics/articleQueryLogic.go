@@ -127,9 +127,10 @@ func ArticleEditLogic(db *gorm.DB) (data interface{}, err error) {
 	// 将标签转换为前端需要的数据格式
 	for _, tag := range tags {
 		t = append(t, struct {
-			Value uint   `json:"value"`
+			Id    uint   `json:"id"`
+			Value string `json:"value"`
 			Label string `json:"label"`
-		}{Value: tag.ID, Label: tag.Name})
+		}{Id: tag.ID, Value: tag.Name, Label: tag.Name})
 	}
 
 	// 查询类目
@@ -140,9 +141,10 @@ func ArticleEditLogic(db *gorm.DB) (data interface{}, err error) {
 	// 将类目转换为前端需要的数据格式
 	for _, category := range categories {
 		c = append(c, struct {
-			Value uint   `json:"value"`
+			Id    uint   `json:"id"`
+			Value string `json:"value"`
 			Label string `json:"label"`
-		}{Value: category.ID, Label: category.Name})
+		}{Id: category.ID, Value: category.Name, Label: category.Name})
 	}
 
 	data = gin.H{"tags": t, "categories": c}

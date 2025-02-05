@@ -15,10 +15,12 @@ type ReqPublish struct {
 }
 
 type TagsReq []struct {
-	Value uint   `json:"value"`
+	Id    uint   `json:"id"`
+	Value string `json:"value"`
 	Label string `json:"label"`
 }
 type CategorysReq []struct {
-	Value uint   `json:"value"`
+	Id    uint   `json:"id"`
+	Value string `json:"value"`
 	Label string `json:"label"`
 }
