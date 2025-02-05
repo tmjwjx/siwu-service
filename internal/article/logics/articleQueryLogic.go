@@ -141,10 +141,9 @@ func ArticleEditLogic(db *gorm.DB) (data interface{}, err error) {
 	// 将类目转换为前端需要的数据格式
 	for _, category := range categories {
 		c = append(c, struct {
-			Id    uint   `json:"id"`
-			Value string `json:"value"`
+			Value uint   `json:"value"`
 			Label string `json:"label"`
-		}{Id: category.ID, Value: category.Name, Label: category.Name})
+		}{Value: category.ID, Label: category.Name})
 	}
 
 	data = gin.H{"tags": t, "categories": c}
