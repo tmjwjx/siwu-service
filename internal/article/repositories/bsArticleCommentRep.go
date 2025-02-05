@@ -42,8 +42,8 @@ func BatchReviewRep(db *gorm.DB, req *requests.BatchReviewReq) (*requests.BatchR
 // ShowCommentsListRep 展示评论列表(获取评论列表)
 func ShowCommentsListRep(db *gorm.DB, req *requests.CommentsListReq) (*requests.CommentsListRes, error) {
 
-	if req.Limit <= 0 || req.Offset < 0 {
-		return nil, fmt.Errorf("ShowCommentsListRep -> Limit的值不能小于等于0 或者 Offset的值不能小于0")
+	if req.Limit <= 0 || req.Offset <= 0 {
+		return nil, fmt.Errorf("ShowCommentsListRep -> Limit的值不能小于等于0 或者 Offset的值不能小于等于0")
 	}
 
 	var commentsListRes *requests.CommentsListRes

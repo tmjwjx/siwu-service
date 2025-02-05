@@ -42,8 +42,8 @@ func QueryTagLogic(db *gorm.DB, req *requests.BsQueTagReq) (*requests.BsQueTag, 
 
 // BatchQueryTagLogic 批量查询标签
 func BatchQueryTagLogic(db *gorm.DB, req *requests.BsBatchQueTagReq) (*requests.BsQueTagRes, error) {
-	if req.Offset < 0 || req.Limit < 0 {
-		return nil, fmt.Errorf("BatchQueryTagLogic -> Offset 或 Limit 的值不能小于0")
+	if req.Offset <= 0 || req.Limit <= 0 {
+		return nil, fmt.Errorf("BatchQueryTagLogic -> Offset 或 Limit 的值不能小于或等于0")
 	}
 	batchTagRes, err := repositories.BatchQueryTagRep(db, req)
 	return batchTagRes, err
