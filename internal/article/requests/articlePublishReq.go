@@ -20,7 +20,7 @@ type TagsReq []struct {
 	Label string `json:"label"`
 }
 type CategorysReq []struct {
-	Id    uint   `json:"id"`
-	Value string `json:"value"`
+	//Id    uint   `json:"id"`
+	Value uint   `json:"value"`
 	Label string `json:"label"`
 }
