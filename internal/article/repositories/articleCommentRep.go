@@ -89,8 +89,25 @@ func InsertCommentRep(userId uint, articleCommentReq *requests.ArticleCommentReq
 		return fmt.Errorf("InsertCommentRep -> 提交事务失败 -> %s", err), 500
 	}
 
-	// 评论通知
-	internalUtils.MessagePush("comment", fmt.Sprintf("%v", articleCommentReq.ParentUserID))
+	if articleCommentReq.HighestID == 0 {
+		// 如果是顶级评论，返回该篇文章的的作者ID
+		// 查询该篇文章的作者ID
+		var aUserID uint
+		result := db.Model(&models.Article{}).Select("user_id").Where("id = ?", articleCommentReq.ArticleID).Scan(&aUserID)
+		if result.Error != nil {
+			return fmt.Errorf("InsertCommentRep -> 查询该篇文章的作者ID异常 -> %s", err), 500
+		}
+		if aUserID == 0 {
+			return fmt.Errorf("InsertCommentRep -> 没有查询到该篇文章的作者ID -> %s", err), 500
+		}
+
+		// 评论通知
+		internalUtils.MessagePush("comment", fmt.Sprintf("%v", aUserID))
+	} else {
+		// 如果不是顶级评论，返回回复的评论的发布者ID
+		// 评论通知
+		internalUtils.MessagePush("comment", fmt.Sprintf("%v", articleCommentReq.ParentUserID))
+	}
 
 	return nil, 200
 
