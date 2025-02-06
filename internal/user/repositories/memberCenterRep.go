@@ -71,8 +71,8 @@ func InitUserInfoRep(db *gorm.DB, qid string, gid string) (*requests.InitUserInf
 		initUserInfoRes.CollectionsCount += article.CollectionsCount
 	}
 
-	var followed []uint // 作者关注的用户
-	var follower []uint // 关注作者的用户
+	var followed []uint // 本页面用户关注的用户
+	var follower []uint // 关注本页面用户的用户
 	// 查询作者关注了哪些用户
 	err = db.Model(&models.UserFollow{}).Where("follower_id = ?", gid).Pluck("followed_id", &followed).Error
 	if err != nil {
@@ -92,13 +92,13 @@ func InitUserInfoRep(db *gorm.DB, qid string, gid string) (*requests.InitUserInf
 		initUserInfoRes.ConcernStatus = 2
 	} else {
 		// 将string类型的值转换成uint类型
-		gid2, err := utils.ChangeStringToUint(gid)
+		qid2, err := utils.ChangeStringToUint(qid)
 		if err != nil {
 			return nil, fmt.Errorf("InitUserInfoRep -> %s", err)
 		}
 
-		for _, id := range followed {
-			if id == gid2 {
+		for _, id := range follower {
+			if id == qid2 {
 				initUserInfoRes.ConcernStatus = 1
 				break
 			}
