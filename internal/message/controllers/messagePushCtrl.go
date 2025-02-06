@@ -13,7 +13,7 @@ func MessagePushCtrl(c *gin.Context) {
 	c.Writer.Header().Set("Cache-Control", "no-cache")         // 提示用户不要缓存响应
 	c.Writer.Header().Set("Connection", "keep-alive")          // 保持连接不断开，以便持续发送事件
 	//c.Writer.Header().Set("Access-Control-Allow-Origin", "*")  // 设置跨域资源共享头，允许所有域访问该资源
-	c.Writer.Header().Set("Access-Control-Allow-Origin", "http://192.168.10.7:9901") // 设置跨域资源共享头，允许所有域访问该资源
+	//c.Writer.Header().Set("Access-Control-Allow-Origin", "http://192.168.10.7:9901") // 设置跨域资源共享头，允许所有域访问该资源
 
 	// 创建用户的消息通道 监听新消息并发送到客户端
 	logics.NewMessageChan(c)
