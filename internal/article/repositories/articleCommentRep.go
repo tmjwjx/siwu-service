@@ -88,6 +88,10 @@ func InsertCommentRep(userId uint, articleCommentReq *requests.ArticleCommentReq
 	if err != nil {
 		return fmt.Errorf("InsertCommentRep -> 提交事务失败 -> %s", err), 500
 	}
+
+	// 评论通知
+	internalUtils.MessagePush("comment", fmt.Sprintf("%v", articleCommentReq.ParentUserID))
+
 	return nil, 200
 
 }
