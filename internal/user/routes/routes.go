@@ -26,9 +26,9 @@ func User(e *gin.Engine) {
 	// 关注
 	r.POST("/click_attention", controllers.ClickAttention)
 	// 用户排行
-	r.GET("/rank", controllers.UserRank)
+	r.GET("/rank", middlewares.UserRankMW, controllers.UserRank)
 	// Attention 搜索用户关注的人
-	r.GET("/attention", controllers.Attention)
+	r.GET("/attention", middlewares.AttentionMW, controllers.Attention)
 	// GetBasicInfo 通过用户id获取到用户简略信息
 	r.POST("/get_basic_information", controllers.GetBasicInfo)
 

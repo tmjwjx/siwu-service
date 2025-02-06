@@ -14,10 +14,11 @@ const (
 	ErrUserIdNotGetFromContext = "无法从上下文中获取用户id"
 	ErrPageRangeIsWrong        = "page 范围错误"
 	ErrLimitRangeIsWrong       = "limit 范围错误"
-
+	ErrDataTypeIsWrong         = "参数类型错误"
 	ErrEmailIsUse              = "邮箱已被使用"
 	ErrUserIdNotExist          = "用户id不存在"
 	ErrEmailNotExist           = "用户邮箱不存在"
+	ErrUserDetailNotExist      = "用户的详细信息不存在"
 	ErrEmailAnPasswordNotMatch = "邮箱和密码不符合"
 	ErrBindDataIsWrong         = "绑定数据错误"
 	ErrTypeAssertionFail       = "类型断言失败"
