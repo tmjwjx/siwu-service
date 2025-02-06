@@ -14,7 +14,6 @@ import (
 // InsertCommentCtrl 将评论存入数据库中
 func InsertCommentCtrl(c *gin.Context) {
 	// 获取参数
-
 	var articleCommentReq requests.ArticleCommentReq
 	err := c.ShouldBindJSON(&articleCommentReq)
 	if err != nil {
