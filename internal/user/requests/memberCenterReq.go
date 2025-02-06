@@ -25,7 +25,7 @@ type MiddleInfo struct {
 	Date      time.Time `json:"date"`      // 注册时间
 	Nickname  string    `json:"nickname"`  // 昵称
 	Signature string    `json:"signature"` // 个人签名
-	HeadShot  string    `json:"head_shot"` // 用户头像
+	//HeadShot  string    `json:"head_shot"` // 用户头像
 }
 
 //// 用户
