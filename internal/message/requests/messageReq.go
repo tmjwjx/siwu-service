@@ -56,3 +56,19 @@ type CommentMessageRes struct {
 	ArticleId  uint       `json:"article_id"`  // 文章ID
 	CommentId  uint       `json:"comment_id"`  // 评论的ID
 }
+
+// CommentLikeMessageRes
+// @Description: 评论点赞消息响应
+// @Author tianjiajie 2025-02-06 09:06:33
+type CommentLikeMessageRes struct {
+	UserId     uint       `json:"user_id"`     // 点赞者用户ID
+	Nickname   string     `json:"nickname"`    // 点赞者昵称
+	Path       string     `json:"path"`        // 点赞者头像URL
+	ArticleId  uint       `json:"article_id"`  // 文章ID
+	Title      string     `json:"title"`       // 文章标题
+	CommentId  uint       `json:"comment_id"`  // 被点赞评论的ID
+	Content    string     `json:"content"`     // 被点赞评论内容
+	CreatedAt  *time.Time `json:"created_at"`  // 评论创建时间
+	FormatTime string     `json:"format_time"` // 格式化时间
+	DailyTime  string     `json:"daily_time"`  // 日常时间
+}

@@ -1,8 +1,8 @@
 package repositories
 
 import (
-	"fmt"
 	"forum/internal/models"
+	"forum/pkg/globals"
 	"gorm.io/gorm"
 )
 
@@ -84,7 +84,9 @@ func QueryFollowed(db *gorm.DB, follower uint) ([]uint, error) {
 	// Pluck("followed_id", &followedIDs)：只提取 followed 字段的值，并存储到 followedIDs 切片中。
 	err := db.Table("sw_user_follows").Where("follower_id = ?", follower).Pluck("followed_id", &followedIDSli).Error
 	if err != nil {
-		return nil, fmt.Errorf("QueryFollowed() err: %v", err)
+		// return nil, fmt.Errorf("QueryFollowed() err: %v", err)
+		globals.Log.Error(err.Error())
+		return nil, err
 	}
 
 	return followedIDSli, nil
@@ -102,7 +104,9 @@ func QueryFollower(db *gorm.DB, followed uint) ([]uint, error) {
 	// 执行查询，获取所有关注的用户ID
 	err := db.Table("sw_user_follows").Where("followed_id = ?", followed).Pluck("follower_id", &followerIDSli).Error
 	if err != nil {
-		return nil, fmt.Errorf("QueryFollowed() err: %v", err)
+		// return nil, fmt.Errorf("QueryFollowed() err: %v", err)
+		globals.Log.Error(err.Error())
+		return nil, err
 	}
 
 	return followerIDSli, nil

@@ -23,6 +23,9 @@ func Message(e *gin.Engine) {
 
 		// 评论消息
 		messageGroup.GET("/comment", controllers.CommentMesCtrl)
+
+		// 评论点赞消息
+		messageGroup.GET("/comment_like", controllers.CommentLikeMesCtrl)
 	}
 
 }
