@@ -174,24 +174,27 @@ func UserAccountRequestCtrl(c *gin.Context) {
 func UserAccountResponseCtrl(c *gin.Context) {
 
 	// 获取参数
-	userID, exists := c.Get("id")
-	if !exists {
-		// 返回错误响应
-		e := response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("UserAccountResponseCtrl -> 从token中获取用户ID失败"), nil)
-		response.Failed(c, 500, e)
-		return
-	}
+	// 从查询参数中获取前端本页面用户的id
+	authorId := c.Query("author_id")
 
-	uintValue, err := internalUtils.ChangeAnyToUint(userID)
-	if err != nil {
-		// 返回错误响应
-		e := response.NewAppErr(globals.StatusInternalServerError, err, nil)
-		response.Failed(c, 500, e)
-		return
-	}
+	//userID, exists := c.Get("id")
+	//if !exists {
+	//	// 返回错误响应
+	//	e := response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("UserAccountResponseCtrl -> 从token中获取用户ID失败"), nil)
+	//	response.Failed(c, 500, e)
+	//	return
+	//}
+	//
+	//uintValue, err := internalUtils.ChangeAnyToUint(userID)
+	//if err != nil {
+	//	// 返回错误响应
+	//	e := response.NewAppErr(globals.StatusInternalServerError, err, nil)
+	//	response.Failed(c, 500, e)
+	//	return
+	//}
 
 	// 逻辑处理
-	userAccountRes, err := logics.UserAccountResponseLogic(uintValue, globals.DB)
+	userAccountRes, err := logics.UserAccountResponseLogic(authorId, globals.DB)
 
 	// 返回响应
 	if err != nil {

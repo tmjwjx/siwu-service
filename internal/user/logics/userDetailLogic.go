@@ -56,7 +56,7 @@ func UserAccountRequestLogic(userAccountReq *requests.UserAccountReq, db *gorm.D
 }
 
 // UserAccountResponseLogic 返回用户账号设置信息给前端
-func UserAccountResponseLogic(userID uint, db *gorm.DB) (*requests.UserAccountRes, error) {
+func UserAccountResponseLogic(userID string, db *gorm.DB) (*requests.UserAccountRes, error) {
 	userAccountRes, err := repositories.UserAccountResponse(userID, db)
 	return userAccountRes, err
 }
