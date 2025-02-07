@@ -373,7 +373,7 @@ func UserDataResponse(userID uint, db *gorm.DB) (*requests.UserDataRes, error) {
 }
 
 // UserAccountResponse 响应用户账号设置
-func UserAccountResponse(userID uint, db *gorm.DB) (*requests.UserAccountRes, error) {
+func UserAccountResponse(userID string, db *gorm.DB) (*requests.UserAccountRes, error) {
 	var user models.User
 
 	err := db.Preload("UserDetail").First(&user, userID).Error
