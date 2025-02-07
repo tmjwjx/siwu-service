@@ -14,6 +14,7 @@ func AddTokenToBlacklist(rdb *redis.Client, tokenString string, expiration time.
 	return rdb.Set(ctx, tokenString, "blacklisted", expiration).Err()
 }
 
+// IsTokenBlacklisted 检查 Token 是否在黑名单
 func IsTokenBlacklisted(rdb *redis.Client, tokenString string) bool {
 	ctx := context.Background()
 	s, err := rdb.Get(ctx, tokenString).Result()

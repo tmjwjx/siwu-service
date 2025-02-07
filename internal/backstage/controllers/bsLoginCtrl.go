@@ -61,6 +61,7 @@ func BsLogin(c *gin.Context) {
 	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", gin.H{"token": tok, "userInfo": backstageLoginRes}))
 }
 
+// BsLogout 后台登出
 func BsLogout(c *gin.Context) {
 	tokenString := c.GetHeader("Authorization")
 	if tokenString == "" {
