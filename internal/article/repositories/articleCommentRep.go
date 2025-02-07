@@ -550,17 +550,18 @@ func UpdatePraiseCountRep(req *requests.PraiseCount, db *gorm.DB, userId uint) e
 						tx.Rollback() // 回滚事务
 						return fmt.Errorf("UpdatePraiseCountRep1 -> 更新评论的点赞数量+1 异常 -> %s", err)
 					}
+
+					// 查询评论的作者
+					var comment models.ArticleComment
+					err = db.Model(&models.ArticleComment{}).Select("user_id").Where("id = ?", req.ID).First(&comment).Error
+					// 评论点赞通知
+					internalUtils.MessagePush("comment_like", strconv.Itoa(int(comment.UserID)))
+
 				} else {
 					tx.Rollback()
 					return fmt.Errorf("DeleteCommentRep1 -> 进行点赞 异常 -> %s", err)
 				}
 			}
-
-			// 查询评论的作者
-			var comment models.ArticleComment
-			err = db.Model(&models.ArticleComment{}).Select("user_id").Where("id = ?", req.ID).First(&comment).Error
-			// 评论点赞通知
-			internalUtils.MessagePush("comment_like", strconv.Itoa(int(comment.UserID)))
 
 		} else if req.Status == 2 {
 			// 将要取消点赞
