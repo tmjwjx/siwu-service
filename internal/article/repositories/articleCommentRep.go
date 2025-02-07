@@ -8,6 +8,7 @@ import (
 	"forum/internal/models"
 	"forum/pkg/globals"
 	"gorm.io/gorm"
+	"strconv"
 )
 
 // GetCommentStatusRep
@@ -592,5 +593,12 @@ func UpdatePraiseCountRep(req *requests.PraiseCount, db *gorm.DB, userId uint) e
 		tx.Rollback() // 回滚事务
 		return fmt.Errorf("DeleteCommentRep -> 提交事务失败 -> %s", err)
 	}
+
+	// 查询评论的作者
+	var comment models.ArticleComment
+	err = db.Model(&models.ArticleComment{}).Select("user_id").Where("id = ?", req.ID).First(&comment).Error
+
+	internalUtils.MessagePush("comment_like", strconv.Itoa(int(comment.UserID)))
+
 	return nil
 }
