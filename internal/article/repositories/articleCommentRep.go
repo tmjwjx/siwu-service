@@ -91,7 +91,7 @@ func InsertCommentRep(userId uint, articleCommentReq *requests.ArticleCommentReq
 	}
 
 	if articleCommentReq.HighestID == 0 {
-		// 如果是顶级评论，返回该篇文章的的作者ID
+		// 如果是顶级评论，返回该篇文章的作者ID
 		// 查询该篇文章的作者ID
 		var aUserID uint
 		result := db.Model(&models.Article{}).Select("user_id").Where("id = ?", articleCommentReq.ArticleID).Scan(&aUserID)
@@ -165,7 +165,7 @@ func GetTopLevelCommentsRep(userId uint, db *gorm.DB, req *requests.TopCommentsR
 
 	// 查询顶级评论
 	err := db.Where("article_id = ? AND highest_id = ?", req.ArticleID, 0).
-		Order("created_at asc").Find(&articleComments).Error
+		Order("created_at desc").Find(&articleComments).Error
 	if err != nil {
 		return nil, fmt.Errorf("GetTopLevelCommentsRep -> %s", err)
 	}
@@ -316,7 +316,7 @@ func GetRepliesRep2Rep(userId uint, db *gorm.DB, req *requests.RepliesReq2) (*re
 	var articleComments []models.ArticleComment
 	var commentId []uint
 
-	err := db.Model(&models.ArticleComment{}).Where("highest_id = ?", req.HighestID).Order("created_at asc").Find(&articleComments).Error
+	err := db.Model(&models.ArticleComment{}).Where("highest_id = ?", req.HighestID).Order("created_at desc").Find(&articleComments).Error
 	if err != nil {
 		return nil, fmt.Errorf("GetRepliesRep2Rep -> 查询 ArticleComment 表失败 -> %s", err)
 	}
