@@ -1,13 +1,11 @@
 package response
 
 const (
-	DataSuccess = "成功"
-
-	ErrPasswordIsInvalid    = "密码不合法"
-	ErrPasswordIsWrong      = "密码错误"
-	ErrPasswordTwiceIsWrong = "两次输入的密码不一致"
-	ErrEmailIsInvalid       = "邮箱不合法"
-	// ErrEmailIsNotExist         = "不存在该邮箱"
+	DataSuccess                = "成功"
+	ErrPasswordIsInvalid       = "密码不合法"
+	ErrPasswordIsWrong         = "密码错误"
+	ErrPasswordTwiceIsWrong    = "两次输入的密码不一致"
+	ErrEmailIsInvalid          = "邮箱不合法"
 	ErrVerifyCodeIsWrong       = "验证码错误"
 	ErrVerifyCodeIsExpired     = "验证码已失效"
 	ErrReqVerifyCodeIsCooling  = "请求验证码正在冷却时间中"
@@ -26,4 +24,6 @@ const (
 	ErrUnableFindUserAvatar    = "无法找到用户头像"
 	ErrModelNotPointer         = "数据模型不是指针类型"
 	ErrInsertDataFail          = "插入数据失败"
+	ErrMissAuthorizationHeader = "缺少授权标头"
+	ErrTokenIsInvalid          = "无效的token"
 )

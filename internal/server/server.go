@@ -36,7 +36,7 @@ func Start() {
 	// 	return
 	// }
 
-	// 创建一个 HTTP 服务
+	// 创建一个 HTTP 服务（处理器）
 	server := &http.Server{
 		Addr:    address,
 		Handler: globals.Router,
