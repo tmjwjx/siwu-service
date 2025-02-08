@@ -8,7 +8,9 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"math/rand"
 	"os"
+	"regexp"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -170,6 +172,43 @@ func MessagePush(data string, userId string) {
 	if exist {
 		notifyChan <- data
 	}
+}
+
+// Highlight
+// @Description: 高亮处理
+// @param        content string
+// @param        keyword string
+// @return       string
+// @Author tianjiajie 2025-02-08 20:28:05
+func Highlight(content string, keyword string) string {
+	// 高亮处理
+	if keyword == "" {
+		return content
+	}
+
+	//keywordLower := strings.ToLower(keyword)
+	//contentLower := strings.ToLower(content)
+	//
+	//if strings.Contains(contentLower, keywordLower) {
+	//	// 高亮显示匹配项
+	//}
+
+	//content = strings.ReplaceAll(content, keyword, fmt.Sprintf("<mark>%s</mark>", keyword))
+
+	// 转换为小写，用于大小写不敏感的匹配
+	keywordLower := strings.ToLower(keyword)
+	contentLower := strings.ToLower(content)
+
+	if strings.Contains(contentLower, keywordLower) {
+		// 使用正则表达式忽略大小写替换
+		regex := regexp.MustCompile(`(?i)` + regexp.QuoteMeta(keyword))
+		//content = regex.ReplaceAllString(content, fmt.Sprintf("<mark>%s</mark>", keyword))
+		return regex.ReplaceAllStringFunc(content, func(match string) string {
+			return fmt.Sprintf("<mark>%s</mark>", match)
+		})
+	}
+
+	return content
 }
 
 /*// ChangeStringToUint

@@ -4,6 +4,7 @@ import (
 	"context"
 	"forum/internal/article/repositories"
 	"forum/internal/article/requests"
+	"forum/internal/internalPkg/internalUtils"
 	"forum/internal/internalPkg/redisUtils"
 	"forum/pkg/globals"
 	"github.com/gin-gonic/gin"
@@ -35,6 +36,12 @@ func ArticleSearchLogic(db *gorm.DB, req *requests.ArticleSearchReq) (data inter
 	articles, err := repositories.SearchArticlesRep(db, req)
 	if err != nil {
 		return nil, err
+	}
+
+	// 高亮处理
+	for i := 0; i < len(articles); i++ {
+		articles[i].Title = internalUtils.Highlight(articles[i].Title, req.Keyword)
+		articles[i].Summary = internalUtils.Highlight(articles[i].Summary, req.Keyword)
 	}
 
 	data = gin.H{"selectedList": articles}
