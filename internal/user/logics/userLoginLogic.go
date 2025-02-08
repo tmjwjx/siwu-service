@@ -6,6 +6,7 @@ import (
 	"forum/internal/internalPkg/sqlUtils"
 	"forum/internal/internalPkg/templates"
 	"forum/pkg/response"
+	"forum/pkg/token"
 	"strconv"
 	"strings"
 
@@ -309,5 +310,25 @@ func (u *UserReqContext) ForgotPassword(forgotPasswordMsg requests.ForgotPasswor
 		return err
 	}
 
+	return nil
+}
+
+// Logout 登出
+func (u *UserReqContext) Logout(tokenString string) error {
+	// 设置过期时间为 Token 剩余时间
+	claims, err := token.ValidateToken(tokenString)
+	if err != nil {
+		globals.Log.Errorf(response.ErrTokenIsInvalid)
+		return fmt.Errorf(response.ErrTokenIsInvalid)
+	}
+
+	expiration := time.Until(claims.ExpiresAt.Time)
+	// 如果该token还没有失效，就把它添加到黑名单中，让它失效
+	if expiration > 0 {
+		if err = token.AddTokenToBlacklist(globals.RDB, tokenString, expiration); err != nil {
+			globals.Log.Errorf(err.Error())
+			return err
+		}
+	}
 	return nil
 }

@@ -21,7 +21,9 @@ func AuthMiddleware() gin.HandlerFunc {
 
 		//  检查 Token 是否在黑名单
 		if IsTokenBlacklisted(globals.RDB, tokenString) {
-			response.Failed(c, http.StatusUnauthorized, response.NewAppErr(globals.StatusUnauthorized, fmt.Errorf("AuthMiddleware() : token 已失效"), nil))
+			// response.Failed(c, http.StatusUnauthorized, response.NewAppErr(globals.StatusUnauthorized, fmt.Errorf("AuthMiddleware() : token 已失效"), nil))
+			globals.Log.Error(response.ErrTokenIsInvalid)
+			response.Failed(c, http.StatusUnauthorized, response.NewAppErr(globals.StatusUnauthorized, fmt.Errorf(response.ErrTokenIsInvalid), nil))
 			c.Abort()
 			return
 		}

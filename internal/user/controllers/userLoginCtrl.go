@@ -222,3 +222,24 @@ func ForgotPassword(c *gin.Context) {
 	// 成功
 	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, response.DataSuccess, nil))
 }
+
+// Logout 登出
+func Logout(c *gin.Context) {
+	tokenString := c.GetHeader("Authorization")
+	if tokenString == "" {
+		globals.Log.Errorf(response.ErrMissAuthorizationHeader)
+		response.Failed(c, http.StatusUnauthorized, response.NewAppErr(globals.StatusUnauthorized, fmt.Errorf(response.ErrMissAuthorizationHeader), nil))
+		return
+	}
+	tokenString = tokenString[len("Bearer "):]
+
+	// 业务逻辑
+	bsManageContext := logics.NewUserReqContext(globals.DB, c, globals.SendEmailCfg)
+	if err := bsManageContext.Logout(tokenString); err != nil {
+		globals.Log.Errorf(err.Error())
+		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, err, nil))
+		return
+	}
+
+	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, response.DataSuccess, nil))
+}
