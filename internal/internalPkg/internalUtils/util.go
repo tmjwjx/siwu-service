@@ -202,7 +202,10 @@ func Highlight(content string, keyword string) string {
 	if strings.Contains(contentLower, keywordLower) {
 		// 使用正则表达式忽略大小写替换
 		regex := regexp.MustCompile(`(?i)` + regexp.QuoteMeta(keyword))
-		content = regex.ReplaceAllString(content, fmt.Sprintf("<mark>%s</mark>", keyword))
+		//content = regex.ReplaceAllString(content, fmt.Sprintf("<mark>%s</mark>", keyword))
+		return regex.ReplaceAllStringFunc(content, func(match string) string {
+			return fmt.Sprintf("<mark>%s</mark>", match)
+		})
 	}
 
 	return content
