@@ -58,7 +58,9 @@ func BsLogin(c *gin.Context) {
 		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("BsLogin() -> %v", err), nil))
 		return
 	}
-	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", gin.H{"token": tok, "userInfo": backstageLoginRes}))
+	backstageLoginRes.Token = tok
+
+	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", backstageLoginRes))
 }
 
 // BsLogout 后台登出
