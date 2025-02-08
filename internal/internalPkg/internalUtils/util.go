@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -170,6 +171,30 @@ func MessagePush(data string, userId string) {
 	if exist {
 		notifyChan <- data
 	}
+}
+
+// Highlight
+// @Description: 高亮处理
+// @param        content string
+// @param        keyword string
+// @return       string
+// @Author tianjiajie 2025-02-08 20:28:05
+func Highlight(content string, keyword string) string {
+	// 高亮处理
+	if keyword == "" {
+		return content
+	}
+
+	//keywordLower := strings.ToLower(keyword)
+	//contentLower := strings.ToLower(content)
+	//
+	//if strings.Contains(contentLower, keywordLower) {
+	//	// 高亮显示匹配项
+	//}
+
+	content = strings.ReplaceAll(content, keyword, fmt.Sprintf("<mark>%s</mark>", keyword))
+
+	return content
 }
 
 /*// ChangeStringToUint
