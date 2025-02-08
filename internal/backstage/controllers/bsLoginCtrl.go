@@ -59,7 +59,7 @@ func BsLogin(c *gin.Context) {
 		return
 	}
 	backstageLoginRes.Token = tok
-	//response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", gin.H{"token": tok, "userInfo": backstageLoginRes}))
+
 	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, "成功", backstageLoginRes))
 }
 
