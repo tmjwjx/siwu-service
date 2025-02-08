@@ -265,11 +265,13 @@ func (b *BsManageContext) GetMenuPermRep(db *gorm.DB, roleIds []uint, flag int) 
 	// 从menuParent中提取出menuIds中没有的元素
 	menuParent2 = internalUtils.RemoveDuplicates2(&seen, menuParent)
 
+	var menuPerm2 []requests.MenuPerm
 	// 查询父ID不为0的菜单的信息
-	err = db.Model(models.Menu{}).Where("id IN ? and type IN ?", menuParent2, []uint{1, 2}).Scan(&menuPerm).Error
+	err = db.Model(models.Menu{}).Where("id IN ? and type IN ?", menuParent2, []uint{1, 2}).Scan(&menuPerm2).Error
 	if err != nil {
 		return nil, fmt.Errorf("GetMenuPermRep -> 查询权限失败 -> %s", err)
 	}
+	menuPerm = append(menuPerm, menuPerm2...)
 
 	return &menuPerm, nil
 }
