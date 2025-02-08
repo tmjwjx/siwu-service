@@ -28,7 +28,7 @@ type FinalBackstageLoginRes struct {
 
 type MenuPerm struct {
 	ID            uint   `json:"id"`
-	ParentId      *uint  `json:"pid"`            //父菜单
+	ParentId      uint   `json:"pid"`            //父菜单
 	RouteName     string `json:"route_name"`     // 路由名称
 	Name          string `json:"name"`           // 菜单名称(权限点名称)
 	Icon          string `json:"icon"`           // 图标名

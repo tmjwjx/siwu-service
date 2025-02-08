@@ -242,6 +242,35 @@ func (b *BsManageContext) GetMenuPermRep(db *gorm.DB, roleIds []uint, flag int) 
 		return nil, fmt.Errorf("GetMenuPermRep -> 查询权限失败 -> %s", err)
 	}
 
+	var menuPermIds []uint
+	var menuParent []uint
+
+	for _, menu := range menuPerm {
+		// 将查询出来的符合条件的菜单的ID存入menuPermIds中
+		menuPermIds = append(menuPermIds, menu.ID)
+
+		if menu.ParentId != 0 {
+			// 将查询出来的符合条件的菜单的父ID不为0的父菜单的ID存入menuParent中
+			menuParent = append(menuParent, menu.ParentId)
+		}
+
+	}
+
+	// seen 用于高效地去除切片中的重复数据
+	seen := make(map[uint]struct{}) // 使用空 struct{} 节省内存
+	// 将menuIds中的元素现存入seen中
+	internalUtils.RemoveDuplicates(&seen, menuPermIds)
+
+	var menuParent2 []uint
+	// 从menuParent中提取出menuIds中没有的元素
+	menuParent2 = internalUtils.RemoveDuplicates2(&seen, menuParent)
+
+	// 查询父ID不为0的菜单的信息
+	err = db.Model(models.Menu{}).Where("id IN ? and type IN ?", menuParent2, []uint{1, 2}).Scan(&menuPerm).Error
+	if err != nil {
+		return nil, fmt.Errorf("GetMenuPermRep -> 查询权限失败 -> %s", err)
+	}
+
 	return &menuPerm, nil
 }
 

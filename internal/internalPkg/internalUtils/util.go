@@ -271,3 +271,22 @@ func RemoveDuplicates(seen *map[uint]struct{}, slice []uint) {
 		}
 	}
 }
+
+// RemoveDuplicates2
+// @Description: 获取一个切片相对于另一个切片中没有的元素
+// @Author wangyulong 2025-02-08 20:48:25
+// @param        seen map[uint]struct{}
+// @param        slice []uint
+// @return       []uint
+func RemoveDuplicates2(seen *map[uint]struct{}, slice []uint) []uint {
+	var result []uint
+
+	for _, v := range slice {
+		_, ok := (*seen)[v]
+		if !ok {
+			//seen[v] = struct{}{}
+			result = append(result, v)
+		}
+	}
+	return result
+}
