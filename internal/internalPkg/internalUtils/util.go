@@ -8,6 +8,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"math/rand"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -192,7 +193,17 @@ func Highlight(content string, keyword string) string {
 	//	// 高亮显示匹配项
 	//}
 
-	content = strings.ReplaceAll(content, keyword, fmt.Sprintf("<mark>%s</mark>", keyword))
+	//content = strings.ReplaceAll(content, keyword, fmt.Sprintf("<mark>%s</mark>", keyword))
+
+	// 转换为小写，用于大小写不敏感的匹配
+	keywordLower := strings.ToLower(keyword)
+	contentLower := strings.ToLower(content)
+
+	if strings.Contains(contentLower, keywordLower) {
+		// 使用正则表达式忽略大小写替换
+		regex := regexp.MustCompile(`(?i)` + regexp.QuoteMeta(keyword))
+		content = regex.ReplaceAllString(content, fmt.Sprintf("<mark>%s</mark>", keyword))
+	}
 
 	return content
 }
