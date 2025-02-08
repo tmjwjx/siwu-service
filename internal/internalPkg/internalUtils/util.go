@@ -256,3 +256,18 @@ func ChangeAnyToUint(v any) (uint, error) {
 	}
 	return uintValue, nil
 }
+
+// RemoveDuplicates
+// @Description: uint类型的切片去重
+// @Author wangyulong 2025-02-07 19:45:04
+// @param        seen map[int]struct{}
+// @param        slice []int
+// @return       []int
+func RemoveDuplicates(seen *map[uint]struct{}, slice []uint) {
+	for _, v := range slice {
+		_, ok := (*seen)[v]
+		if !ok {
+			(*seen)[v] = struct{}{}
+		}
+	}
+}
