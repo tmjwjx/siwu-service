@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"errors"
 	"fmt"
 	"forum/internal/article/requests"
 	"forum/internal/internalPkg/internalUtils"
@@ -119,19 +120,44 @@ func ShowCommentsListRep(db *gorm.DB, req *requests.CommentsListReq) (*requests.
 
 	for _, comment := range comments {
 
+		commentRes := requests.ComList{
+			ID:      comment.ID,
+			Content: comment.Content,
+		}
+
 		// 查询用户信息
 		// 这里要把 user 结构体中存储的上次的查询结果，清空一下，否则会影响下次的查询
 		user = models.User{}
 
 		err = db.Where("id = ?", comment.UserID).First(&user).Error
 		if err != nil {
-			return nil, fmt.Errorf("ShowCommentsListRep -> 查询用户信息失败 -> %s", err)
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				commentRes.Nickname = ""
+				commentRes.Email = ""
+				commentRes.Path = ""
+			} else {
+				return nil, fmt.Errorf("ShowCommentsListRep -> 查询用户信息失败 -> %s", err)
+			}
 			//commentsListRes = &requests.CommentsListRes{
 			//	Comlist: make([]requests.ComList, 0),
 			//	Total:   0,
 			//}
 			//
 			//return commentsListRes, nil
+		} else {
+			commentRes.Nickname = user.Nickname
+			commentRes.Email = user.Email
+
+			// 查询用户头像
+			images, err := internalUtils.GetImages(db, globals.UserHome, comment.UserID)
+			if err != nil {
+				return nil, fmt.Errorf("ShowCommentsListRep -> %s", err)
+			} else {
+				for _, path := range *images {
+					commentRes.Path = path
+				}
+			}
+
 		}
 
 		// 查询文章信息
@@ -140,24 +166,35 @@ func ShowCommentsListRep(db *gorm.DB, req *requests.CommentsListReq) (*requests.
 
 		err = db.Where("id = ?", comment.ArticleID).First(&article).Error
 		if err != nil {
-			return nil, fmt.Errorf("ShowCommentsListRep -> 查询文章信息失败 -> %s", err)
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				// 如果该评论所属的文章被删除了，就不用查询评论所属的文章的信息了，相关字段都返回 空字符串 即可
+				commentRes.ArticleID = 0
+				commentRes.Title = ""
+				commentRes.Summary = ""
+			} else {
+				return nil, fmt.Errorf("ShowCommentsListRep -> 查询文章信息失败 -> %s", err)
+			}
 			//commentsListRes = &requests.CommentsListRes{
 			//	Comlist: make([]requests.ComList, 0),
 			//	Total:   0,
 			//}
 			//
 			//return commentsListRes, nil
+		} else {
+			commentRes.ArticleID = comment.ArticleID
+			commentRes.Title = article.Title
+			commentRes.Summary = article.Summary
 		}
 
-		commentRes := requests.ComList{
-			ID:        comment.ID,
-			Nickname:  user.Nickname,
-			Email:     user.Email,
-			ArticleID: comment.ArticleID,
-			Content:   comment.Content,
-			Title:     article.Title,
-			Summary:   article.Summary,
-		}
+		//commentRes := requests.ComList{
+		//	ID:        comment.ID,
+		//	Nickname:  user.Nickname,
+		//	Email:     user.Email,
+		//	ArticleID: comment.ArticleID,
+		//	Content:   comment.Content,
+		//	Title:     article.Title,
+		//	Summary:   article.Summary,
+		//}
 
 		if comment.ParentUserID == 0 {
 			// 如果是顶级评论，没有回复的评论，就不用查回复的评论的发布者的信息了
@@ -168,6 +205,9 @@ func ShowCommentsListRep(db *gorm.DB, req *requests.CommentsListReq) (*requests.
 			// 查询用户回复对象信息
 			d := db.Where("id = ?", comment.ParentUserID).First(&user)
 			if d.Error != nil {
+				if errors.Is(d.Error, gorm.ErrRecordNotFound) {
+					commentRes.ParentNickname = ""
+				}
 				return nil, fmt.Errorf("ShowCommentsListRep -> 查询用户回复对象信息失败 -> %s", err)
 				//commentsListRes = &requests.CommentsListRes{
 				//	Comlist: make([]requests.ComList, 0),
@@ -175,20 +215,20 @@ func ShowCommentsListRep(db *gorm.DB, req *requests.CommentsListReq) (*requests.
 				//}
 				//
 				//return commentsListRes, nil
-			}
-
-			commentRes.ParentNickname = user.Nickname
-		}
-
-		// 查询用户头像
-		images, err := internalUtils.GetImages(db, globals.UserHome, comment.UserID)
-		if err != nil {
-			return nil, fmt.Errorf("ShowCommentsListRep -> %s", err)
-		} else {
-			for _, path := range *images {
-				commentRes.Path = path
+			} else {
+				commentRes.ParentNickname = user.Nickname
 			}
 		}
+
+		//// 查询用户头像
+		//images, err := internalUtils.GetImages(db, globals.UserHome, comment.UserID)
+		//if err != nil {
+		//	return nil, fmt.Errorf("ShowCommentsListRep -> %s", err)
+		//} else {
+		//	for _, path := range *images {
+		//		commentRes.Path = path
+		//	}
+		//}
 
 		// 查询用户发的评论图片
 		images2, err := internalUtils.GetImages(db, globals.CommentHome, comment.ID)
