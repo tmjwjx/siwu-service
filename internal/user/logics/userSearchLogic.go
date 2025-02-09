@@ -280,11 +280,13 @@ func (u *UserReqContext) GetBasicInfo(userId uint, req requests.GetBasicInfoReq)
 			return nil, err
 		}
 
+		highlightName := internalUtils.Highlight(user.Nickname, req.Keyword)
 		res = append(res, &requests.GetBasicInfoRes{
-			ID:              user.ID,
-			CreatedAt:       user.CreatedAt,
-			UpdatedAt:       user.UpdatedAt,
-			Nickname:        user.Nickname,
+			ID:        user.ID,
+			CreatedAt: user.CreatedAt,
+			UpdatedAt: user.UpdatedAt,
+			// Nickname:        user.Nickname,
+			Nickname:        highlightName,
 			Email:           user.Email,
 			Heat:            user.Heat,
 			AttentionCount:  user.AttentionCount,
