@@ -30,8 +30,9 @@ type RedisConfig struct {
 
 // App 配置
 type App struct {
-	Host string `yaml:"host"`
-	Port int    `yaml:"port"`
+	Host   string `yaml:"host"`
+	Port   int    `yaml:"port"`
+	Domain string `yaml:"domain"`
 }
 
 // SendEmailConfig 验证码配置
