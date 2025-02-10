@@ -31,7 +31,7 @@ func StaticInit() {
 // @Description: 生产图片的部分路径前缀
 // @Author wangyulong 2025-01-17 14:40:04
 func PartPathPrefixInit() {
-	path := "http://" + globals.AppConfig.App.Host + ":" + strconv.Itoa(globals.AppConfig.App.Port) + globals.SConfig.Prefix + "/"
+	path := "http://" + globals.AppConfig.App.Domain + ":" + strconv.Itoa(globals.AppConfig.App.Port) + globals.SConfig.Prefix + "/"
 
 	// UserDefaultImage 默认用户头像路径
 	internalUtils.UserDefaultImage = path + "user_default_head_image.png"
