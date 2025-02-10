@@ -191,8 +191,14 @@ func GetUserArticleOrCollectionLogic(db *gorm.DB, req *requests.UserArticleOrCol
 		case "draft":
 			articleList[i].Status = "草稿"
 		}
-
 	}
+
+	// 高亮处理
+	for i := 0; i < len(articleList); i++ {
+		articleList[i].Title = internalUtils.Highlight(articleList[i].Title, req.Keyword)
+		articleList[i].Summary = internalUtils.Highlight(articleList[i].Summary, req.Keyword)
+	}
+
 	data = gin.H{
 		"dataList": articleList,
 		"total":    total}
