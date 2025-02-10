@@ -37,6 +37,8 @@ func CorsMiddleware() gin.HandlerFunc {
 		allowedOrigins := map[string]bool{
 			"http://192.168.10.7:9901": true,
 			"http://192.168.10.7:9902": true,
+			"http://8.154.36.180:8910": true,
+			"http://8.154.36.180:8911": true,
 		}
 
 		// 判断 origin 是否在允许列表内

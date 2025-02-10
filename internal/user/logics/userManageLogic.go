@@ -202,6 +202,9 @@ func (u *UserReqContext) List(req requests.ListReq) ([]*requests.ListRes, int, e
 		roleNames := make([]string, 0)
 		for _, v := range roleIds {
 			role := repositories.QueryRoleById(u.DB, v)
+			if role == nil {
+				return nil, 0, fmt.Errorf("UserReqContext.List() err -> 没有查询到角色 id:%d", roleIds)
+			}
 			roleNames = append(roleNames, role.Name)
 		}
 
