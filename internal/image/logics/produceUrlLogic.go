@@ -95,7 +95,7 @@ func ProduceUrlLogic(c *gin.Context) (*requests.ImageUrl, error) {
 		uniqueFilename := generateUniqueFilename(formats[i])
 
 		// 生成url
-		imageUrl := "http://" + globals.AppConfig.App.Host + ":" + strconv.Itoa(globals.AppConfig.App.Port) + globals.SConfig.Prefix + "/" + uniqueFilename
+		imageUrl := "http://" + globals.AppConfig.App.Domain + ":" + strconv.Itoa(globals.AppConfig.App.Port) + globals.SConfig.Prefix + "/" + uniqueFilename
 
 		url := &requests.UrlPath{
 			Url: imageUrl,
