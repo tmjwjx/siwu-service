@@ -22,7 +22,7 @@ func FollowRep(db *gorm.DB, req requests.MessageReq, userId uint) (res []request
 
 	// 获取关注消息
 	err = db.Model(&models.UserFollow{}).
-		Joins("join sw_users on sw_users.id = sw_user_follows.followed_id").
+		Joins("join sw_users on sw_users.id = sw_user_follows.follower_id").
 		Select("sw_user_follows.follower_id, sw_users.nickname, sw_user_follows.created_at").
 		Where("sw_user_follows.followed_id = ?", userId).
 		Limit(req.Limit).
