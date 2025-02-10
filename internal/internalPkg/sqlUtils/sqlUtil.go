@@ -2,6 +2,8 @@ package sqlUtils
 
 import (
 	"fmt"
+	"forum/pkg/globals"
+	"forum/pkg/response"
 	"gorm.io/gorm"
 	"reflect"
 )
@@ -17,7 +19,9 @@ import (
 func InsertObject(db *gorm.DB, model interface{}) error {
 	// 检查 model 是否为指针类型
 	if reflect.TypeOf(model).Kind() != reflect.Ptr {
-		return fmt.Errorf("InsertObject() err: 数据模型必须是指针类型")
+		// return fmt.Errorf("InsertObject() err: 数据模型必须是指针类型")
+		globals.Log.Errorf(response.ErrModelNotPointer)
+		return fmt.Errorf(response.ErrModelNotPointer)
 	}
 
 	// 开启事务
@@ -26,11 +30,15 @@ func InsertObject(db *gorm.DB, model interface{}) error {
 		result := tx.Create(model)
 		if result.Error != nil {
 			// 如果插入时出错，事务会自动回滚
-			return fmt.Errorf("InsertObject() err: %v", result.Error)
+			// return fmt.Errorf("InsertObject() err: %v", result.Error)
+			globals.Log.Errorf(result.Error.Error())
+			return result.Error
 		}
 		if result.RowsAffected == 0 {
 			// 如果没有插入任何数据，也进行回滚
-			return fmt.Errorf("InsertObject() err: 插入数据失败")
+			// return fmt.Errorf("InsertObject() err: 插入数据失败")
+			globals.Log.Errorf(response.ErrInsertDataFail)
+			return fmt.Errorf(response.ErrInsertDataFail)
 		}
 
 		// 如果成功，事务会自动提交
@@ -44,26 +52,26 @@ func InsertObject(db *gorm.DB, model interface{}) error {
 // @param        db *gorm.DB GORM的数据库实例。
 // @param        models interface{} 切片类型。切片的每一个元素要包含要添加的结构体字段。
 // @return       error
-func InsertObjects(db *gorm.DB, models interface{}) error {
-	// 确保传入的 models 是一个切片
-	modelsValue := reflect.ValueOf(models)
-	if modelsValue.Kind() != reflect.Slice {
-		return fmt.Errorf("InsertObjects() err: 传入的参数必须是切片类型")
-	}
-
-	// 开启事务
-	return db.Transaction(func(tx *gorm.DB) error {
-		// 执行批量插入
-		result := tx.Create(models)
-		if result.Error != nil {
-			return fmt.Errorf("InsertObjects() err: %v", result.Error)
-		}
-		if result.RowsAffected == 0 {
-			return fmt.Errorf("InsertObjects() err: 插入数据失败")
-		}
-		return nil
-	})
-}
+// func InsertObjects(db *gorm.DB, models interface{}) error {
+// 	// 确保传入的 models 是一个切片
+// 	modelsValue := reflect.ValueOf(models)
+// 	if modelsValue.Kind() != reflect.Slice {
+// 		return fmt.Errorf("InsertObjects() err: 传入的参数必须是切片类型")
+// 	}
+//
+// 	// 开启事务
+// 	return db.Transaction(func(tx *gorm.DB) error {
+// 		// 执行批量插入
+// 		result := tx.Create(models)
+// 		if result.Error != nil {
+// 			return fmt.Errorf("InsertObjects() err: %v", result.Error)
+// 		}
+// 		if result.RowsAffected == 0 {
+// 			return fmt.Errorf("InsertObjects() err: 插入数据失败")
+// 		}
+// 		return nil
+// 	})
+// }
 
 // DeleteObjectsByModel
 // @Description: 按照model模型，根据一个或多个条件删除一个或多个对象。
@@ -76,7 +84,9 @@ func InsertObjects(db *gorm.DB, models interface{}) error {
 func DeleteObjectsByModel(db *gorm.DB, modelType interface{}, condition map[string]interface{}) (int64, error) {
 	// 确保 modelType 是指针类型
 	if reflect.TypeOf(modelType).Kind() != reflect.Ptr {
-		return 0, fmt.Errorf("DeleteObjectsByModel() err: 数据模型必须是指针类型")
+		// return 0, fmt.Errorf("DeleteObjectsByModel() err: 数据模型必须是指针类型")
+		globals.Log.Errorf(response.ErrModelNotPointer)
+		return 0, fmt.Errorf(response.ErrModelNotPointer)
 	}
 	var rowsAffected int64 // 用于保存删除的记录数
 
@@ -91,7 +101,9 @@ func DeleteObjectsByModel(db *gorm.DB, modelType interface{}, condition map[stri
 		// 执行删除操作
 		result := query.Delete(modelType)
 		if result.Error != nil {
-			return fmt.Errorf("DeleteObjectsByModel() err: %v", result.Error)
+			// return fmt.Errorf("DeleteObjectsByModel() err: %v", result.Error)
+			globals.Log.Errorf(result.Error.Error())
+			return result.Error
 		}
 
 		// 保存删除的记录数
@@ -123,7 +135,9 @@ func DeleteObjectsByTable(db *gorm.DB, tableName string, condition map[string]in
 		// 执行删除操作。query.Delete(nil)：删除符合条件的记录，不需要指定具体的模型类型。
 		result := query.Delete(nil)
 		if result.Error != nil {
-			return fmt.Errorf("DeleteObjectsByTable() err: %v", result.Error)
+			// return fmt.Errorf("DeleteObjectsByTable() err: %v", result.Error)
+			globals.Log.Errorf(result.Error.Error())
+			return result.Error
 		}
 
 		// 保存删除的记录数
@@ -143,7 +157,9 @@ func DeleteObjectsByTable(db *gorm.DB, tableName string, condition map[string]in
 func UpdateObjects(db *gorm.DB, model interface{}, updates map[string]interface{}) error {
 	// 检查 model 是否为指针类型
 	if reflect.TypeOf(model).Kind() != reflect.Ptr {
-		return fmt.Errorf("UpdateObjects() err: 数据模型必须是指针类型")
+		// return fmt.Errorf("UpdateObjects() err: 数据模型必须是指针类型")
+		globals.Log.Errorf(response.ErrModelNotPointer)
+		return fmt.Errorf(response.ErrModelNotPointer)
 	}
 
 	// 开启事务
@@ -151,7 +167,9 @@ func UpdateObjects(db *gorm.DB, model interface{}, updates map[string]interface{
 		// 执行更新操作
 		result := tx.Model(model).Where(model).Updates(updates)
 		if result.Error != nil {
-			return fmt.Errorf("UpdateObjects() err: %v", result.Error)
+			globals.Log.Errorf(result.Error.Error())
+			return result.Error
+			// return fmt.Errorf("UpdateObjects() err: %v", result.Error)
 		}
 		return nil
 	})

@@ -8,6 +8,7 @@ import (
 	"forum/internal/models"
 	"forum/pkg/globals"
 	"gorm.io/gorm"
+	"strconv"
 )
 
 // GetCommentStatusRep
@@ -88,6 +89,27 @@ func InsertCommentRep(userId uint, articleCommentReq *requests.ArticleCommentReq
 	if err != nil {
 		return fmt.Errorf("InsertCommentRep -> 提交事务失败 -> %s", err), 500
 	}
+
+	if articleCommentReq.HighestID == 0 {
+		// 如果是顶级评论，返回该篇文章的作者ID
+		// 查询该篇文章的作者ID
+		var aUserID uint
+		result := db.Model(&models.Article{}).Select("user_id").Where("id = ?", articleCommentReq.ArticleID).Scan(&aUserID)
+		if result.Error != nil {
+			return fmt.Errorf("InsertCommentRep -> 查询该篇文章的作者ID异常 -> %s", err), 500
+		}
+		if aUserID == 0 {
+			return fmt.Errorf("InsertCommentRep -> 没有查询到该篇文章的作者ID -> %s", err), 500
+		}
+
+		// 评论通知
+		internalUtils.MessagePush("comment", fmt.Sprintf("%v", aUserID))
+	} else {
+		// 如果不是顶级评论，返回回复的评论的发布者ID
+		// 评论通知
+		internalUtils.MessagePush("comment", fmt.Sprintf("%v", articleCommentReq.ParentUserID))
+	}
+
 	return nil, 200
 
 }
@@ -143,7 +165,7 @@ func GetTopLevelCommentsRep(userId uint, db *gorm.DB, req *requests.TopCommentsR
 
 	// 查询顶级评论
 	err := db.Where("article_id = ? AND highest_id = ?", req.ArticleID, 0).
-		Order("created_at asc").Find(&articleComments).Error
+		Order("created_at desc").Find(&articleComments).Error
 	if err != nil {
 		return nil, fmt.Errorf("GetTopLevelCommentsRep -> %s", err)
 	}
@@ -294,7 +316,7 @@ func GetRepliesRep2Rep(userId uint, db *gorm.DB, req *requests.RepliesReq2) (*re
 	var articleComments []models.ArticleComment
 	var commentId []uint
 
-	err := db.Model(&models.ArticleComment{}).Where("highest_id = ?", req.HighestID).Order("created_at asc").Find(&articleComments).Error
+	err := db.Model(&models.ArticleComment{}).Where("highest_id = ?", req.HighestID).Order("created_at desc").Find(&articleComments).Error
 	if err != nil {
 		return nil, fmt.Errorf("GetRepliesRep2Rep -> 查询 ArticleComment 表失败 -> %s", err)
 	}
@@ -528,11 +550,19 @@ func UpdatePraiseCountRep(req *requests.PraiseCount, db *gorm.DB, userId uint) e
 						tx.Rollback() // 回滚事务
 						return fmt.Errorf("UpdatePraiseCountRep1 -> 更新评论的点赞数量+1 异常 -> %s", err)
 					}
+
+					// 查询评论的作者
+					var comment models.ArticleComment
+					err = db.Model(&models.ArticleComment{}).Select("user_id").Where("id = ?", req.ID).First(&comment).Error
+					// 评论点赞通知
+					internalUtils.MessagePush("comment_like", strconv.Itoa(int(comment.UserID)))
+
 				} else {
 					tx.Rollback()
 					return fmt.Errorf("DeleteCommentRep1 -> 进行点赞 异常 -> %s", err)
 				}
 			}
+
 		} else if req.Status == 2 {
 			// 将要取消点赞
 
@@ -571,5 +601,6 @@ func UpdatePraiseCountRep(req *requests.PraiseCount, db *gorm.DB, userId uint) e
 		tx.Rollback() // 回滚事务
 		return fmt.Errorf("DeleteCommentRep -> 提交事务失败 -> %s", err)
 	}
+
 	return nil
 }

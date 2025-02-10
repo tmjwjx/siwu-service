@@ -439,8 +439,8 @@ func CreateApiRep(db *gorm.DB, req *requests.CreateApiReq) error {
 // SearchApiListRep 检索api列表
 func SearchApiListRep(db *gorm.DB, req *requests.SearchApiListReq) (*requests.SearchApiListRes, error) {
 
-	if req.Limit == 0 {
-		return nil, fmt.Errorf("SearchApiListRep -> Limit的值不能为0")
+	if req.Page <= 0 || req.Limit <= 0 {
+		return nil, fmt.Errorf("SearchApiListRep -> Page或Limit的值不能小于或等于0")
 	}
 
 	var searchApiRes []requests.SearchApiRes

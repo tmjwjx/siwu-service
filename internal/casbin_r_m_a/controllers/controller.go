@@ -39,7 +39,7 @@ func AssignMenuPermCtrl(c *gin.Context) {
 func GetMenuPermCtrl(c *gin.Context) {
 
 	// 获取参数
-	id := c.Query("id")
+	id := c.Query("id") // 角色ID
 
 	// 业务处理
 	res, err := logics.GetMenuPermLogic(globals.DB, id)

@@ -1,6 +1,7 @@
 package logics
 
 import (
+	"fmt"
 	"forum/internal/article/repositories"
 	"forum/internal/article/requests"
 	"forum/pkg/globals"
@@ -30,6 +31,10 @@ func GetRepliesLogic(req *requests.RepliesReq) (*[]models.ArticleComment, error)
 
 // GetTopLevelCommentsLogic 返回顶级评论
 func GetTopLevelCommentsLogic(userId uint, db *gorm.DB, req *requests.TopCommentsReq) (*requests.TopCommentsRes, error) {
+	if req.Offset <= 0 || req.Limit <= 0 {
+		return nil, fmt.Errorf("GetTopLevelCommentsLogic -> Offset 或 Limit 的值不能小于或等于0")
+	}
+
 	topCommentsRes, err := repositories.GetTopLevelCommentsRep(userId, db, req)
 	if err != nil {
 		return nil, err
@@ -53,6 +58,10 @@ func GetTopLevelCommentsLogic(userId uint, db *gorm.DB, req *requests.TopComment
 
 // GetRepliesRep2Logic 返回评论回复
 func GetRepliesRep2Logic(userId uint, db *gorm.DB, req *requests.RepliesReq2) (*requests.RepliesRes, error) {
+	if req.Offset <= 0 || req.Limit <= 0 {
+		return nil, fmt.Errorf("GetRepliesRep2Logic -> Offset 或 Limit 的值不能小于或等于0")
+	}
+
 	repliesRes, err := repositories.GetRepliesRep2Rep(userId, db, req)
 
 	if err != nil {

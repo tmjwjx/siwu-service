@@ -4,6 +4,7 @@ import (
 	"context"
 	"forum/internal/article/repositories"
 	"forum/internal/article/requests"
+	"forum/internal/internalPkg/internalUtils"
 	"forum/internal/internalPkg/redisUtils"
 	"forum/pkg/globals"
 	"github.com/gin-gonic/gin"
@@ -35,6 +36,12 @@ func ArticleSearchLogic(db *gorm.DB, req *requests.ArticleSearchReq) (data inter
 	articles, err := repositories.SearchArticlesRep(db, req)
 	if err != nil {
 		return nil, err
+	}
+
+	// 高亮处理
+	for i := 0; i < len(articles); i++ {
+		articles[i].Title = internalUtils.Highlight(articles[i].Title, req.Keyword)
+		articles[i].Summary = internalUtils.Highlight(articles[i].Summary, req.Keyword)
 	}
 
 	data = gin.H{"selectedList": articles}
@@ -127,9 +134,10 @@ func ArticleEditLogic(db *gorm.DB) (data interface{}, err error) {
 	// 将标签转换为前端需要的数据格式
 	for _, tag := range tags {
 		t = append(t, struct {
-			Value uint   `json:"value"`
+			Id    uint   `json:"id"`
+			Value string `json:"value"`
 			Label string `json:"label"`
-		}{Value: tag.ID, Label: tag.Name})
+		}{Id: tag.ID, Value: tag.Name, Label: tag.Name})
 	}
 
 	// 查询类目
@@ -183,8 +191,14 @@ func GetUserArticleOrCollectionLogic(db *gorm.DB, req *requests.UserArticleOrCol
 		case "draft":
 			articleList[i].Status = "草稿"
 		}
-
 	}
+
+	// 高亮处理
+	for i := 0; i < len(articleList); i++ {
+		articleList[i].Title = internalUtils.Highlight(articleList[i].Title, req.Keyword)
+		articleList[i].Summary = internalUtils.Highlight(articleList[i].Summary, req.Keyword)
+	}
+
 	data = gin.H{
 		"dataList": articleList,
 		"total":    total}

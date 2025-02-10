@@ -5,6 +5,7 @@ import (
 	"forum/internal/internalPkg/internalUtils"
 	"forum/internal/models"
 	"forum/internal/user/requests"
+	"forum/pkg/globals"
 	"forum/pkg/utils"
 	"gorm.io/gorm"
 )
@@ -16,11 +17,10 @@ func InitUserInfoRep(db *gorm.DB, qid string, gid string) (*requests.InitUserInf
 
 	middleInfo := requests.MiddleInfo{}
 
-	// 查询 头像，昵称，个签
+	// 查询 昵称，个签
 	err := db.Model(&models.User{}).
-		Select("sw_users.created_at AS date, sw_users.nickname, sw_user_details.signature, sw_attachments.path AS head_shot").
-		Joins("join sw_user_details on sw_user_details.user_id = sw_users.id").
-		Joins("join sw_attachments on sw_attachments.home_id = sw_users.id").
+		Select("sw_users.created_at AS date, sw_users.nickname, sw_user_details.signature").
+		Joins("left join sw_user_details on sw_user_details.user_id = sw_users.id").
 		Where("sw_users.id = ?", gid).Scan(&middleInfo).Error
 	if err != nil {
 		return nil, fmt.Errorf("InitUserInfoRep -> 查询 头像，昵称，个签 失败 -> %s", err)
@@ -29,7 +29,21 @@ func InitUserInfoRep(db *gorm.DB, qid string, gid string) (*requests.InitUserInf
 	initUserInfoRes := &requests.InitUserInfoRes{
 		Nickname:  middleInfo.Nickname,
 		Signature: middleInfo.Signature,
-		HeadShot:  middleInfo.HeadShot,
+	}
+
+	Uid, err := utils.ChangeStringToUint(gid)
+	if err != nil {
+		return nil, fmt.Errorf("InitUserInfoRep -> ChangeStringToUint异常 -> %s", err)
+	}
+
+	// 查询用户头像
+	paths, err := internalUtils.GetImages(db, globals.UserHome, Uid)
+	if err != nil {
+		return nil, fmt.Errorf("InitUserInfoRep -> 查询用户头像异常 -> %s", err)
+	}
+
+	for _, path := range *paths {
+		initUserInfoRes.HeadShot = path
 	}
 
 	// 转化时间格式
@@ -57,16 +71,16 @@ func InitUserInfoRep(db *gorm.DB, qid string, gid string) (*requests.InitUserInf
 		initUserInfoRes.CollectionsCount += article.CollectionsCount
 	}
 
-	var followed []uint // 作者关注的用户
-	var follower []uint // 关注作者的用户
+	var followed []uint // 本页面用户关注的用户
+	var follower []uint // 关注本页面用户的用户
 	// 查询作者关注了哪些用户
-	err = db.Model(&models.UserFollow{}).Where("follower_id = ?", qid).Pluck("followed_id", &followed).Error
+	err = db.Model(&models.UserFollow{}).Where("follower_id = ?", gid).Pluck("followed_id", &followed).Error
 	if err != nil {
 		return nil, fmt.Errorf("InitUserInfoRep -> 查询用户关注了哪些用户失败 -> %s", err)
 	}
 	initUserInfoRes.ConcernsCount = len(followed)
 	// 查询哪些用户关注了作者
-	err = db.Model(&models.UserFollow{}).Where("followed_id = ?", qid).Pluck("follower_id", &follower).Error
+	err = db.Model(&models.UserFollow{}).Where("followed_id = ?", gid).Pluck("follower_id", &follower).Error
 	if err != nil {
 		return nil, fmt.Errorf("InitUserInfoRep -> 查询用户关注了哪些用户失败 -> %s", err)
 	}
@@ -78,13 +92,13 @@ func InitUserInfoRep(db *gorm.DB, qid string, gid string) (*requests.InitUserInf
 		initUserInfoRes.ConcernStatus = 2
 	} else {
 		// 将string类型的值转换成uint类型
-		gid2, err := utils.ChangeStringToUint(gid)
+		qid2, err := utils.ChangeStringToUint(qid)
 		if err != nil {
 			return nil, fmt.Errorf("InitUserInfoRep -> %s", err)
 		}
 
-		for _, id := range followed {
-			if id == gid2 {
+		for _, id := range follower {
+			if id == qid2 {
 				initUserInfoRes.ConcernStatus = 1
 				break
 			}

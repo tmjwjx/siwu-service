@@ -17,6 +17,9 @@ import (
 // @Author tianjiajie 2024-10-04 20:54:53
 func LikeMessageLogic(db *gorm.DB, req requests.MessageReq, id uint) (data interface{}, err error) {
 	res, err := repositories.LikeRep(db, req, id)
+	if err != nil {
+		return nil, err
+	}
 	data = gin.H{"like_list": res}
-	return data, err
+	return data, nil
 }

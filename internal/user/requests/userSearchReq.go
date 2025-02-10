@@ -40,7 +40,8 @@ type AttentionRes struct {
 
 // GetBasicInfoReq 通过ids获取到用户简略信息请求
 type GetBasicInfoReq struct {
-	Ids []uint `json:"ids"`
+	Ids     []uint `json:"ids"`
+	Keyword string `json:"keyword"` // 名字中需要高亮显示的关键字
 }
 
 // GetBasicInfoRes 通过ids获取到用户简略信息响应

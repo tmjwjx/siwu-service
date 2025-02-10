@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"fmt"
 	"forum/internal/models"
 	"gorm.io/gorm"
 )
@@ -34,4 +35,26 @@ func QueryRoleById(db *gorm.DB, id uint) *models.Role {
 		return nil
 	}
 	return &role
+}
+
+// QuerySuperAdminId
+// @Description: 查询超级管理员的ID
+// @Author wangyulong 2025-02-07 17:55:04
+// @param        db *gorm.DB
+// @return       uint
+// @return       error
+func QuerySuperAdminId(db *gorm.DB) (uint, error) {
+	var superAdminId uint
+
+	// 查询超级管理员的id
+	err := db.Model(&models.Role{}).Select("id").Where("name = ?", "超级管理员").Scan(&superAdminId).Error
+	if err != nil {
+		return 0, fmt.Errorf("GetMenuPermRep -> 查询超级管理员的id异常 -> %s", err)
+	}
+
+	if superAdminId == 0 {
+		return 0, fmt.Errorf("GetMenuPermRep -> 不存在超级管理员这个角色 -> %s", err)
+	}
+
+	return superAdminId, nil
 }

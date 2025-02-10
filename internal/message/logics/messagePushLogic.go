@@ -17,7 +17,7 @@ func NewMessageChan(c *gin.Context) {
 	userId := fmt.Sprintf("%d", id)
 
 	// 将用户的通道存入全局变量
-	notifyChan := make(chan string)
+	notifyChan := make(chan string, 10)
 	globals.SubscriberChannels[userId] = notifyChan
 	//notifyChan := globals.SubscriberChannels[userId]
 

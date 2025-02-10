@@ -8,7 +8,9 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"math/rand"
 	"os"
+	"regexp"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -172,6 +174,43 @@ func MessagePush(data string, userId string) {
 	}
 }
 
+// Highlight
+// @Description: 高亮处理
+// @param        content string
+// @param        keyword string
+// @return       string
+// @Author tianjiajie 2025-02-08 20:28:05
+func Highlight(content string, keyword string) string {
+	// 高亮处理
+	if keyword == "" {
+		return content
+	}
+
+	//keywordLower := strings.ToLower(keyword)
+	//contentLower := strings.ToLower(content)
+	//
+	//if strings.Contains(contentLower, keywordLower) {
+	//	// 高亮显示匹配项
+	//}
+
+	//content = strings.ReplaceAll(content, keyword, fmt.Sprintf("<mark>%s</mark>", keyword))
+
+	// 转换为小写，用于大小写不敏感的匹配
+	keywordLower := strings.ToLower(keyword)
+	contentLower := strings.ToLower(content)
+
+	if strings.Contains(contentLower, keywordLower) {
+		// 使用正则表达式忽略大小写替换
+		regex := regexp.MustCompile(`(?i)` + regexp.QuoteMeta(keyword))
+		//content = regex.ReplaceAllString(content, fmt.Sprintf("<mark>%s</mark>", keyword))
+		return regex.ReplaceAllStringFunc(content, func(match string) string {
+			return fmt.Sprintf("<mark>%s</mark>", match)
+		})
+	}
+
+	return content
+}
+
 /*// ChangeStringToUint
 // @Description: 将string类型的值转换成uint类型
 // @Author wangyulong 2024-10-09 15:26:15
@@ -255,4 +294,38 @@ func ChangeAnyToUint(v any) (uint, error) {
 		fmt.Println("ChangeAnyToUint -> 将Any类型转换成Uint类型失败")
 	}
 	return uintValue, nil
+}
+
+// RemoveDuplicates
+// @Description: uint类型的切片去重
+// @Author wangyulong 2025-02-07 19:45:04
+// @param        seen map[int]struct{}
+// @param        slice []int
+// @return       []int
+func RemoveDuplicates(seen *map[uint]struct{}, slice []uint) {
+	for _, v := range slice {
+		_, ok := (*seen)[v]
+		if !ok {
+			(*seen)[v] = struct{}{}
+		}
+	}
+}
+
+// RemoveDuplicates2
+// @Description: 获取一个切片相对于另一个切片中没有的元素
+// @Author wangyulong 2025-02-08 20:48:25
+// @param        seen map[uint]struct{}
+// @param        slice []uint
+// @return       []uint
+func RemoveDuplicates2(seen *map[uint]struct{}, slice []uint) []uint {
+	var result []uint
+
+	for _, v := range slice {
+		_, ok := (*seen)[v]
+		if !ok {
+			//seen[v] = struct{}{}
+			result = append(result, v)
+		}
+	}
+	return result
 }

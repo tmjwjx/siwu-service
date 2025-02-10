@@ -52,11 +52,32 @@ func AssignMenuPermRep(db *gorm.DB, req *requests.AssignMenuPermReq) error {
 func GetMenuPermRep(db *gorm.DB, id string) (*requests.GetMenuPermRes, error) {
 
 	var menuId []uint
-	// 查询菜单id
-	err := db.Model(&models.RoleMenu{}).Select("MenuId").Where("role_id = ?", id).Scan(&menuId).Error
+	var superAdminId uint
+
+	// 查询超级管理员的id
+	err := db.Model(&models.Role{}).Select("id").Where("name = ?", "超级管理员").Scan(&superAdminId).Error
 	if err != nil {
-		return nil, fmt.Errorf("GetMenuPermRep -> 该角色没有任何权限 -> %s", err)
+		return nil, fmt.Errorf("GetMenuPermRep -> 查询超级管理员的id异常 -> %s", err)
 	}
+
+	if superAdminId == 0 {
+		return nil, fmt.Errorf("GetMenuPermRep -> 不存在超级管理员这个角色 -> %s", err)
+	}
+
+	if id == fmt.Sprintf("%v", superAdminId) {
+		// 查询菜单id
+		err = db.Model(&models.Menu{}).Pluck("id", &menuId).Error
+		if err != nil {
+			return nil, fmt.Errorf("GetMenuPermRep -> 1查询菜单id异常 -> %s", err)
+		}
+	} else {
+		// 查询菜单id
+		err = db.Model(&models.RoleMenu{}).Select("MenuId").Where("role_id = ?", id).Scan(&menuId).Error
+		if err != nil {
+			return nil, fmt.Errorf("GetMenuPermRep -> 2查询菜单id异常 -> %s", err)
+		}
+	}
+
 	// 查询权限
 	var menuPerm []requests.MenuPerm
 	err = db.Model(models.Menu{}).Where("id IN ? and type IN ?", menuId, []uint{1, 2}).Scan(&menuPerm).Error
@@ -157,10 +178,33 @@ func AssignApiPermRep(db *gorm.DB, req *requests.AssignApiPermReq) error {
 // GetPermCodeRep 获取当前角色的所有权限标识
 func GetPermCodeRep(casbinService *casbin.CasbinService, db *gorm.DB, id string) (*requests.GetPermCodeRes, error) {
 
-	// 获取当前角色的api权限
-	apiIds, err := casbinService.GetApiPerm(id)
+	var apiIds []uint
+
+	var superAdminId uint
+
+	// 查询超级管理员的id
+	err := db.Model(&models.Role{}).Select("id").Where("name = ?", "超级管理员").Scan(&superAdminId).Error
 	if err != nil {
-		return nil, fmt.Errorf("GetApiPermRep -> 获取当前角色的api权限失败 -> %s", err)
+		return nil, fmt.Errorf("GetPermCodeRep -> 查询超级管理员的id异常 -> %s", err)
+	}
+
+	if superAdminId == 0 {
+		return nil, fmt.Errorf("GetPermCodeRep -> 不存在超级管理员这个角色 -> %s", err)
+	}
+
+	if id == fmt.Sprintf("%v", superAdminId) {
+		// 获取当前角色的api权限
+		err := db.Model(&models.Api{}).Pluck("id", &apiIds).Error
+		if err != nil {
+			return nil, fmt.Errorf("GetPermCodeRep -> 获取当前角色的api权限失败 -> %s", err)
+		}
+	} else {
+		// 获取当前角色的api权限
+		apiId, err := casbinService.GetApiPerm(id)
+		if err != nil {
+			return nil, fmt.Errorf("GetPermCodeRep -> 获取当前角色的api权限失败 -> %s", err)
+		}
+		apiIds = apiId
 	}
 
 	// 获取type为3的菜单(即按钮)

@@ -2,6 +2,9 @@ package routes
 
 import (
 	"forum/internal/casbin_r_m_a/controllers"
+	"forum/pkg/casbin"
+	"forum/pkg/globals"
+	"forum/pkg/token"
 	"github.com/gin-gonic/gin"
 )
 
@@ -11,7 +14,7 @@ import (
 // @param        e *gin.Engine
 func CasbinRMA(e *gin.Engine) {
 
-	r := e.Group("/acl")
+	r := e.Group("/acl").Use(token.AuthMiddleware()).Use(casbin.CasbinAuth(globals.CasbinEnforcer))
 
 	// 为角色分配菜单权限
 	r.POST("/dispatch/role_menu", controllers.AssignMenuPermCtrl)
