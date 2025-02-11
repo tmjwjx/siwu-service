@@ -14,10 +14,13 @@ func IsValidNickname(nickname string) bool {
 
 // IsValidEmail 判断邮箱是否合法。
 func IsValidEmail(email string) bool {
-	// 定义正则表达式，允许字母、数字和下划线
-	qqEmailPattern := `^[a-zA-Z0-9_]{5,15}@qq\.com$`
+	// 定义通用的邮箱正则表达式
+	// 这个正则表达式可以匹配大多数常见的邮箱格式
+	// 它允许用户名部分包含字母、数字、点、加号、减号和下划线
+	// 域名部分允许字母、数字、连字符，并且以有效的顶级域名（如.com、.org 等）结尾
+	emailPattern := `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
 	// 编译正则表达式
-	re := regexp.MustCompile(qqEmailPattern)
+	re := regexp.MustCompile(emailPattern)
 
 	return re.MatchString(email)
 }
