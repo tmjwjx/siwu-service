@@ -7,6 +7,22 @@ import (
 	"gorm.io/gorm"
 )
 
+// LikeUnreadCountLogic
+// @Description: 未读点赞消息数量
+// @param        db *gorm.DB
+// @param        id uint
+// @return       count
+// @return       err
+// @Author tianjiajie 2025-02-12 21:30:52
+func LikeUnreadCountLogic(db *gorm.DB, id uint) (data interface{}, err error) {
+	count, err := repositories.LikeUnreadCount(db, id)
+	if err != nil {
+		return 0, err
+	}
+	data = gin.H{"count": count}
+	return data, nil
+}
+
 // LikeMessageLogic
 // @Description: 点赞消息
 // @param        db *gorm.DB

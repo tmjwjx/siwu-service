@@ -3,8 +3,87 @@ package repositories
 import (
 	"forum/internal/internalPkg/internalUtils"
 	"forum/internal/message/requests"
+	"forum/internal/models"
+	"forum/pkg/globals"
 	"gorm.io/gorm"
 )
+
+// CommentUnreadCount
+// @Description: 评论消息未读数量
+// @param        db *gorm.DB
+// @param        id uint
+// @return       count
+// @return       err
+// @Author tianjiajie 2025-02-12 21:24:39
+func CommentUnreadCount(db *gorm.DB, id uint) (count int64, err error) {
+	var a []int64
+	err = db.Model(&models.Article{}).
+		Select("id").
+		Where("user_id = ?", id).
+		Pluck("id", &a).
+		Error
+	if err != nil {
+		globals.Log.Errorf("Failed to get article id: %v", err)
+		return 0, err
+	}
+
+	err = db.Model(&models.ArticleComment{}).
+		Where("article_id in ?", a).
+		Where("is_read = ?", 0).
+		Count(&count).
+		Error
+
+	if err != nil {
+		globals.Log.Errorf("Failed to count unread likes: %v", err)
+		return 0, err
+	}
+
+	return count, nil
+}
+
+// CommentRead
+// @Description: 评论消息已读
+// @param        db *gorm.DB
+// @param        id uint
+// @return       err
+// @Author tianjiajie 2025-02-12 20:56:54
+func CommentRead(db *gorm.DB, id uint) (err error) {
+	// 获取文章id
+	var a []int64
+	err = db.Model(&models.Article{}).
+		Select("id").
+		Where("user_id = ?", id).
+		Pluck("id", &a).
+		Error
+	if err != nil {
+		globals.Log.Errorf("Failed to get article id: %v", err)
+		return err
+	}
+
+	// 查询评论id
+	var b []int64
+	err = db.Model(&models.ArticleComment{}).
+		Select("id").
+		Where("user_id = ?", id).
+		Pluck("id", &b).
+		Error
+	if err != nil {
+		globals.Log.Errorf("Failed to get article id: %v", err)
+		return err
+	}
+
+	err = db.Model(&models.ArticleComment{}).
+		Where("article_id in ? or parent_id in ?", a, b).
+		Update("is_read", 1).
+		Error
+
+	if err != nil {
+		globals.Log.Errorf("Failed to mark likes as read: %v", err)
+		return err
+	}
+
+	return nil
+}
 
 // IsCommentLikeRep
 // @Description: 查询是否给评论点赞
@@ -81,6 +160,12 @@ func CommentRep(db *gorm.DB, req *requests.MessageReq, userId uint) (res []reque
 	for i := range res {
 		res[i].FormatTime = internalUtils.TimeFormat(res[i].CreatedAt)
 		res[i].DailyTime = internalUtils.TimeFormatDaily(res[i].CreatedAt)
+	}
+
+	// 评论消息已读
+	err = CommentRead(db, userId)
+	if err != nil {
+		return res, err
 	}
 
 	return res, err

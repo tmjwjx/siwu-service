@@ -10,6 +10,48 @@ import (
 	"gorm.io/gorm"
 )
 
+// FollowUnreadCount
+// @Description: 关注消息未读数量
+// @param        db *gorm.DB
+// @param        id uint
+// @return       count
+// @return       err
+// @Author tianjiajie 2025-02-12 21:25:00
+func FollowUnreadCount(db *gorm.DB, id uint) (count int64, err error) {
+	err = db.Model(&models.UserFollow{}).
+		Where("followed_id = ?", id).
+		Where("is_read = ?", 0).
+		Count(&count).
+		Error
+
+	if err != nil {
+		globals.Log.Errorf("Failed to count unread likes: %v", err)
+		return 0, err
+	}
+
+	return count, nil
+}
+
+// FollowRead
+// @Description: 关注消息已读
+// @param        db *gorm.DB
+// @param        id uint
+// @return       err
+// @Author tianjiajie 2025-02-12 21:11:52
+func FollowRead(db *gorm.DB, id uint) (err error) {
+	err = db.Model(&models.UserFollow{}).
+		Where("followed_id = ?", id).
+		Update("is_read", 1).
+		Error
+
+	if err != nil {
+		globals.Log.Errorf("Failed to mark likes as read: %v", err)
+		return err
+	}
+
+	return nil
+}
+
 // FollowRep
 // @Description: 关注消息
 // @param        *gorm.DB *gorm.DB
@@ -66,6 +108,12 @@ func FollowRep(db *gorm.DB, req requests.MessageReq, userId uint) (res []request
 	for i := range res {
 		res[i].FormatTime = internalUtils.TimeFormat(res[i].CreatedAt)
 		res[i].DailyTime = internalUtils.TimeFormatDaily(res[i].CreatedAt)
+	}
+
+	// 关注消息已读
+	err = FollowRead(db, userId)
+	if err != nil {
+		return nil, err
 	}
 
 	return res, nil
