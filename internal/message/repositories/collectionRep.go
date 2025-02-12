@@ -4,8 +4,40 @@ import (
 	"forum/internal/internalPkg/internalUtils"
 	"forum/internal/message/requests"
 	"forum/internal/models"
+	"forum/pkg/globals"
 	"gorm.io/gorm"
 )
+
+// CollectionRead
+// @Description: 收藏消息已读
+// @param        db *gorm.DB
+// @param        id uint
+// @return       err
+// @Author tianjiajie 2025-02-12 20:56:29
+func CollectionRead(db *gorm.DB, id uint) (err error) {
+	var a []int64
+	err = db.Model(&models.Article{}).
+		Select("id").
+		Where("user_id = ?", id).
+		Pluck("id", &a).
+		Error
+	if err != nil {
+		globals.Log.Errorf("Failed to get article id: %v", err)
+		return err
+	}
+
+	err = db.Model(&models.ArticleCollection{}).
+		Where("article_id in ?", a).
+		Update("is_read", 1).
+		Error
+
+	if err != nil {
+		globals.Log.Errorf("Failed to mark likes as read: %v", err)
+		return err
+	}
+
+	return nil
+}
 
 // CollectionRep
 // @Description: 收藏消息
@@ -39,6 +71,12 @@ func CollectionRep(db *gorm.DB, req requests.MessageReq, id uint) (res []request
 	for i := range res {
 		res[i].FormatTime = internalUtils.TimeFormat(res[i].CreatedAt)
 		res[i].DailyTime = internalUtils.TimeFormatDaily(res[i].CreatedAt)
+	}
+
+	// 收藏消息已读
+	err = CollectionRead(db, id)
+	if err != nil {
+		return nil, err
 	}
 
 	return res, nil

@@ -5,6 +5,7 @@ import "gorm.io/gorm"
 // ArticleCollection 文章收藏表
 type ArticleCollection struct {
 	gorm.Model      //ID CreatedAt UpdatedAt DeletedAt
-	ArticleID  uint `json:"article_id" gorm:"index"` // 文章ID
-	UserID     uint `json:"user_id" gorm:"index"`    // 收藏人ID
+	ArticleID  uint `json:"article_id" gorm:"index"`      // 文章ID
+	UserID     uint `json:"user_id" gorm:"index"`         // 收藏人ID
+	IsRead     bool `json:"is_read" gorm:"default:false"` // 是否已读
 }

@@ -4,8 +4,40 @@ import (
 	"forum/internal/internalPkg/internalUtils"
 	"forum/internal/message/requests"
 	"forum/internal/models"
+	"forum/pkg/globals"
 	"gorm.io/gorm"
 )
+
+// CommentLikeRead
+// @Description: 评论点赞消息已读
+// @param        db *gorm.DB
+// @param        id uint
+// @return       err
+// @Author tianjiajie 2025-02-12 21:13:37
+func CommentLikeRead(db *gorm.DB, id uint) (err error) {
+	var a []int64
+	err = db.Model(&models.ArticleComment{}).
+		Select("id").
+		Where("user_id = ?", id).
+		Pluck("id", &a).
+		Error
+	if err != nil {
+		globals.Log.Errorf("Failed to get article id: %v", err)
+		return err
+	}
+
+	err = db.Model(&models.CommentLike{}).
+		Where("comment_id in ?", a).
+		Update("is_read", 1).
+		Error
+
+	if err != nil {
+		globals.Log.Errorf("Failed to mark likes as read: %v", err)
+		return err
+	}
+
+	return nil
+}
 
 // CommentLikeRep
 // @Description: 评论点赞消息
@@ -48,6 +80,12 @@ func CommentLikeRep(db *gorm.DB, req requests.MessageReq, userId uint) (res []re
 	for i := range res {
 		res[i].FormatTime = internalUtils.TimeFormat(res[i].CreatedAt)
 		res[i].DailyTime = internalUtils.TimeFormatDaily(res[i].CreatedAt)
+	}
+
+	// 评论点赞消息已读
+	err = CommentLikeRead(db, userId)
+	if err != nil {
+		return nil, err
 	}
 
 	return res, nil
