@@ -7,6 +7,22 @@ import (
 	"gorm.io/gorm"
 )
 
+// CommentUnreadCountLogic
+// @Description: 未读评论消息数量
+// @param        db *gorm.DB
+// @param        id uint
+// @return       data
+// @return       err
+// @Author tianjiajie 2025-02-12 22:11:41
+func CommentUnreadCountLogic(db *gorm.DB, id uint) (data interface{}, err error) {
+	count, err := repositories.CommentUnreadCount(db, id)
+	if err != nil {
+		return 0, err
+	}
+	data = gin.H{"count": count}
+	return data, nil
+}
+
 // CommentMesLogic
 // @Description: 评论消息
 // @Author tianjiajie 2025-01-18 11:11:34

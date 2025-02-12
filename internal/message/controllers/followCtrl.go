@@ -9,8 +9,29 @@ import (
 	"net/http"
 )
 
-func FollowMessageCtrl(c *gin.Context) {
+// FollowUnreadCtrl
+// @Description: 未读关注消息数量
+// @param        c *gin.Context
+// @Author tianjiajie 2025-02-12 22:12:17
+func FollowUnreadCtrl(c *gin.Context) {
+	db := globals.DB
+	userId, _ := c.Get("id")
+	count, err := logics.FollowUnreadCountLogic(db, userId.(uint))
+	if err != nil {
+		globals.Log.Errorf("Failed to get unread follows: %v", err)
+		data := response.NewAppErr(globals.StatusInternalServerError, err, nil)
+		response.Failed(c, http.StatusInternalServerError, data)
+		return
+	}
+	data := response.NewAppData(globals.StatusOK, "获取未读关注消息数量成功", count)
+	response.Success(c, http.StatusOK, data)
+}
 
+// FollowMessageCtrl
+// @Description: 关注消息
+// @param        c *gin.Context
+// @Author tianjiajie 2025-02-12 22:12:08
+func FollowMessageCtrl(c *gin.Context) {
 	//初始化需要的变量
 	db := globals.DB
 	var req requests.MessageReq
