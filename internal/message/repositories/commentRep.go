@@ -8,6 +8,39 @@ import (
 	"gorm.io/gorm"
 )
 
+// CommentUnreadCount
+// @Description: 评论消息未读数量
+// @param        db *gorm.DB
+// @param        id uint
+// @return       count
+// @return       err
+// @Author tianjiajie 2025-02-12 21:24:39
+func CommentUnreadCount(db *gorm.DB, id uint) (count int64, err error) {
+	var a []int64
+	err = db.Model(&models.Article{}).
+		Select("id").
+		Where("user_id = ?", id).
+		Pluck("id", &a).
+		Error
+	if err != nil {
+		globals.Log.Errorf("Failed to get article id: %v", err)
+		return 0, err
+	}
+
+	err = db.Model(&models.ArticleComment{}).
+		Where("article_id in ?", a).
+		Where("is_read = ?", 0).
+		Count(&count).
+		Error
+
+	if err != nil {
+		globals.Log.Errorf("Failed to count unread likes: %v", err)
+		return 0, err
+	}
+
+	return count, nil
+}
+
 // CommentRead
 // @Description: 评论消息已读
 // @param        db *gorm.DB
