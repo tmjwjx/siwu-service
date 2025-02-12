@@ -16,4 +16,5 @@ type ArticleComment struct {
 	Content      string `json:"content" gorm:"not null"`      // 评论内容
 	LikesCount   int    `json:"likes_count" gorm:"default:0"` // 点赞数量
 	Examine      int    `json:"examine"`                      // 是否审核 1:审核 2:未审核
+	IsRead       bool   `json:"is_read" gorm:"default:false"` // 是否已读
 }

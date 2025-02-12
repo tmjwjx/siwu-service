@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"forum/internal/article/logics"
 	"forum/internal/article/requests"
 	"forum/pkg/globals"
@@ -19,7 +18,7 @@ func ArticlePublishCtrl(c *gin.Context) {
 
 	// 获取用户ID
 	userId, _ := c.Get("id")
-	fmt.Println(userId)
+	//fmt.Println(userId)
 
 	// 绑定查询参数到 req 变量，如果绑定失败，返回错误信息
 	if err := c.ShouldBind(&req); err != nil {
@@ -30,7 +29,7 @@ func ArticlePublishCtrl(c *gin.Context) {
 		response.Failed(c, http.StatusBadRequest, data)
 		return // 结束函数执行
 	}
-	fmt.Printf("%v", req)
+	//fmt.Printf("%v", req)
 
 	// 进入业务层
 	id, err := logics.ArticleCreateLogic(db, req, userId.(uint))
