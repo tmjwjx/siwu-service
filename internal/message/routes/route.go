@@ -7,7 +7,7 @@ import (
 )
 
 func Message(e *gin.Engine) {
-	
+
 	messageGroup := e.Group("/message")
 	{
 		messageGroup.Use(token.AuthMiddleware())
@@ -22,18 +22,18 @@ func Message(e *gin.Engine) {
 		// 评论消息
 		messageGroup.GET("/comment", controllers.CommentMesCtrl)
 		// 评论点赞消息
-		messageGroup.GET("/comment_like", controllers.CommentLikeMesCtrl)
-		
+		messageGroup.GET("/comment_like", controllers.CommentLikeCtrl)
+
 		// 未读点赞消息数量
 		messageGroup.GET("/like_unread", controllers.LikeUnreadCtrl)
 		// 未读收藏消息数量
-		messageGroup.GET("/like_unread", controllers.LikeUnreadCtrl)
+		messageGroup.GET("/collection_unread", controllers.CollectionUnreadCtrl)
 		// 未读评论消息数量
-		messageGroup.GET("/like_unread", controllers.LikeUnreadCtrl)
+		messageGroup.GET("/comment_unread", controllers.CommentUnreadCtrl)
 		// 未读关注消息数量
-		messageGroup.GET("/like_unread", controllers.LikeUnreadCtrl)
+		messageGroup.GET("/follow_unread", controllers.FollowUnreadCtrl)
 		// 未读评论点赞消息数量
-		messageGroup.GET("/like_unread", controllers.LikeUnreadCtrl)
+		messageGroup.GET("/comment_like_unread", controllers.CommentLikeUnreadCtrl)
 	}
-	
+
 }

@@ -17,6 +17,8 @@ import (
 func LikeUnreadCtrl(c *gin.Context) {
 	// 初始化需要的变量
 	db := globals.DB
+
+	// 获取用户ID
 	userId, _ := c.Get("id")
 
 	// 进入业务层

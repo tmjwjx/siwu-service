@@ -10,6 +10,31 @@ import (
 	"net/http"
 )
 
+// CollectionUnreadCtrl
+// @Description: 未读收藏消息数量
+// @param        c *gin.Context
+// @Author tianjiajie 2025-02-12 22:08:00
+func CollectionUnreadCtrl(c *gin.Context) {
+	// 初始化需要的变量
+	db := globals.DB
+
+	// 获取用户ID
+	userId, _ := c.Get("id")
+
+	//进入业务层
+	count, err := logics.CollectionUnreadCountLogic(db, userId.(uint))
+	if err != nil {
+		globals.Log.Errorf("收藏消息加载失败 err = %s", err)
+		data := response.NewAppErr(globals.StatusInternalServerError, err, nil)
+		response.Failed(c, http.StatusInternalServerError, data)
+		return
+	}
+
+	// 返回响应
+	data := response.NewAppData(globals.StatusOK, "收藏消息加载成功", count)
+	response.Success(c, http.StatusOK, data)
+}
+
 // CollectionMessageCtrl
 // @Description: 点赞消息
 // @param        c *gin.Context
