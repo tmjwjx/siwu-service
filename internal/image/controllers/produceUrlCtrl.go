@@ -9,6 +9,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// ProduceUrlCtrl
+// @Description: 根据上传的图片，生成url路径，并将图片存到静态文件中，url路径存到数据库中。
+// @Author wangyulong 2025-02-13 15:38:20
+// @param        c *gin.Context
 func ProduceUrlCtrl(c *gin.Context) {
 
 	// 解析multipart/form-data

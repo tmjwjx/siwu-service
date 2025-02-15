@@ -26,3 +26,11 @@ type ImageUrl struct {
 type UrlPath struct {
 	Url string `json:"url"`
 }
+
+// CompressImageReq 请求参数结构体
+type CompressImageReq struct {
+	Path   string `json:"path" binding:"required"`              // 图片路径（相对于静态文件夹的路径）
+	Width  int    `json:"width" binding:"min=0"`                // 目标宽度
+	Height int    `json:"height" binding:"min=0"`               // 目标高度
+	Level  int    `json:"level" binding:"required,min=0,max=9"` // 压缩级别 (0-9)
+}

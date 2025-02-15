@@ -67,6 +67,7 @@ func decodeImages(c *gin.Context) ([]image.Image, []string, error) {
 // ProduceUrlLogic 图片文件的逻辑处理
 func ProduceUrlLogic(c *gin.Context) (*requests.ImageUrl, error) {
 
+	var finalImage image.Image
 	// 读取图片并进行处理
 	images, formats, err := decodeImages(c)
 	if err != nil {
@@ -77,19 +78,20 @@ func ProduceUrlLogic(c *gin.Context) (*requests.ImageUrl, error) {
 		}
 	}
 
-	param := c.PostForm("width")
-
-	// 将string 转换为 int
-	width, err := strconv.Atoi(param)
-	if err != nil {
-		return nil, fmt.Errorf("ProduceUrlLogic -> 将string 转换为 int失败 -> %s", err)
-	}
+	// 获取上传的图片属于的类型（文章，用户，标签，评论)
+	typeParam := c.PostForm("type")
 
 	var urls []*requests.UrlPath
 	// 处理解码后的图片（例如压缩、加水印等）
 	for i, img := range images {
-		// 添加水印
-		imgWithWatermark := addWatermark(img, "思悟")
+
+		if typeParam == "文章" {
+			// 添加水印
+			imgWithWatermark := addWatermark(img, "思悟")
+			finalImage = imgWithWatermark
+		} else {
+			finalImage = img
+		}
 
 		// 生成唯一的文件名
 		uniqueFilename := generateUniqueFilename(formats[i])
@@ -105,24 +107,14 @@ func ProduceUrlLogic(c *gin.Context) (*requests.ImageUrl, error) {
 		// 定义存储的完整路径，确保以原始格式的扩展名结尾
 		outFile := fmt.Sprintf(globals.SConfig.Path + "/" + uniqueFilename)
 
-		// 是否压缩图片
-		var compressedImg image.Image
-		if width != 0 {
-			// 压缩图片
-			compressedImg = imaging.Resize(imgWithWatermark, width, 0, imaging.Lanczos)
-		} else {
-			// 不压缩图片
-			compressedImg = imgWithWatermark
-		}
-
 		// 根据原始格式保存文件
 		switch formats[i] {
 		case "jpeg", "jpg":
-			err = imaging.Save(compressedImg, outFile, imaging.JPEGQuality(80))
+			err = imaging.Save(finalImage, outFile, imaging.JPEGQuality(80))
 		case "png":
-			err = imaging.Save(compressedImg, outFile, imaging.PNGCompressionLevel(5))
+			err = imaging.Save(finalImage, outFile, imaging.PNGCompressionLevel(5))
 		case "gif":
-			err = imaging.Save(compressedImg, outFile)
+			err = imaging.Save(finalImage, outFile)
 		default:
 			return nil, fmt.Errorf("ProduceUrlLogic -> 不支持的格式: %s -> %s", formats[i], err)
 		}
