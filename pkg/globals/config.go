@@ -1,6 +1,8 @@
 package globals
 
-import "time"
+import (
+	"time"
+)
 
 // 和配置相关的结构体
 
