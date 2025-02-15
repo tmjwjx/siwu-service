@@ -22,6 +22,17 @@ func QueryUserByEmail(db *gorm.DB, email string) *models.User {
 	return &user
 }
 
+// QueryAdminByEmail 通过email查找管理者
+func QueryAdminByEmail(db *gorm.DB, email string) *models.Administrator {
+	var admin models.Administrator
+	d := db.Model(&models.Administrator{}).Where("email = ?", email).Select("*").Scan(&admin)
+	// 没有找到用户
+	if d.RowsAffected <= 0 {
+		return nil
+	}
+	return &admin
+}
+
 // QueryRoleById
 // @Description: 通过角色id查询该角色的信息
 // @Author lizhuang 2024-10-21 20:59:15

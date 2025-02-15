@@ -162,13 +162,20 @@ func (b *BsManageContext) BsLogin(msg requests.BackstageLoginReq) (*requests.Fin
 
 	// return backstageLoginRes, nil
 
-	// 补丁：只允许管理者进入后台（以后要额外添加一张表用来存储管理者）
-	for _, v := range backstageLoginRes.RoleNames {
-		if v == "管理员" || v == "超级管理员" || v == "测试" {
-			return res, nil
-		}
+	// // 补丁：只允许管理者进入后台（以后要额外添加一张表用来存储管理者）
+	// for _, v := range backstageLoginRes.RoleNames {
+	// 	if v == "管理员" || v == "超级管理员" {
+	// 		return res, nil
+	// 	}
+	// }
+
+	// 从管理者表格中查询管理者
+	admin := repositories.QueryAdminByEmail(b.DB, email)
+	if admin != nil {
+		return res, nil
+	} else {
+		return nil, fmt.Errorf("用户id为%d的用户没有权限进入后台", user.ID)
 	}
-	return nil, fmt.Errorf("用户id为%d的用户没有权限进入后台", user.ID)
 }
 
 // BsLogout 后台登出
@@ -325,7 +332,7 @@ func (b *BsManageContext) GetPermCodeRep(casbinService *casbin.CasbinService, db
 	}
 
 	// 通过菜单id查询其拥有的api的id
-	//menuApi := make(map[uint]uint)
+	// menuApi := make(map[uint]uint)
 	var endMenuId []uint
 	var apiID []uint
 	for _, menuId := range menuIds {
@@ -350,7 +357,7 @@ func (b *BsManageContext) GetPermCodeRep(casbinService *casbin.CasbinService, db
 		}
 	}
 
-	//通过查到的角色拥有的菜单(即按钮),去查询菜单的code字段
+	// 通过查到的角色拥有的菜单(即按钮),去查询菜单的code字段
 	var codes []string
 	err = db.Model(&models.Menu{}).Where("id IN ?", endMenuId).Pluck("code", &codes).Error
 	if err != nil {
