@@ -32,11 +32,12 @@ func ClickAttention(c *gin.Context) {
 	// 类型断言
 	followMsg.FollowerId = follerId.(uint)
 
-	// // 简单检验数据
-	// if followMsg.FollowerId == followMsg.FollowedId {
-	// 	response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("ClickAttention() : id%d不能关注%d", followMsg.FollowerId, followMsg.FollowedId), nil))
-	// 	return
-	// }
+	// 检验数据
+	if followMsg.FollowerId == followMsg.FollowedId {
+		globals.Log.Error(fmt.Errorf("id%d不能关注%d", followMsg.FollowerId, followMsg.FollowedId))
+		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("id%d不能关注%d", followMsg.FollowerId, followMsg.FollowedId), nil))
+		return
+	}
 
 	// 业务逻辑
 	if err := userReqContext.ClickAttention(followMsg); err != nil {
