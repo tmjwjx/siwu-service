@@ -14,7 +14,7 @@ import (
 // @return       *models.User
 func QueryUserByEmail(db *gorm.DB, email string) *models.User {
 	var user models.User
-	d := db.Model(&models.User{}).Where("email = ?", email).Select("*").Scan(&user)
+	d := db.Model(&models.Administrator{}).Where("email = ?", email).Select("*").Scan(&user)
 	// 没有找到用户
 	if d.RowsAffected <= 0 {
 		return nil
