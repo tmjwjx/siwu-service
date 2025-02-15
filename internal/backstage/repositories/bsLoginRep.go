@@ -14,12 +14,23 @@ import (
 // @return       *models.User
 func QueryUserByEmail(db *gorm.DB, email string) *models.User {
 	var user models.User
-	d := db.Model(&models.Administrator{}).Where("email = ?", email).Select("*").Scan(&user)
+	d := db.Model(&models.User{}).Where("email = ?", email).Select("*").Scan(&user)
 	// 没有找到用户
 	if d.RowsAffected <= 0 {
 		return nil
 	}
 	return &user
+}
+
+// QueryAdminByEmail 通过email查找管理者
+func QueryAdminByEmail(db *gorm.DB, email string) *models.Administrator {
+	var admin models.Administrator
+	d := db.Model(&models.Administrator{}).Where("email = ?", email).Select("*").Scan(&admin)
+	// 没有找到用户
+	if d.RowsAffected <= 0 {
+		return nil
+	}
+	return &admin
 }
 
 // QueryRoleById
