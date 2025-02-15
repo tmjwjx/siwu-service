@@ -7,6 +7,7 @@ import (
 	"forum/internal/internalPkg/templates"
 	"forum/pkg/response"
 	"forum/pkg/token"
+	"gopkg.in/gomail.v2"
 	"strconv"
 	"strings"
 
@@ -16,7 +17,6 @@ import (
 	"forum/internal/user/requests"
 	"forum/pkg/globals"
 	"github.com/gin-gonic/gin"
-	"gopkg.in/gomail.v2"
 	"gorm.io/gorm"
 	"time"
 )
@@ -31,9 +31,9 @@ type UserReqContext struct {
 // NewUserReqContext 新建UserReqContext对象
 func NewUserReqContext(db *gorm.DB, c *gin.Context, sendEmailCfg *globals.SendEmailConfig) *UserReqContext {
 	return &UserReqContext{
-		DB:           db,
-		Ctx:          c,
-		SendEmailCfg: sendEmailCfg,
+		DB:  db,
+		Ctx: c,
+		// SendEmailCfg: sendEmailCfg,
 	}
 }
 
@@ -122,12 +122,9 @@ func (u *UserReqContext) Register(registerMsg requests.RegisterReq) error {
 
 // ReqVerifyCode 用户请求验证码
 func (u *UserReqContext) ReqVerifyCode(email string) error {
-	// 随机生成验证码
-	verifyCode := internalUtils.RandomGenerateStrings(internalUtils.VerifyCodeLen)
-
 	// 查找最后一条验证码（如何能够查询到验证码，要判断一下冷却时间；如果不能够查询到验证码，就直接发送）
 	userVerifyCode, _ := repositories.QueryLastUserVerifyCodeByEmail(u.DB, email)
-	// 如何查询到了验证码，判断冷却时间是否到
+	// 如果查询到了验证码，判断冷却时间是否到
 	if userVerifyCode != nil {
 		// 当前时间
 		now := time.Now()
@@ -141,10 +138,20 @@ func (u *UserReqContext) ReqVerifyCode(email string) error {
 		}
 	}
 
+	// 随机生成验证码
+	verifyCode := internalUtils.RandomGenerateStrings(internalUtils.VerifyCodeLen)
+
 	// 先发送验证码，后插入到表中，避免发送验证码失败
 	// 给用户发送验证码
+	// body := fmt.Sprintf(templates.GetEmailFormatTemplate(), verifyCode, int(internalUtils.VerifyCodeEffectiveDuration.Minutes()))
+	// if err := globals.SendEmailCfg.SendEmail(email, internalUtils.VerifyCodeSubject, body); err != nil {
+	// 	// return fmt.Errorf("UserReqContext.VerifyCodeReq() -> 向 %s 邮箱发送验证码错误，%v", email, err)
+	// 	globals.Log.Errorf(err.Error())
+	// 	return err
+	// }
+
 	body := fmt.Sprintf(templates.GetEmailFormatTemplate(), verifyCode, int(internalUtils.VerifyCodeEffectiveDuration.Minutes()))
-	if err := u.SendEmail(email, internalUtils.VerifyCodeSubject, body); err != nil {
+	if err := SendEmail(globals.SendEmailCfg, email, internalUtils.VerifyCodeSubject, body); err != nil {
 		// return fmt.Errorf("UserReqContext.VerifyCodeReq() -> 向 %s 邮箱发送验证码错误，%v", email, err)
 		globals.Log.Errorf(err.Error())
 		return err
@@ -160,33 +167,72 @@ func (u *UserReqContext) ReqVerifyCode(email string) error {
 	return nil
 }
 
+// SendVerificationCodeAsync 异步发送验证码
+// func SendVerificationCodeAsync(to string, subject string, body string, resultCh chan string) {
+// 	err := globals.SendEmailCfg.SendEmail(to, subject, body)
+// 	if err != nil {
+// 		globals.Log.Errorf(err.Error())
+// 		resultCh <- "fail"
+// 	} else {
+// 		resultCh <- "success"
+// 	}
+// }
+
+// // SendEmail 给邮箱(to)发送内容(body)
+// // to: 接收人
+// // body: 正文内容
+// // subject: 主题
+// func (s *globals.SendEmailConfig) SendEmail(to string, subject string, body string) error {
+// 	// 判断邮箱是否合法
+// 	if !internalUtils.IsValidEmail(to) {
+// 		globals.Log.Errorf(response.ErrEmailIsInvalid + ":" + to)
+// 		return fmt.Errorf(response.ErrEmailIsInvalid + ":" + to)
+// 		// return fmt.Errorf("UserReqContext.SendEmail() err: 接收者邮箱错误")
+// 	}
+//
+// 	m := gomail.NewMessage()
+// 	// 设置邮件消息的头部字段
+// 	m.SetHeader("From", u.SendEmailCfg.From) // 发送人
+// 	m.SetHeader("To", to)                    // 接收人
+// 	m.SetHeader("Subject", subject)          // 主题
+// 	m.SetBody("text/html", body)             // 正文内容
+// 	// 创建一个新的邮件拨号器对象，用于通过指定的 SMTP 服务器发送邮件
+// 	d := gomail.NewDialer(u.SendEmailCfg.Host, u.SendEmailCfg.Port, u.SendEmailCfg.Username, u.SendEmailCfg.AuthorizeCode)
+// 	// 通过拨号器对象发送指定的邮件消息
+// 	if err := d.DialAndSend(m); err != nil {
+// 		// return fmt.Errorf("UserReqContext.SendEmail() err: %v", err)
+// 		globals.Log.Errorf(err.Error())
+// 		return err
+// 	}
+//
+// 	return nil
+// }
+
 // SendEmail 给邮箱(to)发送内容(body)
 // to: 接收人
 // body: 正文内容
 // subject: 主题
-func (u *UserReqContext) SendEmail(to string, subject string, body string) error {
+func SendEmail(s *globals.SendEmailConfig, to string, subject string, body string) error {
 	// 判断邮箱是否合法
 	if !internalUtils.IsValidEmail(to) {
 		globals.Log.Errorf(response.ErrEmailIsInvalid + ":" + to)
 		return fmt.Errorf(response.ErrEmailIsInvalid + ":" + to)
-		// return fmt.Errorf("UserReqContext.SendEmail() err: 接收者邮箱错误")
 	}
 
 	m := gomail.NewMessage()
 	// 设置邮件消息的头部字段
-	m.SetHeader("From", u.SendEmailCfg.From) // 发送人
-	m.SetHeader("To", to)                    // 接收人
-	m.SetHeader("Subject", subject)          // 主题
-	m.SetBody("text/html", body)             // 正文内容
+	m.SetHeader("From", s.From)     // 发送人
+	m.SetHeader("To", to)           // 接收人
+	m.SetHeader("Subject", subject) // 主题
+	m.SetBody("text/html", body)    // 正文内容
 	// 创建一个新的邮件拨号器对象，用于通过指定的 SMTP 服务器发送邮件
-	d := gomail.NewDialer(u.SendEmailCfg.Host, u.SendEmailCfg.Port, u.SendEmailCfg.Username, u.SendEmailCfg.AuthorizeCode)
+	d := gomail.NewDialer(s.Host, s.Port, s.Username, s.AuthorizeCode)
 	// 通过拨号器对象发送指定的邮件消息
 	if err := d.DialAndSend(m); err != nil {
 		// return fmt.Errorf("UserReqContext.SendEmail() err: %v", err)
 		globals.Log.Errorf(err.Error())
 		return err
 	}
-
 	return nil
 }
 
