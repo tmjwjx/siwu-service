@@ -6,7 +6,6 @@ import (
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"os"
 )
 
 func LogInit() {
@@ -23,13 +22,14 @@ func LogInit() {
 	encoder := logger.GetEncoder()
 
 	// 新增部分：将日志输出到控制台
-	consoleCore := zapcore.NewCore(encoder, zapcore.AddSync(os.Stdout), zapcore.DebugLevel)
+	//consoleCore := zapcore.NewCore(encoder, zapcore.AddSync(os.Stdout), zapcore.DebugLevel)
 
 	// 新增部分：将日志输出到文件
 	fileCore := zapcore.NewCore(encoder, writeSyncer, zapcore.DebugLevel)
 
 	// 修改部分：合并控制台输出和文件输出
-	core := zapcore.NewTee(consoleCore, fileCore)
+	//core := zapcore.NewTee(consoleCore, fileCore)
+	core := zapcore.NewTee(fileCore)
 
 	log := zap.New(core, zap.AddCaller())
 

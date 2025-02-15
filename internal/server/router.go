@@ -14,7 +14,6 @@ import (
 	userRouter "forum/internal/user/routes"
 	"forum/pkg/corsMW"
 	"forum/pkg/globals"
-	"forum/pkg/token"
 )
 
 // SetupRouter 启动处理函数
@@ -22,12 +21,11 @@ func SetupRouter() {
 	// 跨域
 	globals.Router.Use(corsMW.CorsMiddleware())
 
-	// 空白分组，用于需要 token 验证中间件的接口
-	r := globals.Router.Group("")
-	// token 验证
-	r.Use(token.AuthMiddleware())
-
-	// todo 各个分路由需要传入不同的路由参数
+	// csrf 中间件
+	// 验证前端的 csrf 令牌
+	// globals.Router.Use(csrfMW.CSRFMW())
+	// 给前端发送 X-CSRF-Token
+	// globals.Router.Use(csrfMW.CSRFTokenMW())
 
 	// 用户分路由
 	userRouter.User(globals.Router)

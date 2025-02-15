@@ -66,8 +66,23 @@ func Register(c *gin.Context) {
 		return
 	}
 
+	// 通过email查询id
+	user := repositories.QueryUserByEmail(userReqContext.DB, registerReq.Email)
+	if user == nil {
+		globals.Log.Errorf(response.ErrEmailNotExist + ":" + registerReq.Email)
+		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf(response.ErrEmailNotExist+":"+registerReq.Email), nil))
+		return
+	}
+	// 生成token
+	tok, err := token.GenerateToken(user.ID)
+	if err != nil {
+		globals.Log.Errorf(err.Error())
+		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, err, nil))
+		return
+	}
+
 	// 成功
-	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, response.DataSuccess, nil))
+	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, response.DataSuccess, gin.H{"token": tok}))
 }
 
 // ReqVerifyCode 用户请求验证码

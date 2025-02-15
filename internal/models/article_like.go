@@ -5,6 +5,7 @@ import "gorm.io/gorm"
 // ArticleLike 文章获赞表
 type ArticleLike struct {
 	gorm.Model      //ID CreatedAt UpdatedAt DeletedAt
-	ArticleID  uint `json:"article_id" gorm:"index"` // 文章ID
-	UserID     uint `json:"user_id" gorm:"index"`    // 点赞人ID
+	ArticleID  uint `json:"article_id" gorm:"index"`      // 文章ID
+	UserID     uint `json:"user_id" gorm:"index"`         // 点赞人ID
+	IsRead     bool `json:"is_read" gorm:"default:false"` // 是否已读
 }

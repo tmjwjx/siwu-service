@@ -9,6 +9,24 @@ import (
 	"net/http"
 )
 
+// CommentUnreadCtrl
+// @Description: 未读评论消息数量
+// @param        c *gin.Context
+// @Author tianjiajie 2025-02-12 22:11:18
+func CommentUnreadCtrl(c *gin.Context) {
+	db := globals.DB
+	userId, _ := c.Get("id")
+	count, err := logics.CommentUnreadCountLogic(db, userId.(uint))
+	if err != nil {
+		globals.Log.Errorf("Failed to get unread comments: %v", err)
+		data := response.NewAppErr(globals.StatusInternalServerError, err, nil)
+		response.Failed(c, http.StatusInternalServerError, data)
+		return
+	}
+	data := response.NewAppData(globals.StatusOK, "获取未读评论消息数量成功", count)
+	response.Success(c, http.StatusOK, data)
+}
+
 // CommentMesCtrl
 // @Description: 评论消息
 // @param        c *gin.Context

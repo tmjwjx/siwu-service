@@ -25,5 +25,6 @@ const (
 	ErrModelNotPointer         = "数据模型不是指针类型"
 	ErrInsertDataFail          = "插入数据失败"
 	ErrMissAuthorizationHeader = "缺少授权标头"
-	ErrTokenIsInvalid          = "无效的token"
+	ErrTokenIsInvalid          = "无效的 token"
+	ErrTCSRFokenIsInvalid      = "无效的 CSRF token"
 )

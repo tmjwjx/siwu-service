@@ -1,7 +1,6 @@
 package observer
 
 import (
-	"fmt"
 	"forum/pkg/globals"
 )
 
@@ -32,7 +31,7 @@ func (u *SystemMsgObserver) Update(data string) {
 
 	// 消息通知事件 推送消息给指定用户
 	notifyChan, exists := globals.SubscriberChannels[u.userId]
-	fmt.Println("exist", exists)
+	//fmt.Println("exist", exists)
 	if exists {
 		notifyChan <- data // 推送消息给指定用户的通道
 		globals.Log.Infof("用户 %s 收到消息 %s", u.userId, data)

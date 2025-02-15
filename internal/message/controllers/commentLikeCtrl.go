@@ -9,11 +9,29 @@ import (
 	"net/http"
 )
 
-// CommentLikeMesCtrl
+// CommentLikeUnreadCtrl
+// @Description: 未读评论点赞消息数量
+// @param        c *gin.Context
+// @Author tianjiajie 2025-02-12 22:13:33
+func CommentLikeUnreadCtrl(c *gin.Context) {
+	db := globals.DB
+	userId, _ := c.Get("id")
+	count, err := logics.CommentLikeUnreadCountLogic(db, userId.(uint))
+	if err != nil {
+		globals.Log.Errorf("Failed to get unread comment likes: %v", err)
+		data := response.NewAppErr(globals.StatusInternalServerError, err, nil)
+		response.Failed(c, http.StatusInternalServerError, data)
+		return
+	}
+	data := response.NewAppData(globals.StatusOK, "获取未读评论点赞消息数量成功", count)
+	response.Success(c, http.StatusOK, data)
+}
+
+// CommentLikeCtrl
 // @Description: 评论点赞消息
 // @param        c *gin.Context
 // @Author tianjiajie 2025-02-06 09:01:11
-func CommentLikeMesCtrl(c *gin.Context) {
+func CommentLikeCtrl(c *gin.Context) {
 
 	// 初始化需要的变量
 	db := globals.DB

@@ -87,6 +87,9 @@ func TableInit() {
 
 		// 系统消息
 		&models.SystemMessage{},
+
+		// 管理员表
+		&models.Administrator{},
 	)
 
 	if err != nil {
