@@ -329,3 +329,31 @@ func RemoveDuplicates2(seen *map[uint]struct{}, slice []uint) []uint {
 	}
 	return result
 }
+
+// ProcessImagePath
+// @Description: 将上传图片的url路径处理成其在服务器中的路径
+// @Author wangyulong 2025-02-13 16:02:59
+func ProcessImagePath(url string) (string, error) {
+	var outFile string // 图片在服务器的存储路径
+	if url == "" {
+		return "", nil
+	}
+
+	originalURL := url
+
+	// 获取最后一个 '/' 的位置
+	lastSlashIndex := strings.LastIndex(originalURL, "/")
+	// 如果找到了 '/', 进行截取
+	if lastSlashIndex != -1 {
+
+		// 获取最后一个 '/' 前面的部分（不包含最后一个 '/'）
+		prefix := originalURL[:lastSlashIndex]
+		// 替换前缀为 './static/images'
+		outFile = strings.Replace(originalURL, prefix, "./static/images", 1)
+
+	} else {
+		return "", fmt.Errorf("ProcessImagePath -> 获取最后一个 '/' 的位置失败")
+	}
+
+	return outFile, nil
+}
