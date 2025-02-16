@@ -80,7 +80,12 @@ func (u *UserReqContext) Register(registerMsg requests.RegisterReq) error {
 	}
 
 	// 随机生成用户名
-	nickName := internalUtils.RandomGenerateStrings(internalUtils.UserNameLen)
+	// nickName := internalUtils.RandomGenerateStrings(internalUtils.UserNameLen)
+	nickName, err := internalUtils.RandomGenerateNickname()
+	if err != nil {
+		globals.Log.Errorf(err.Error())
+		return err
+	}
 
 	// 密码加密
 	encryptedPassword, err := internalUtils.HashPassword(password)
@@ -139,7 +144,12 @@ func (u *UserReqContext) ReqVerifyCode(email string) error {
 	}
 
 	// 随机生成验证码
-	verifyCode := internalUtils.RandomGenerateStrings(internalUtils.VerifyCodeLen)
+	// verifyCode := internalUtils.RandomGenerateStrings(internalUtils.VerifyCodeLen)
+	verifyCode, err := internalUtils.RandomGenerateVerifyCode()
+	if err != nil {
+		globals.Log.Errorf(err.Error())
+		return err
+	}
 
 	// 先发送验证码，后插入到表中，避免发送验证码失败
 	// 给用户发送验证码

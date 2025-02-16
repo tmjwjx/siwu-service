@@ -5,6 +5,7 @@ import (
 	"forum/internal/models"
 	"forum/pkg/globals"
 	"github.com/gin-gonic/gin"
+	gonanoid "github.com/matoous/go-nanoid/v2"
 	"golang.org/x/crypto/bcrypt"
 	"math/rand"
 	"os"
@@ -23,6 +24,26 @@ func RandomGenerateStrings(l int) string {
 		b[i] = letters[rand.Intn(len(letters))]
 	}
 	return string(b)
+}
+
+// RandomGenerateNickname 随机生成唯一名字
+func RandomGenerateNickname() (string, error) {
+	nickname, err := gonanoid.Generate(CustomAlphabetNickname, UserNameLen)
+	if err != nil {
+		fmt.Println("Error generating ID:", err)
+		return "", err
+	}
+	return nickname, nil
+}
+
+// RandomGenerateVerifyCode 随机生成验证码
+func RandomGenerateVerifyCode() (string, error) {
+	nickname, err := gonanoid.Generate(CustomAlphabetVerifyCode, VerifyCodeLen)
+	if err != nil {
+		fmt.Println("Error generating ID:", err)
+		return "", err
+	}
+	return nickname, nil
 }
 
 // HashPassword 加密密码。使用 bcrypt.GenerateFromPassword() 方法来加密密码。
@@ -186,14 +207,14 @@ func Highlight(content string, keyword string) string {
 		return content
 	}
 
-	//keywordLower := strings.ToLower(keyword)
-	//contentLower := strings.ToLower(content)
+	// keywordLower := strings.ToLower(keyword)
+	// contentLower := strings.ToLower(content)
 	//
-	//if strings.Contains(contentLower, keywordLower) {
+	// if strings.Contains(contentLower, keywordLower) {
 	//	// 高亮显示匹配项
-	//}
+	// }
 
-	//content = strings.ReplaceAll(content, keyword, fmt.Sprintf("<mark>%s</mark>", keyword))
+	// content = strings.ReplaceAll(content, keyword, fmt.Sprintf("<mark>%s</mark>", keyword))
 
 	// 转换为小写，用于大小写不敏感的匹配
 	keywordLower := strings.ToLower(keyword)
@@ -202,7 +223,7 @@ func Highlight(content string, keyword string) string {
 	if strings.Contains(contentLower, keywordLower) {
 		// 使用正则表达式忽略大小写替换
 		regex := regexp.MustCompile(`(?i)` + regexp.QuoteMeta(keyword))
-		//content = regex.ReplaceAllString(content, fmt.Sprintf("<mark>%s</mark>", keyword))
+		// content = regex.ReplaceAllString(content, fmt.Sprintf("<mark>%s</mark>", keyword))
 		return regex.ReplaceAllStringFunc(content, func(match string) string {
 			return fmt.Sprintf("<mark>%s</mark>", match)
 		})
@@ -248,8 +269,8 @@ func ChangeStringToInt(str string) (int, error) {
 // TimeAgo 函数根据传入的 time.Time 和当前时间计算差值并返回相应的时间描述
 func TimeAgo(t time.Time) string {
 	duration := time.Since(t) // 计算传入时间和当前时间的差值
-	//y, m, d := t.Date()
-	//fmt.Println(y, m, d)
+	// y, m, d := t.Date()
+	// fmt.Println(y, m, d)
 
 	seconds := int(duration.Seconds())
 	minutes := int(duration.Minutes())
@@ -274,10 +295,10 @@ func TimeAgo(t time.Time) string {
 }
 
 // TimeFormat 格式化 CreatedAt 为 年-月-日 时:分:秒
-//func TimeFormat(t time.Time) string {
+// func TimeFormat(t time.Time) string {
 //	formattedTime := t.Format("2006-01-02 15:04:05")
 //	return formattedTime
-//}
+// }
 
 // ChangeAnyToUint
 // @Description: 将Any类型转换成Uint类型
@@ -323,7 +344,7 @@ func RemoveDuplicates2(seen *map[uint]struct{}, slice []uint) []uint {
 	for _, v := range slice {
 		_, ok := (*seen)[v]
 		if !ok {
-			//seen[v] = struct{}{}
+			// seen[v] = struct{}{}
 			result = append(result, v)
 		}
 	}
