@@ -63,6 +63,7 @@ type FirstComment struct {
 }
 
 type RepliesReq2 struct {
+	ArticleID uint `json:"article_id"` // 文章ID
 	HighestID uint `json:"highest_id"` // 顶级评论ID
 	Offset    int  `json:"offset"`     // 分页查询的起始位置
 	Limit     int  `json:"limit"`      // 分页查询要返回记录的数量
