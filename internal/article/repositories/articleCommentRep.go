@@ -189,11 +189,14 @@ func GetTopLevelCommentsRep(userId uint, db *gorm.DB, req *requests.TopCommentsR
 	// 统计本篇文章所有评论的数量
 	totalCount := int(sCount) + length
 
-	// 查询用户对该篇文章中的评论的点赞情况
-	err = db.Model(models.ArticleComment{}).Joins("join sw_comment_likes on sw_comment_likes.comment_id = sw_article_comments.id").
-		Select("sw_article_comments.id").Where("sw_article_comments.article_id = ? and sw_comment_likes.user_id = ?", req.ArticleID, userId).Find(&commentId).Error
-	if err != nil {
-		return nil, fmt.Errorf("GetTopLevelCommentsRep -> 查询用户对该篇文章中的评论的点赞情况失败 -> %s", err)
+	// 如果是游客，就不用进行查询了，只有是用户才进行查询
+	if userId != 0 {
+		// 查询用户对该篇文章中的评论的点赞情况
+		err = db.Model(models.ArticleComment{}).Joins("join sw_comment_likes on sw_comment_likes.comment_id = sw_article_comments.id").
+			Select("sw_article_comments.id").Where("sw_article_comments.article_id = ? and sw_comment_likes.user_id = ?", req.ArticleID, userId).Find(&commentId).Error
+		if err != nil {
+			return nil, fmt.Errorf("GetTopLevelCommentsRep -> 查询用户对该篇文章中的评论的点赞情况失败 -> %s", err)
+		}
 	}
 
 	for _, comment := range articleComments {
@@ -213,16 +216,24 @@ func GetTopLevelCommentsRep(userId uint, db *gorm.DB, req *requests.TopCommentsR
 			Content:      comment.Content,
 			LikesCount:   comment.LikesCount,
 		}
-		// 判断用户对评论是否已经点过赞了
-		for _, id := range commentId {
-			if comment.ID == id {
-				// 1 表示对该评论该用户已经点过赞了
-				topComment.Status = 1
-				break
-			}
-		}
 
-		if topComment.Status == 0 {
+		// 如果是游客，就不用进行判断了，只有是用户才进行判断
+		if userId != 0 {
+			// 判断用户对评论是否已经点过赞了
+			for _, id := range commentId {
+				if comment.ID == id {
+					// 1 表示对该评论该用户已经点过赞了
+					topComment.Status = 1
+					break
+				}
+			}
+
+			if topComment.Status == 0 {
+				// 2 表示对该评论该用户从没有点过赞
+				topComment.Status = 2
+			}
+		} else {
+			// 如果是游客，那么其肯定没有对其他评论点过赞
 			// 2 表示对该评论该用户从没有点过赞
 			topComment.Status = 2
 		}
@@ -361,11 +372,14 @@ func GetRepliesRep2Rep(userId uint, db *gorm.DB, req *requests.RepliesReq2) (*re
 	// 统计本篇文章所有评论的数量
 	totalCount := int(sCount) + hLength*/
 
-	// 查询用户对该篇文章中的评论的点赞情况
-	err = db.Model(models.ArticleComment{}).Joins("join sw_comment_likes on sw_comment_likes.comment_id = sw_article_comments.id").
-		Where("sw_article_comments.highest_id = ? and sw_comment_likes.user_id = ?", req.HighestID, userId).Find(&commentId).Error
-	if err != nil {
-		return nil, fmt.Errorf("GetTopLevelCommentsRep -> 查询用户对该篇文章中的评论的点赞情况失败 -> %s", err)
+	// 如果是游客，就不用进行查询了，只有是用户才进行查询
+	if userId != 0 {
+		// 查询用户对该篇文章中的评论的点赞情况
+		err = db.Model(models.ArticleComment{}).Joins("join sw_comment_likes on sw_comment_likes.comment_id = sw_article_comments.id").
+			Where("sw_article_comments.highest_id = ? and sw_comment_likes.user_id = ?", req.HighestID, userId).Find(&commentId).Error
+		if err != nil {
+			return nil, fmt.Errorf("GetTopLevelCommentsRep -> 查询用户对该篇文章中的评论的点赞情况失败 -> %s", err)
+		}
 	}
 
 	for _, comment := range articleComments {
@@ -385,16 +399,23 @@ func GetRepliesRep2Rep(userId uint, db *gorm.DB, req *requests.RepliesReq2) (*re
 			LikesCount:   comment.LikesCount,
 		}
 
-		// 判断用户对评论是否已经点过赞了
-		for _, id := range commentId {
-			if comment.ID == id {
-				// 1 表示对该评论该用户已经点过赞了
-				replies.Status = 1
-				break
+		// 如果是游客，就不用进行判断了，只有是用户才进行判断
+		if userId != 0 {
+			// 判断用户对评论是否已经点过赞了
+			for _, id := range commentId {
+				if comment.ID == id {
+					// 1 表示对该评论该用户已经点过赞了
+					replies.Status = 1
+					break
+				}
 			}
-		}
 
-		if replies.Status == 0 {
+			if replies.Status == 0 {
+				// 2 表示对该评论该用户从没有点过赞
+				replies.Status = 2
+			}
+		} else {
+			// 如果是游客，那么其肯定没有对其他评论点过赞
 			// 2 表示对该评论该用户从没有点过赞
 			replies.Status = 2
 		}

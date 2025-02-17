@@ -13,7 +13,7 @@ func UpdateTagUserCountLogic(userId uint, db *gorm.DB, tagID uint) (*requests.Ta
 	return fansCount, err
 }
 
-// UpdateTagArticleCountLogic 更新前端的标签页
+// UpdateTagArticleCountLogic 刷新前端标签页
 func UpdateTagArticleCountLogic(userId uint, db *gorm.DB) (*requests.TagRes, error) {
 	tagRes, err := repositories.UpdateTagArticleCountReq(userId, db)
 	return tagRes, err

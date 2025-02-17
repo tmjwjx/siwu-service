@@ -93,24 +93,23 @@ func GetTopLevelCommentsCtrl(c *gin.Context) {
 		return
 	}
 
-	userID, exists := c.Get("id")
-	if !exists {
-		// 返回错误响应
-		e := response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("UserDataResponseCtrl -> 从token中获取用户ID失败"), nil)
-		response.Failed(c, 500, e)
-		return
-	}
-
-	uintValue, err := internalUtils.ChangeAnyToUint(userID)
-	if err != nil {
-		// 返回错误响应
-		e := response.NewAppErr(globals.StatusInternalServerError, err, nil)
-		response.Failed(c, 500, e)
-		return
-	}
+	//userID, exists := c.Get("id")
+	//if !exists {
+	//	// 返回错误响应
+	//	e := response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("UserDataResponseCtrl -> 从token中获取用户ID失败"), nil)
+	//	response.Failed(c, 500, e)
+	//	return
+	//}
+	//uintValue, err := internalUtils.ChangeAnyToUint(userID)
+	//if err != nil {
+	//	// 返回错误响应
+	//	e := response.NewAppErr(globals.StatusInternalServerError, err, nil)
+	//	response.Failed(c, 500, e)
+	//	return
+	//}
 
 	// 逻辑处理
-	topCommentsRes, err := logics.GetTopLevelCommentsLogic(uintValue, globals.DB, &req)
+	topCommentsRes, err := logics.GetTopLevelCommentsLogic(req.UserID, globals.DB, &req)
 
 	// 返回响应
 	if err != nil {
@@ -134,24 +133,24 @@ func GetRepliesRep2Ctrl(c *gin.Context) {
 		return
 	}
 
-	userID, exists := c.Get("id")
-	if !exists {
-		// 返回错误响应
-		e := response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("UserDataResponseCtrl -> 从token中获取用户ID失败"), nil)
-		response.Failed(c, 500, e)
-		return
-	}
-
-	uintValue, err := internalUtils.ChangeAnyToUint(userID)
-	if err != nil {
-		// 返回错误响应
-		e := response.NewAppErr(globals.StatusInternalServerError, err, nil)
-		response.Failed(c, 500, e)
-		return
-	}
+	//userID, exists := c.Get("id")
+	//if !exists {
+	//	// 返回错误响应
+	//	e := response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("UserDataResponseCtrl -> 从token中获取用户ID失败"), nil)
+	//	response.Failed(c, 500, e)
+	//	return
+	//}
+	//
+	//uintValue, err := internalUtils.ChangeAnyToUint(userID)
+	//if err != nil {
+	//	// 返回错误响应
+	//	e := response.NewAppErr(globals.StatusInternalServerError, err, nil)
+	//	response.Failed(c, 500, e)
+	//	return
+	//}
 
 	// 逻辑处理
-	repliesRes, err := logics.GetRepliesRep2Logic(uintValue, globals.DB, &req)
+	repliesRes, err := logics.GetRepliesRep2Logic(req.UserID, globals.DB, &req)
 
 	// 返回响应
 	if err != nil {

@@ -83,51 +83,48 @@ func Workplace(e *gin.Engine) {
 // Comment 评论
 func Comment(e *gin.Engine) {
 
-	//casbinService, err := casbin.NewCasbinService(globals.DB)
-	//if err != nil {
-	//	fmt.Println("Api(e *gin.Engine) -> 创建 casbinService 失败, err = ", err)
-	//}
+	// 返回顶级评论列表
+	e.POST("/top_level", controllers.GetTopLevelCommentsCtrl)
+
+	// 返回评论回复列表
+	e.POST("/replies", controllers.GetRepliesRep2Ctrl)
 
 	// 前台
 	r := e.Group("/comment").Use(token.AuthMiddleware())
+	{
+		// 保存评论
+		r.POST("/create", controllers.InsertCommentCtrl)
 
-	// 保存评论
-	r.POST("/create", controllers.InsertCommentCtrl)
+		// 删除评论
+		r.POST("/delete", controllers.DeleteCommentCtrl)
 
-	// 返回顶级评论 列表
-	r.POST("/top_level", controllers.GetTopLevelCommentsCtrl)
-
-	// 返回评论回复 列表
-	r.POST("/replies", controllers.GetRepliesRep2Ctrl)
-
-	// 删除评论
-	r.POST("/delete", controllers.DeleteCommentCtrl)
-
-	// 更新点赞的数量
-	r.POST("/praise", controllers.UpdatePraiseCountCtrl)
+		// 更新点赞的数量
+		r.POST("/praise", controllers.UpdatePraiseCountCtrl)
+	}
 
 	// 后台
 	r2 := e.Group("/backstage_comment").Use(token.AuthMiddleware()).Use(casbin.CasbinAuth(globals.CasbinEnforcer))
+	{
+		// 展示评论列表(检索api获取列表)
+		r2.POST("/list", controllers.ShowCommentsListCtrl)
 
-	// 展示评论列表(检索api获取列表)
-	r2.POST("/list", controllers.ShowCommentsListCtrl)
+		// 添加评论
+		r2.POST("/add", controllers.AddCommentCtrl)
 
-	// 添加评论
-	r2.POST("/add", controllers.AddCommentCtrl)
+		// 删除评论
+		r2.DELETE("/delete", controllers.BsDeleteCommentCtrl)
 
-	// 删除评论
-	r2.DELETE("/delete", controllers.BsDeleteCommentCtrl)
+		// 批量删除评论
+		r2.DELETE("/batch_delete", controllers.BatchDelTagCtrl)
 
-	// 批量删除评论
-	r2.DELETE("/batch_delete", controllers.BatchDelTagCtrl)
+		// 批量审核
+		r2.POST("/query", controllers.BatchReviewCtrl)
 
-	// 批量审核
-	r2.POST("/query", controllers.BatchReviewCtrl)
+		// 更新评论
+		r2.POST("/update", controllers.UpdateCommentCtrl)
 
-	// 更新评论
-	r2.POST("/update", controllers.UpdateCommentCtrl)
-
-	// 查询某个用户的全部评论
-	//r2.GET("/query", controllers.QueryCommentCtrl)
+		// 查询某个用户的全部评论
+		//r2.GET("/query", controllers.QueryCommentCtrl)
+	}
 
 }
