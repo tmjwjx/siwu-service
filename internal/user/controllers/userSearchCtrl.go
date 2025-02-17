@@ -8,6 +8,7 @@ import (
 	"forum/pkg/response"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strconv"
 )
 
 // ClickAttention 点击关注和点击取消关注
@@ -53,6 +54,7 @@ func ClickAttention(c *gin.Context) {
 
 // UserRank 用户热度排行
 func UserRank(c *gin.Context) {
+
 	// 从上下文中获取 id
 	str, exists := c.Get("id")
 	if !exists {
@@ -64,51 +66,51 @@ func UserRank(c *gin.Context) {
 	// 类型断言
 	id := str.(uint)
 
-	p, exists := c.Get("page")
-	if !exists {
-		globals.Log.Error(response.ErrUserIdNotGetFromContext)
-		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf(response.ErrUserIdNotGetFromContext), nil))
-		return
-	}
-	l, exists := c.Get("limit")
-	if !exists {
-		globals.Log.Error(response.ErrUserIdNotGetFromContext)
-		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf(response.ErrUserIdNotGetFromContext), nil))
-		return
-	}
-	// 类型断言
-	page := p.(int)
-	limit := l.(int)
+	// p, exists := c.Get("page")
+	// if !exists {
+	// 	globals.Log.Error(response.ErrUserIdNotGetFromContext)
+	// 	response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf(response.ErrUserIdNotGetFromContext), nil))
+	// 	return
+	// }
+	// l, exists := c.Get("limit")
+	// if !exists {
+	// 	globals.Log.Error(response.ErrUserIdNotGetFromContext)
+	// 	response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf(response.ErrUserIdNotGetFromContext), nil))
+	// 	return
+	// }
+	// // 类型断言
+	// page := p.(int)
+	// limit := l.(int)
 
-	// // 绑定数据
-	// page, err := strconv.Atoi(c.Query("page"))
-	// if err != nil {
-	// 	response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("UserRank() err = 数据类型转换错误"), nil))
-	// 	return
-	// }
-	// limit, err := strconv.Atoi(c.Query("limit"))
-	// if err != nil {
-	// 	response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("UserRank() err = 数据类型转换错误"), nil))
-	// 	return
-	// }
-	//
-	// var rankMsg requests.UserRankReq
-	// rankMsg.Page = page
-	// rankMsg.Limit = limit
-	//
-	// // 检验数据
-	// if page <= 0 {
-	// 	response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("UserRank() err: Page参数必须为正数"), nil))
-	// 	return
-	// }
-	// if limit <= 0 {
-	// 	response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("UserRank() err: limit参数必须为正数"), nil))
-	// 	return
-	// }
+	// 绑定数据
+	page, err := strconv.Atoi(c.Query("page"))
+	if err != nil {
+		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("UserRank() err = 数据类型转换错误"), nil))
+		return
+	}
+	limit, err := strconv.Atoi(c.Query("limit"))
+	if err != nil {
+		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("UserRank() err = 数据类型转换错误"), nil))
+		return
+	}
 
 	var rankMsg requests.UserRankReq
 	rankMsg.Page = page
 	rankMsg.Limit = limit
+
+	// 检验数据
+	if page <= 0 {
+		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("UserRank() err: Page参数必须为正数"), nil))
+		return
+	}
+	if limit <= 0 {
+		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("UserRank() err: limit参数必须为正数"), nil))
+		return
+	}
+
+	// var rankMsg requests.UserRankReq
+	// rankMsg.Page = page
+	// rankMsg.Limit = limit
 
 	// 业务逻辑
 	userReqContext := logics.NewUserReqContext(globals.DB, c, globals.SendEmailCfg)
@@ -126,54 +128,54 @@ func UserRank(c *gin.Context) {
 
 // Attention 搜索用户关注的人
 func Attention(c *gin.Context) {
-	// // 绑定数据
-	// userId, err := strconv.Atoi(c.Query("userId"))
-	// if err != nil {
-	// 	response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("Attention() err = 数据类型转换错误"), nil))
-	// 	return
-	// }
-	// keyword := c.Query("keyword")
-	// page, err := strconv.Atoi(c.Query("page"))
-	// if err != nil {
-	// 	response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("Attention() err = 数据类型转换错误"), nil))
-	// 	return
-	// }
-	// limit, err := strconv.Atoi(c.Query("limit"))
-	// if err != nil {
-	// 	response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("Attention() err = 数据类型转换错误"), nil))
-	// 	return
-	// }
-	//
-	// // 检验数据
-	// if page <= 0 {
-	// 	response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("Attention() err: Page参数必须为正数"), nil))
-	// 	return
-	// }
-	// if limit <= 0 {
-	// 	response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("Attention() err: limit参数必须为正数"), nil))
-	// 	return
-	// }
-
-	// attentionReq := requests.AttentionReq{
-	// 	UserId:  uint(userId),
-	// 	Keyword: keyword,
-	// 	Page:    page,
-	// 	Limit:   limit,
-	// }
-
-	req, ok := c.Get("req")
-	if !ok {
-		globals.Log.Errorf(response.ErrGetReqIsWrong)
-		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf(response.ErrGetReqIsWrong), nil))
+	// 绑定数据
+	userId, err := strconv.Atoi(c.Query("userId"))
+	if err != nil {
+		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("Attention() err = 数据类型转换错误"), nil))
 		return
 	}
-	// 类型断言
-	attentionReq, ok := req.(requests.AttentionReq)
-	if !ok {
-		globals.Log.Errorf(response.ErrTypeAssertionFail)
-		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf(response.ErrTypeAssertionFail), nil))
+	keyword := c.Query("keyword")
+	page, err := strconv.Atoi(c.Query("page"))
+	if err != nil {
+		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("Attention() err = 数据类型转换错误"), nil))
 		return
 	}
+	limit, err := strconv.Atoi(c.Query("limit"))
+	if err != nil {
+		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("Attention() err = 数据类型转换错误"), nil))
+		return
+	}
+
+	// 检验数据
+	if page <= 0 {
+		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("Attention() err: Page参数必须为正数"), nil))
+		return
+	}
+	if limit <= 0 {
+		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("Attention() err: limit参数必须为正数"), nil))
+		return
+	}
+
+	attentionReq := requests.AttentionReq{
+		UserId:  uint(userId),
+		Keyword: keyword,
+		Page:    page,
+		Limit:   limit,
+	}
+
+	// req, ok := c.Get("req")
+	// if !ok {
+	// 	globals.Log.Errorf(response.ErrGetReqIsWrong)
+	// 	response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf(response.ErrGetReqIsWrong), nil))
+	// 	return
+	// }
+	// // 类型断言
+	// attentionReq, ok := req.(requests.AttentionReq)
+	// if !ok {
+	// 	globals.Log.Errorf(response.ErrTypeAssertionFail)
+	// 	response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf(response.ErrTypeAssertionFail), nil))
+	// 	return
+	// }
 
 	// 业务逻辑
 	userReqContext := logics.NewUserReqContext(globals.DB, c, globals.SendEmailCfg)
