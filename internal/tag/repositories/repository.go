@@ -118,7 +118,7 @@ func UpdateTagUserCountReq(userId uint, db *gorm.DB, tagID uint) (*requests.TagF
 
 }
 
-// UpdateTagArticleCountReq 更新前端的标签页
+// UpdateTagArticleCountReq 刷新前端标签页
 func UpdateTagArticleCountReq(userId uint, db *gorm.DB) (*requests.TagRes, error) {
 
 	// 查询数据时要用到的结构体
@@ -172,16 +172,25 @@ func UpdateTagArticleCountReq(userId uint, db *gorm.DB) (*requests.TagRes, error
 			}
 		}
 
-		var userTag models.UserTag
-		err = db.Model(&models.UserTag{}).Where("user_id = ? and tag_id = ?", userId, tag.ID).First(&userTag).Error
-		if err != nil {
-			if errors.Is(err, gorm.ErrRecordNotFound) {
-				t.Status = 2
+		// 如果是游客，就不用进行查询了，只有是用户才进行查询
+		if userId != 0 {
+			var userTag models.UserTag
+			err = db.Model(&models.UserTag{}).Where("user_id = ? and tag_id = ?", userId, tag.ID).First(&userTag).Error
+			if err != nil {
+				if errors.Is(err, gorm.ErrRecordNotFound) {
+					// 未关注
+					t.Status = 2
+				} else {
+					return nil, fmt.Errorf("UpdateTagArticleCountReq -> 查询用户是否关注该标签异常 -> %s", err)
+				}
 			} else {
-				return nil, fmt.Errorf("UpdateTagArticleCountReq -> 查询用户是否关注该标签异常 -> %s", err)
+				// 已关注
+				t.Status = 1
 			}
 		} else {
-			t.Status = 1
+			// 如果是游客，那么其肯定没有对任何标签关注过
+			// 未关注
+			t.Status = 2
 		}
 
 		tagList = append(tagList, t)

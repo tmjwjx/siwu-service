@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"errors"
 	"fmt"
 	"forum/internal/api/requests"
 	"forum/internal/models"
@@ -266,7 +267,6 @@ func UpdateApiRep(db *gorm.DB, req *requests.UpdateApiReq) error {
 	// 查询该api是否存在
 	var api models.Api
 	err := tx.Where("id = ?", req.ID).First(&api).Error
-
 	if err != nil {
 		tx.Rollback() // 回滚事务
 		return fmt.Errorf("UpdateApiRep -> 该api不存在 -> %s", err)
@@ -284,7 +284,7 @@ func UpdateApiRep(db *gorm.DB, req *requests.UpdateApiReq) error {
 
 	// 查询新的分组的id
 	var groupId uint
-	err = tx.Model(&models.Group{}).Select("ID").Where("name = ?", req.Grouping).First(&groupId).Error
+	err = tx.Model(&models.DictItem{}).Select("ID").Where("label = ?", req.Grouping).First(&groupId).Error
 	if err != nil {
 		tx.Rollback() // 回滚事务
 		return fmt.Errorf("UpdateApiRep -> 查询 group_id失败 -> %s", err)
@@ -299,7 +299,7 @@ func UpdateApiRep(db *gorm.DB, req *requests.UpdateApiReq) error {
 
 	// 查询 request_method_id
 	var reqMethodId uint
-	err = tx.Model(&models.RequestMethod{}).Select("ID").Where("name = ?", req.RequestMethod).First(&reqMethodId).Error
+	err = tx.Model(&models.DictItem{}).Select("ID").Where("label = ?", req.RequestMethod).First(&reqMethodId).Error
 	if err != nil {
 		tx.Rollback() // 回滚事务
 		return fmt.Errorf("UpdateApiRep -> 查询 group_id失败 -> %s", err)
@@ -351,14 +351,7 @@ func CreateApiRep(db *gorm.DB, req *requests.CreateApiReq) error {
 		return fmt.Errorf("CreateApiRep -> 向api表中添加api相关信息失败 -> %s", err)
 	}
 
-	//// 查询新增api的ID
-	//err = tx.Model(models.Api{}).First(&api).Error
-	//if err != nil {
-	//	tx.Rollback() // 回滚事务
-	//	return fmt.Errorf("CreateApiRep -> 查询新增api的ID失败 -> %s", err)
-	//}
-
-	// 查询分组id
+	/*// 查询分组id
 	group := &models.Group{
 		Name: req.Grouping,
 	}
@@ -370,15 +363,27 @@ func CreateApiRep(db *gorm.DB, req *requests.CreateApiReq) error {
 			tx.Rollback() // 回滚事务
 			return fmt.Errorf("CreateApiRep -> 将分组添加进表中失败 -> %s", err)
 		}
-		//// 查询分组id
-		//err = tx.Model(&models.Group{}).Select("ID").First(&groupId).Error
-		//if err != nil {
-		//	return fmt.Errorf("CreateApiRep -> 查询分组id失败 -> %s", err)
-		//}
+	}*/
+
+	// 查询分组id
+	group := models.DictItem{
+		Label: req.Grouping,
 	}
-	//else {
-	//	groupId = group.ID
-	//}
+
+	// 查询dict_item表中是否已经存在该分组
+	err = tx.Model(&models.DictItem{}).Where("label = ?", req.Grouping).First(&group).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			// 没有查到，说明表中还没有该分组，将分组添加进dict_item表中
+			err = tx.Model(&models.DictItem{}).Create(&group).Error
+			if err != nil {
+				tx.Rollback() // 回滚事务
+				return fmt.Errorf("CreateApiRep -> 将分组添加进表中失败 -> %s", err)
+			}
+		} else {
+			return fmt.Errorf("CreateApiRep -> 查询dict_item表中是否已经存在该分组失败 -> %s", err)
+		}
+	}
 
 	// 向api_group表中添加api相关信息
 	apiGroup := &models.ApiGroup{
@@ -393,26 +398,24 @@ func CreateApiRep(db *gorm.DB, req *requests.CreateApiReq) error {
 	}
 
 	// 查询请求方法id
-	reqMethod := &models.RequestMethod{
-		Name: req.RequestMethod,
+	reqMethod := &models.DictItem{
+		Label: req.RequestMethod,
 	}
-	err = tx.Model(&models.RequestMethod{}).Where("name = ?", req.RequestMethod).First(reqMethod).Error
+
+	// 查询dict_item表中是否已经存在该请求方法
+	err = tx.Model(&models.DictItem{}).Where("label = ?", req.RequestMethod).First(reqMethod).Error
 	if err != nil {
-		// 没有查到，说明表中还没有该分组，将分组添加进表中
-		err = tx.Model(&models.RequestMethod{}).Create(reqMethod).Error
-		if err != nil {
-			tx.Rollback() // 回滚事务
-			return fmt.Errorf("CreateApiRep -> 将请求方法添加进表中失败 -> %s", err)
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			// 没有查到，说明表中还没有该请求方法，将请求方法添加进dict_item表中
+			err = tx.Model(&models.DictItem{}).Create(reqMethod).Error
+			if err != nil {
+				tx.Rollback() // 回滚事务
+				return fmt.Errorf("CreateApiRep -> 将请求方法添加进表中失败 -> %s", err)
+			}
+		} else {
+			return fmt.Errorf("CreateApiRep -> 查询dict_item表中是否已经存在该请求方法失败 -> %s", err)
 		}
-		//// 查询请求方法id
-		//err = tx.Model(&models.RequestMethod{}).First(&reqMethodId).Error
-		//if err != nil {
-		//	return fmt.Errorf("CreateApiRep -> 查询请求方法id失败 -> %s", err)
-		//}
 	}
-	//else {
-	//	reqMethodId = reqMethod.ID
-	//}
 
 	// 向api_request_method表中添加api相关信息
 	apiReqMethod := &models.ApiRequestMethod{
