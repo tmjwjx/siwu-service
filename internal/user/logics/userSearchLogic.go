@@ -126,75 +126,189 @@ func (u *UserReqContext) ClickAttention(req requests.ClickAttentionReq) error {
 
 // UserRank 用户热度排行
 func (u *UserReqContext) UserRank(id uint, req requests.UserRankReq) ([]*requests.UserRankRes, error) {
+	// userRankReqSli := make([]*requests.UserRankRes, req.Limit)
+	//
+	// // 查询排行榜：每个用户id，昵称
+	// usersRank, err := repositories.QueryUserRank(u.DB, req.Page, req.Limit)
+	// if err != nil {
+	// 	// return nil, fmt.Errorf("UserReqContext.UserRank() -> %v", err)
+	// 	globals.Log.Error(err.Error())
+	// 	return nil, err
+	// }
+	//
+	// // 查询每个用户是否已关注（用户是否关注了这个排行榜上的用户：用户是否关注了这个排行榜上的用户：未关注：0，已关注：1，这个用户是自己：2）
+	// // 查询 id 关注了谁
+	// ids, err := repositories.QueryFollowed(u.DB, id)
+	// if err != nil {
+	// 	// return nil, fmt.Errorf("UserReqContext.UserRank() -> %v", err)
+	// 	globals.Log.Error(err.Error())
+	// 	return nil, err
+	// }
+	//
+	// // 使用 lo.Associate 将 []uint 转换为 map[uint]bool
+	// m := lo.Associate(ids, func(item uint) (uint, bool) {
+	// 	return item, true
+	// })
+	//
+	// // 查询每个id的详细信息
+	// for i, v := range usersRank {
+	// 	// 查询用户的职业描述
+	// 	userDetail := repositories.QueryUserDetailsById(u.DB, v.ID)
+	// 	if userDetail == nil {
+	// 		// return nil, fmt.Errorf("UserReqContext.UserRank() err: user_id为 %v 的userDetail不存在", v.ID)
+	// 		globals.Log.Error(response.ErrUserDetailNotExist + ":" + strconv.Itoa(int(v.ID)))
+	// 		return nil, fmt.Errorf(response.ErrUserDetailNotExist + ":" + strconv.Itoa(int(v.ID)))
+	// 	}
+	// 	userRankReqSli[i] = &requests.UserRankRes{
+	// 		Id:              v.ID,
+	// 		Nickname:        v.Nickname,
+	// 		CareerDirection: userDetail.CareerDirection,
+	// 	}
+	//
+	// 	// 查询用户的头像路径
+	// 	userImages, err := internalUtils.GetImages(u.DB, globals.UserHome, v.ID)
+	// 	if err != nil {
+	// 		// return nil, fmt.Errorf("UserReqContext.UserRank() %v", err)
+	// 		globals.Log.Error(err.Error())
+	// 		return nil, err
+	// 	}
+	// 	// 没有图片
+	// 	if userImages == nil {
+	// 		// return nil, fmt.Errorf("UserReqContext.UserRank() err: 无法找到id为%d的用户头像图片", v.ID)
+	// 		globals.Log.Errorf(response.ErrUnableFindUserAvatar + ":" + strconv.Itoa(int(v.ID)))
+	// 		return nil, fmt.Errorf(response.ErrUnableFindUserAvatar + ":" + strconv.Itoa(int(v.ID)))
+	// 	}
+	// 	userRankReqSli[i].AvatarPath = (*userImages)[0]
+	//
+	// 	// 未关注：0，已关注：1，这个用户是自己：2
+	// 	if v.ID == id {
+	// 		userRankReqSli[i].IsFollowed = 2
+	// 	} else {
+	// 		// 判断用户是否关注该id
+	// 		_, ok := m[v.ID]
+	// 		if !ok {
+	// 			userRankReqSli[i].IsFollowed = 0
+	// 		} else {
+	// 			userRankReqSli[i].IsFollowed = 1
+	// 		}
+	// 	}
+	// }
+	//
+	// return userRankReqSli, nil
+
 	userRankReqSli := make([]*requests.UserRankRes, req.Limit)
 
-	// 查询排行榜：每个用户id，昵称
-	usersRank, err := repositories.QueryUserRank(u.DB, req.Page, req.Limit)
-	if err != nil {
-		// return nil, fmt.Errorf("UserReqContext.UserRank() -> %v", err)
-		globals.Log.Error(err.Error())
-		return nil, err
-	}
-
-	// 查询每个用户是否已关注（用户是否关注了这个排行榜上的用户：用户是否关注了这个排行榜上的用户：未关注：0，已关注：1，这个用户是自己：2）
-	// 查询 id 关注了谁
-	ids, err := repositories.QueryFollowed(u.DB, id)
-	if err != nil {
-		// return nil, fmt.Errorf("UserReqContext.UserRank() -> %v", err)
-		globals.Log.Error(err.Error())
-		return nil, err
-	}
-
-	// 使用 lo.Associate 将 []uint 转换为 map[uint]bool
-	m := lo.Associate(ids, func(item uint) (uint, bool) {
-		return item, true
-	})
-
-	// 查询每个id的详细信息
-	for i, v := range usersRank {
-		// 查询用户的职业描述
-		userDetail := repositories.QueryUserDetailsById(u.DB, v.ID)
-		if userDetail == nil {
-			// return nil, fmt.Errorf("UserReqContext.UserRank() err: user_id为 %v 的userDetail不存在", v.ID)
-			globals.Log.Error(response.ErrUserDetailNotExist + ":" + strconv.Itoa(int(v.ID)))
-			return nil, fmt.Errorf(response.ErrUserDetailNotExist + ":" + strconv.Itoa(int(v.ID)))
-		}
-		userRankReqSli[i] = &requests.UserRankRes{
-			Id:              v.ID,
-			Nickname:        v.Nickname,
-			CareerDirection: userDetail.CareerDirection,
-		}
-
-		// 查询用户的头像路径
-		userImages, err := internalUtils.GetImages(u.DB, globals.UserHome, v.ID)
+	// 判断是否是游客模式
+	if id == 0 { // 如果 id == 0 那么就是游客模式
+		// 查询排行榜：每个用户id，昵称
+		usersRank, err := repositories.QueryUserRank(u.DB, req.Page, req.Limit)
 		if err != nil {
-			// return nil, fmt.Errorf("UserReqContext.UserRank() %v", err)
+			// return nil, fmt.Errorf("UserReqContext.UserRank() -> %v", err)
 			globals.Log.Error(err.Error())
 			return nil, err
 		}
-		// 没有图片
-		if userImages == nil {
-			// return nil, fmt.Errorf("UserReqContext.UserRank() err: 无法找到id为%d的用户头像图片", v.ID)
-			globals.Log.Errorf(response.ErrUnableFindUserAvatar + ":" + strconv.Itoa(int(v.ID)))
-			return nil, fmt.Errorf(response.ErrUnableFindUserAvatar + ":" + strconv.Itoa(int(v.ID)))
-		}
-		userRankReqSli[i].AvatarPath = (*userImages)[0]
 
-		// 未关注：0，已关注：1，这个用户是自己：2
-		if v.ID == id {
-			userRankReqSli[i].IsFollowed = 2
-		} else {
-			// 判断用户是否关注该id
-			_, ok := m[v.ID]
-			if !ok {
-				userRankReqSli[i].IsFollowed = 0
+		// 查询每个id的详细信息
+		for i, v := range usersRank {
+			// 查询用户的职业描述
+			userDetail := repositories.QueryUserDetailsById(u.DB, v.ID)
+			if userDetail == nil {
+				// return nil, fmt.Errorf("UserReqContext.UserRank() err: user_id为 %v 的userDetail不存在", v.ID)
+				globals.Log.Error(response.ErrUserDetailNotExist + ":" + strconv.Itoa(int(v.ID)))
+				return nil, fmt.Errorf(response.ErrUserDetailNotExist + ":" + strconv.Itoa(int(v.ID)))
+			}
+			userRankReqSli[i] = &requests.UserRankRes{
+				Id:              v.ID,
+				Nickname:        v.Nickname,
+				CareerDirection: userDetail.CareerDirection,
+			}
+
+			// 查询用户的头像路径
+			userImages, err := internalUtils.GetImages(u.DB, globals.UserHome, v.ID)
+			if err != nil {
+				// return nil, fmt.Errorf("UserReqContext.UserRank() %v", err)
+				globals.Log.Error(err.Error())
+				return nil, err
+			}
+			// 没有图片
+			if userImages == nil {
+				// return nil, fmt.Errorf("UserReqContext.UserRank() err: 无法找到id为%d的用户头像图片", v.ID)
+				globals.Log.Errorf(response.ErrUnableFindUserAvatar + ":" + strconv.Itoa(int(v.ID)))
+				return nil, fmt.Errorf(response.ErrUnableFindUserAvatar + ":" + strconv.Itoa(int(v.ID)))
+			}
+			userRankReqSli[i].AvatarPath = (*userImages)[0]
+
+		}
+		return userRankReqSli, nil
+
+	} else {
+		// 查询排行榜：每个用户id，昵称
+		usersRank, err := repositories.QueryUserRank(u.DB, req.Page, req.Limit)
+		if err != nil {
+			// return nil, fmt.Errorf("UserReqContext.UserRank() -> %v", err)
+			globals.Log.Error(err.Error())
+			return nil, err
+		}
+
+		// 查询每个用户是否已关注（用户是否关注了这个排行榜上的用户：用户是否关注了这个排行榜上的用户：未关注：0，已关注：1，这个用户是自己：2）
+		// 查询 id 关注了谁
+		ids, err := repositories.QueryFollowed(u.DB, id)
+		if err != nil {
+			// return nil, fmt.Errorf("UserReqContext.UserRank() -> %v", err)
+			globals.Log.Error(err.Error())
+			return nil, err
+		}
+
+		// 使用 lo.Associate 将 []uint 转换为 map[uint]bool
+		m := lo.Associate(ids, func(item uint) (uint, bool) {
+			return item, true
+		})
+
+		// 查询每个id的详细信息
+		for i, v := range usersRank {
+			// 查询用户的职业描述
+			userDetail := repositories.QueryUserDetailsById(u.DB, v.ID)
+			if userDetail == nil {
+				// return nil, fmt.Errorf("UserReqContext.UserRank() err: user_id为 %v 的userDetail不存在", v.ID)
+				globals.Log.Error(response.ErrUserDetailNotExist + ":" + strconv.Itoa(int(v.ID)))
+				return nil, fmt.Errorf(response.ErrUserDetailNotExist + ":" + strconv.Itoa(int(v.ID)))
+			}
+			userRankReqSli[i] = &requests.UserRankRes{
+				Id:              v.ID,
+				Nickname:        v.Nickname,
+				CareerDirection: userDetail.CareerDirection,
+			}
+
+			// 查询用户的头像路径
+			userImages, err := internalUtils.GetImages(u.DB, globals.UserHome, v.ID)
+			if err != nil {
+				// return nil, fmt.Errorf("UserReqContext.UserRank() %v", err)
+				globals.Log.Error(err.Error())
+				return nil, err
+			}
+			// 没有图片
+			if userImages == nil {
+				// return nil, fmt.Errorf("UserReqContext.UserRank() err: 无法找到id为%d的用户头像图片", v.ID)
+				globals.Log.Errorf(response.ErrUnableFindUserAvatar + ":" + strconv.Itoa(int(v.ID)))
+				return nil, fmt.Errorf(response.ErrUnableFindUserAvatar + ":" + strconv.Itoa(int(v.ID)))
+			}
+			userRankReqSli[i].AvatarPath = (*userImages)[0]
+
+			// 未关注：0，已关注：1，这个用户是自己：2
+			if v.ID == id {
+				userRankReqSli[i].IsFollowed = 2
 			} else {
-				userRankReqSli[i].IsFollowed = 1
+				// 判断用户是否关注该id
+				_, ok := m[v.ID]
+				if !ok {
+					userRankReqSli[i].IsFollowed = 0
+				} else {
+					userRankReqSli[i].IsFollowed = 1
+				}
 			}
 		}
+		return userRankReqSli, nil
 	}
-
-	return userRankReqSli, nil
 }
 
 // Attention 搜索用户关注的人

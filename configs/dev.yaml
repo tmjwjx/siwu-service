@@ -21,7 +21,7 @@ redis:
 app:
   host: ""
   port: 8081
-  domain: "8.154.36.180"
+  domain: "192.168.10.7"
 
 # 发送邮件
 send_email:
