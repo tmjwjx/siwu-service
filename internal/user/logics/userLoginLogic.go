@@ -38,7 +38,7 @@ func NewUserReqContext(db *gorm.DB, c *gin.Context, sendEmailCfg *globals.SendEm
 }
 
 // Register 注册
-func (u *UserReqContext) Register(registerMsg requests.RegisterReq) error {
+func (u *UserReqContext) Register(registerMsg requests.RegisterReq) (*requests.LogicRes, error) {
 	email := registerMsg.Email
 	verifyCode := registerMsg.VerifyCode
 	password := registerMsg.Password
@@ -47,7 +47,7 @@ func (u *UserReqContext) Register(registerMsg requests.RegisterReq) error {
 	user := repositories.QueryUserByEmail(u.DB, email)
 	if user != nil {
 		globals.Log.Errorf(response.ErrEmailIsUse + ":" + email)
-		return fmt.Errorf(response.ErrEmailIsUse + ":" + email)
+		return nil, fmt.Errorf(response.ErrEmailIsUse + ":" + email)
 		// return fmt.Errorf("UserReqContext.Register() : 邮箱为%s的用户已经注册过", email)
 	}
 
@@ -55,20 +55,20 @@ func (u *UserReqContext) Register(registerMsg requests.RegisterReq) error {
 	userVerifyCode, err := repositories.QueryLastUserVerifyCodeByEmail(u.DB, email)
 	if err != nil {
 		globals.Log.Errorf(err.Error())
-		return err
+		return nil, err
 	}
 
 	// 判断该验证码是否使用过（判断DeletedAt是否有值）
 	if userVerifyCode.DeletedAt.Valid {
 		globals.Log.Errorf(response.ErrVerifyCodeIsExpired + ":" + userVerifyCode.VerifyCode)
-		return fmt.Errorf(response.ErrVerifyCodeIsExpired + ":" + userVerifyCode.VerifyCode)
+		return nil, fmt.Errorf(response.ErrVerifyCodeIsExpired + ":" + userVerifyCode.VerifyCode)
 		// return fmt.Errorf("UserReqContext.Register() : 验证码%s已失效", verifyCode)
 	}
 	// 检验验证码是否正确（不区分大小写）
 	if !strings.EqualFold(verifyCode, userVerifyCode.VerifyCode) {
 		// return fmt.Errorf("UserReqContext.Register() : 验证码%s输入错误", verifyCode)
 		globals.Log.Errorf(response.ErrVerifyCodeIsWrong + ":" + userVerifyCode.VerifyCode)
-		return fmt.Errorf(response.ErrVerifyCodeIsWrong + ":" + userVerifyCode.VerifyCode)
+		return nil, fmt.Errorf(response.ErrVerifyCodeIsWrong + ":" + userVerifyCode.VerifyCode)
 	}
 	// 判断验证码是否已经超时
 	now := time.Now()
@@ -76,7 +76,7 @@ func (u *UserReqContext) Register(registerMsg requests.RegisterReq) error {
 	if duration > internalUtils.VerifyCodeEffectiveDuration {
 		// return fmt.Errorf("UserReqContext.Register() : 验证码%s已过期", verifyCode)
 		globals.Log.Errorf(response.ErrVerifyCodeIsExpired + ":" + userVerifyCode.VerifyCode)
-		return fmt.Errorf(response.ErrVerifyCodeIsExpired + ":" + userVerifyCode.VerifyCode)
+		return nil, fmt.Errorf(response.ErrVerifyCodeIsExpired + ":" + userVerifyCode.VerifyCode)
 	}
 
 	// 随机生成用户名
@@ -84,7 +84,7 @@ func (u *UserReqContext) Register(registerMsg requests.RegisterReq) error {
 	nickName, err := internalUtils.RandomGenerateNickname()
 	if err != nil {
 		globals.Log.Errorf(err.Error())
-		return err
+		return nil, err
 	}
 
 	// 密码加密
@@ -92,27 +92,27 @@ func (u *UserReqContext) Register(registerMsg requests.RegisterReq) error {
 	if err != nil {
 		// return fmt.Errorf("UserReqContext.Register() : 密码%s加密失败", password)
 		globals.Log.Errorf(err.Error())
-		return err
+		return nil, err
 	}
 
 	// 向 user 表中添加该用户
 	if err = sqlUtils.InsertObject(u.DB, &models.User{Nickname: nickName, Email: email, Password: encryptedPassword, LastLoginTime: time.Now()}); err != nil {
 		// return fmt.Errorf("UserReqContext.Register() err: %v", err)
 		globals.Log.Errorf(err.Error())
-		return err
+		return nil, err
 	}
 	// 查询该用户的id
 	user = repositories.QueryUserByEmail(u.DB, email)
 	if user == nil {
 		// return fmt.Errorf("UserReqContext.Register() : 未查询到邮箱为%v的用户", email)
 		globals.Log.Errorf(response.ErrEmailNotExist + ":" + email)
-		return fmt.Errorf(response.ErrEmailNotExist + ":" + email)
+		return nil, fmt.Errorf(response.ErrEmailNotExist + ":" + email)
 	}
 	// 向 UserDetail 表中添加该用户
 	if err = sqlUtils.InsertObject(u.DB, &models.UserDetail{UserID: user.ID}); err != nil {
 		// return fmt.Errorf("UserReqContext.Register() err: %v", err)
 		globals.Log.Errorf(err.Error())
-		return err
+		return nil, err
 	}
 
 	// 删除该用户对应的全部验证码
@@ -120,9 +120,38 @@ func (u *UserReqContext) Register(registerMsg requests.RegisterReq) error {
 	if err != nil {
 		// return fmt.Errorf("UserReqContext.Register() err: %v", err)
 		globals.Log.Errorf(err.Error())
-		return err
+		return nil, err
 	}
-	return nil
+
+	userImages, err := internalUtils.GetImages(u.DB, globals.UserHome, user.ID)
+	if err != nil {
+		globals.Log.Errorf(err.Error())
+		return nil, err
+		// return nil, fmt.Errorf("UserReqContext.Login() %v", err)
+	}
+	// 没有图片
+	if userImages == nil {
+		// return nil, fmt.Errorf("UserReqContext.Login() err = 无法找到id为%d的用户头像图片", user.ID)
+		globals.Log.Errorf(response.ErrUnableFindUserAvatar + ":" + strconv.Itoa(int(user.ID)))
+		return nil, fmt.Errorf(response.ErrUnableFindUserAvatar + ":" + strconv.Itoa(int(user.ID)))
+	}
+	avatarPath := (*userImages)[0]
+
+	// 修改 LastLoginTime
+	if err = sqlUtils.UpdateObjects(u.DB, &models.User{Model: gorm.Model{ID: user.ID}}, map[string]interface{}{"last_login_time": now}); err != nil {
+		// return nil, fmt.Errorf("UserReqContext.Login() -> %v", err)
+		globals.Log.Errorf(err.Error())
+		return nil, err
+	}
+
+	// 获取登陆响应
+	userInfo := &requests.LogicRes{
+		Id:         user.ID,
+		Nickname:   user.Nickname,
+		AvatarPath: avatarPath,
+	}
+
+	return userInfo, nil
 }
 
 // ReqVerifyCode 用户请求验证码
