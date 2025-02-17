@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"forum/internal/internalPkg/internalUtils"
 	"forum/internal/user/logics"
-	"forum/internal/user/repositories"
 	"forum/internal/user/requests"
 	"forum/pkg/globals"
 	"forum/pkg/response"
@@ -60,30 +59,71 @@ func Register(c *gin.Context) {
 
 	// 业务逻辑
 	userReqContext := logics.NewUserReqContext(globals.DB, c, globals.SendEmailCfg)
-	if err := userReqContext.Register(registerReq); err != nil {
+	userInfo, err := userReqContext.Register(registerReq)
+	if err != nil {
 		// response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, err, nil))
 		globals.Log.Errorf(err.Error())
 		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, err, nil))
 		return
 	}
 
-	// 通过email查询id
-	user := repositories.QueryUserByEmail(userReqContext.DB, registerReq.Email)
-	if user == nil {
-		globals.Log.Errorf(response.ErrEmailNotExist + ":" + registerReq.Email)
-		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf(response.ErrEmailNotExist+":"+registerReq.Email), nil))
-		return
-	}
+	// // 通过email查询id
+	// user := repositories.QueryUserByEmail(userReqContext.DB, registerReq.Email)
+	// if user == nil {
+	// 	globals.Log.Errorf(response.ErrEmailNotExist + ":" + registerReq.Email)
+	// 	response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf(response.ErrEmailNotExist+":"+registerReq.Email), nil))
+	// 	return
+	// }
+	// // 生成token
+	// tok, err := token.GenerateToken(user.ID)
+	// if err != nil {
+	// 	globals.Log.Errorf(err.Error())
+	// 	response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, err, nil))
+	// 	return
+	// }
+
+	// 查询用户的信息
+
+	// // 通过email查询id
+	// user := repositories.QueryUserByEmail(userReqContext.DB, registerReq.Email)
+	// if user == nil {
+	// 	globals.Log.Errorf(response.ErrEmailNotExist + ":" + registerReq.Email)
+	// 	response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf(response.ErrEmailNotExist+":"+registerReq.Email), nil))
+	// 	return
+	// }
+	// userImages, err := internalUtils.GetImages(u.DB, globals.UserHome, user.ID)
+	// if err != nil {
+	// 	globals.Log.Errorf(err.Error())
+	// 	response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf(response.ErrEmailNotExist+":"+registerReq.Email), nil))
+	// 	return
+	// 	// return nil, fmt.Errorf("UserReqContext.Login() %v", err)
+	// }
+	// // 没有图片
+	// if userImages == nil {
+	// 	// return nil, fmt.Errorf("UserReqContext.Login() err = 无法找到id为%d的用户头像图片", user.ID)
+	// 	globals.Log.Errorf(response.ErrUnableFindUserAvatar + ":" + strconv.Itoa(int(user.ID)))
+	//
+	// 	return
+	// }
+	// avatarPath := (*userImages)[0]
+	//
+	// var userInfo = requests.LogicRes{
+	// 	Id:         user.ID,
+	// 	Nickname:   user.Nickname,
+	// 	AvatarPath: avatarPath,
+	// }
+
 	// 生成token
-	tok, err := token.GenerateToken(user.ID)
+	tok, err := token.GenerateToken(userInfo.Id)
 	if err != nil {
 		globals.Log.Errorf(err.Error())
 		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, err, nil))
 		return
 	}
+	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, response.DataSuccess, gin.H{"token": tok, "userinfo": userInfo}))
 
-	// 成功
-	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, response.DataSuccess, gin.H{"token": tok}))
+	// // 成功
+	// response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, response.DataSuccess, gin.H{"token": tok}))
 }
 
 // ReqVerifyCode 用户请求验证码
@@ -167,14 +207,14 @@ func Login(c *gin.Context) {
 	}
 
 	// 通过email查询id
-	user := repositories.QueryUserByEmail(userReqContext.DB, loginReq.Email)
-	if user == nil {
-		globals.Log.Errorf(response.ErrEmailNotExist + ":" + loginReq.Email)
-		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf(response.ErrEmailNotExist+":"+loginReq.Email), nil))
-		return
-	}
+	// user := repositories.QueryUserByEmail(userReqContext.DB, loginReq.Email)
+	// if user == nil {
+	// 	globals.Log.Errorf(response.ErrEmailNotExist + ":" + loginReq.Email)
+	// 	response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf(response.ErrEmailNotExist+":"+loginReq.Email), nil))
+	// 	return
+	// }
 	// 生成token
-	tok, err := token.GenerateToken(user.ID)
+	tok, err := token.GenerateToken(userInfo.Id)
 	if err != nil {
 		globals.Log.Errorf(err.Error())
 		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, err, nil))

@@ -57,14 +57,25 @@ func UserRank(c *gin.Context) {
 
 	// 从上下文中获取 id
 	str, exists := c.Get("id")
-	if !exists {
-		// response.Failed(c, http.StatusUnauthorized, response.NewAppErr(globals.StatusUnauthorized, fmt.Errorf("UserRank() err = 无法获取 id"), nil))
-		globals.Log.Error(response.ErrUserIdNotGetFromContext)
-		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf(response.ErrUserIdNotGetFromContext), nil))
-		return
-	}
+	// if !exists {
+	// 	// response.Failed(c, http.StatusUnauthorized, response.NewAppErr(globals.StatusUnauthorized, fmt.Errorf("UserRank() err = 无法获取 id"), nil))
+	// 	globals.Log.Error(response.ErrUserIdNotGetFromContext)
+	// 	response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf(response.ErrUserIdNotGetFromContext), nil))
+	// 	return
+	// }
+
 	// 类型断言
-	id := str.(uint)
+	// id := str.(uint)
+
+	var id uint
+	// 如果无法Get到id，那么就是没有token，说明是游客模式
+	if !exists {
+		id = 0
+		globals.Log.Error("用户热度排行——游客模式")
+	} else {
+		// 类型断言
+		id = str.(uint)
+	}
 
 	// p, exists := c.Get("page")
 	// if !exists {
