@@ -17,6 +17,8 @@ func User(e *gin.Engine) {
 	// 登录
 	e.POST("/user/login", controllers.Login)
 
+	e.GET("/user/rank", controllers.UserRank)
+
 	// 分组
 	r := e.Group("/user")
 	// token 校验
@@ -25,7 +27,7 @@ func User(e *gin.Engine) {
 	// 关注
 	r.POST("/click_attention", controllers.ClickAttention)
 	// 用户排行
-	r.GET("/rank", controllers.UserRank)
+	// r.GET("/rank", controllers.UserRank)
 	// 搜索用户关注的人
 	r.GET("/attention", controllers.Attention)
 	// 通过用户id获取到用户简略信息
