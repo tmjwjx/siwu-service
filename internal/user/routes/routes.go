@@ -2,7 +2,6 @@ package routes
 
 import (
 	"forum/internal/user/controllers"
-	"forum/internal/user/middlewares"
 	"forum/pkg/token"
 	"github.com/gin-gonic/gin"
 )
@@ -10,13 +9,13 @@ import (
 // User 用户路由
 func User(e *gin.Engine) {
 	// 注册
-	e.POST("/user/register", middlewares.RegisterMW, controllers.Register)
+	e.POST("/user/register", controllers.Register)
 	// 忘记密码
-	e.POST("/user/forgot_password", middlewares.ForgotPasswordMW, controllers.ForgotPassword)
+	e.POST("/user/forgot_password", controllers.ForgotPassword)
 	// 用户请求验证码
-	e.GET("/user/req_verify_code", middlewares.ReqVerifyCodeMW, controllers.ReqVerifyCode)
+	e.GET("/user/req_verify_code", controllers.ReqVerifyCode)
 	// 登录
-	e.POST("/user/login", middlewares.LoginMW, controllers.Login)
+	e.POST("/user/login", controllers.Login)
 
 	// 分组
 	r := e.Group("/user")
@@ -26,9 +25,9 @@ func User(e *gin.Engine) {
 	// 关注
 	r.POST("/click_attention", controllers.ClickAttention)
 	// 用户排行
-	r.GET("/rank", middlewares.UserRankMW, controllers.UserRank)
+	r.GET("/rank", controllers.UserRank)
 	// 搜索用户关注的人
-	r.GET("/attention", middlewares.AttentionMW, controllers.Attention)
+	r.GET("/attention", controllers.Attention)
 	// 通过用户id获取到用户简略信息
 	r.POST("/get_basic_information", controllers.GetBasicInfo)
 	// 登出

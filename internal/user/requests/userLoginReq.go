@@ -10,8 +10,8 @@ type RegisterReq struct {
 
 // LogicReq 登录请求
 type LogicReq struct {
-	Email    string `json:"email"`    // 邮箱
-	Password string `json:"password"` // 密码
+	Email    string `json:"email" binding:"required,email"` // 邮箱
+	Password string `json:"password" binding:"required"`    // 密码
 }
 
 // LogicRes 登录响应
