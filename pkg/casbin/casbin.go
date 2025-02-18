@@ -341,14 +341,8 @@ func (c *CasbinService) VerifySuperAdministrator(userId string, roleId string) (
 // @param        roleId string
 // @return       error
 func (c *CasbinService) DeletePermForUser(roleId string) error {
-	// 确保最新的策略数据
-	err := c.Enforcer.LoadPolicy()
-	if err != nil {
-		return fmt.Errorf("(c *CasbinService) DeletePermForUser -> 策略加载失败， 已有的会忽略 -> %s", err)
-	}
-
 	// 删除角色拥有的权限
-	_, err = c.Enforcer.DeletePermissionForUser(roleId)
+	_, err := c.Enforcer.DeletePermissionForUser(roleId)
 	if err != nil {
 		return fmt.Errorf("(c *CasbinService) DeletePermForUser -> 删除角色拥有的权限异常 -> %s", err)
 	}

@@ -86,6 +86,9 @@ func ProduceUrlLogic(c *gin.Context) (*requests.ImageUrl, error) {
 	for i, img := range images {
 
 		if typeParam == "文章" {
+			if float64(img.Bounds().Dx()/img.Bounds().Dy()) != 1.65 {
+				return nil, fmt.Errorf("上传的图片比例不对")
+			}
 			// 添加水印
 			imgWithWatermark := addWatermark(img, "思悟")
 			finalImage = imgWithWatermark
