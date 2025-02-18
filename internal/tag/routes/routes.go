@@ -11,10 +11,10 @@ import (
 func Tag(e *gin.Engine) {
 
 	// 刷新前端标签页
-	e.GET("/article_count", controllers.UpdateTag)
+	e.GET("/tag/article_count", controllers.UpdateTag)
 
 	// 获取所有标签的id和name
-	e.GET("/get_all_tags", controllers.GetAllTagCtrl)
+	e.GET("/tag/get_all_tags", controllers.GetAllTagCtrl)
 
 	// 前台分组
 	r := e.Group("/tag").Use(token.AuthMiddleware())

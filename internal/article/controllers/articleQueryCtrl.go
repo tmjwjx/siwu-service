@@ -151,10 +151,11 @@ func ArticleDetailCtrl(c *gin.Context) {
 	articleId := c.Query("id")
 
 	userId, ok := c.Get("id")
-	if ok != true {
-		data := response.NewAppErr(globals.StatusBadRequest, nil, nil)
-		response.Failed(c, http.StatusBadRequest, data)
-		return
+	if ok == false {
+		//data := response.NewAppErr(globals.StatusBadRequest, nil, nil)
+		//response.Failed(c, http.StatusBadRequest, data)
+		//return
+		userId = uint(0)
 	}
 
 	// 进入业务层
@@ -239,8 +240,9 @@ func GetUserArticleOrCollectionCtrl(c *gin.Context) {
 	var req *requests.UserArticleOrCollectionReq
 	userId, exists := c.Get("id")
 	if !exists {
-		response.Failed(c, http.StatusUnauthorized, response.NewAppErr(globals.StatusUnauthorized, fmt.Errorf("无法获取 id"), nil))
-		return
+		//response.Failed(c, http.StatusUnauthorized, response.NewAppErr(globals.StatusUnauthorized, fmt.Errorf("无法获取 id"), nil))
+		//return
+		userId = uint(0)
 	}
 	// 类型断言
 	id := userId.(uint)

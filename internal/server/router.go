@@ -27,6 +27,9 @@ func SetupRouter() {
 	// 给前端发送 X-CSRF-Token
 	// globals.Router.Use(csrfMW.CSRFTokenMW())
 
+	// 空接口，不执行操作，用来 get X-CSRF-Token
+	globals.Router.GET("/get_csrf_token")
+
 	// 用户分路由
 	userRouter.User(globals.Router)
 
