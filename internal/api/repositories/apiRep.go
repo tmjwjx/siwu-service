@@ -20,19 +20,23 @@ import (
 func GetAllApiRep(db *gorm.DB) (*requests.GetAllApiRes, error) {
 
 	var res requests.GetAllApiRes
-	var groups []models.Group
+	var groups []requests.MiddleResultG
 
-	// 查询所有的分组id
-	err := db.Model(models.Group{}).Find(&groups).Error
+	// 查询所有的分组id和label
+	err := db.Table("sw_dict_types").
+		Select("sw_dict_items.id, sw_dict_items.label").
+		Joins("join sw_dict_items on sw_dict_items.dict_type_code = sw_dict_types.code").
+		Where("sw_dict_types.name = ?", "API分组").
+		Scan(&groups).Error
 	if err != nil {
-		return nil, fmt.Errorf("GetAllApiRep -> 查询所有的分组id失败 -> %s", err)
+		return nil, fmt.Errorf("GetAllApiRep -> 查询所有的分组id和label失败 -> %s", err)
 	}
 
 	for _, group := range groups {
 
 		list := &requests.List{
 			GroupID:   group.ID,
-			GroupName: group.Name,
+			GroupName: group.Label,
 			Children:  make([]*requests.Children, 0),
 		}
 		var apiIDs []uint
@@ -124,7 +128,24 @@ func GetAllApiRep(db *gorm.DB) (*requests.GetAllApiRes, error) {
 // GetApiDetailsRep 获取当前api详情
 func GetApiDetailsRep(db *gorm.DB, id uint) (*requests.ApiDetailsRes, error) {
 
-	var api models.Api
+	var res requests.ApiDetailsRes
+	query := db.Table("sw_apis").
+		Select("sw_apis.id, sw_apis.path, sw_apis.brief_introduction, dg.id As grouping_id, dg.label As grouping, dm.id As request_method_id, dm.label As request_method").
+		Joins("left join sw_api_groups on sw_api_groups.api_id = sw_apis.id").
+		Joins("left join sw_api_request_methods on sw_api_request_methods.api_id = sw_apis.id").
+		Joins("left join sw_dict_items As dg on sw_api_groups.group_id = dg.id").
+		Joins("left join sw_dict_items As dm on sw_api_request_methods.request_method_id = dm.id")
+
+	query = query.Where("sw_apis.deleted_at IS NULL").Order("sw_apis.created_at DESC")
+
+	err := query.Scan(&res).Error
+	if err != nil {
+		return nil, fmt.Errorf("SearchApiListRep -> 查询api异常 -> %s", err)
+	}
+
+	return &res, nil
+
+	/*var api models.Api
 	// 从api表中查询 api
 	err := db.Model(models.Api{}).Where("id = ?", id).Scan(&api).Error
 	if err != nil {
@@ -146,7 +167,7 @@ func GetApiDetailsRep(db *gorm.DB, id uint) (*requests.ApiDetailsRes, error) {
 		RequestMethod:     result.RequestMethodName,
 	}
 
-	return apiDetailsRes, nil
+	return apiDetailsRes, nil*/
 
 }
 
@@ -187,7 +208,7 @@ func GetRequestMethodRep(db *gorm.DB) (*requests.ApiReqMethodRes, error) {
 	// 查询请求方法
 	query := db.Table("sw_dict_types").Joins("left join sw_dict_items on sw_dict_items.dict_type_code = sw_dict_types.code")
 
-	err := query.Where("sw_dict_types.name = ?", "API请求方法").Pluck("sw_dict_items.label", &reqMethods).Error
+	err := query.Where("sw_dict_types.name = ?  AND sw_dict_items.deleted_at IS NULL", "API请求方法").Pluck("sw_dict_items.label", &reqMethods).Error
 	if err != nil {
 		return nil, fmt.Errorf("GetRequestMethodRep -> 查询请求方法失败 -> %s", err)
 	}
@@ -608,7 +629,7 @@ func GetApiGroupAndMethod(db *gorm.DB, apiID uint) (*MethodAndGroup, error) {
 	}*/
 
 	err := db.Table("sw_api_groups").
-		Select("dg.id As request_method_id, dg.label As group_name, dm.id As group_id, dm.label As request_method_name").
+		Select("dg.id As group_id, dg.label As group_name, dm.id As request_method_id, dm.label As request_method_name").
 		Joins("join sw_dict_items As dg on dg.id = sw_api_groups.group_id").
 		Joins("join sw_dict_items As dm on dm.id = sw_api_request_methods.request_method_id").
 		Joins("join sw_api_request_methods on sw_api_request_methods.api_id = sw_api_groups.api_id").

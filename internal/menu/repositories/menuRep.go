@@ -125,13 +125,22 @@ func GetMenuIconRep(db *gorm.DB) (*requests.GetMenuIconRes, error) {
 
 	var icons []string
 	var iconList []*requests.IconRes
-	err := db.Model(models.Menu{}).
+
+	// 查询所有菜单图标
+	query := db.Table("sw_dict_types").Joins("join sw_dict_items on sw_dict_items.dict_type_code = sw_dict_types.code")
+
+	err := query.Where("sw_dict_types.name = ?  AND sw_dict_items.deleted_at IS NULL", "图标名").Pluck("sw_dict_items.label", &icons).Error
+	if err != nil {
+		return nil, fmt.Errorf("GetRequestMethodRep -> 查询所有菜单图标失败 -> %s", err)
+	}
+
+	/*err := db.Model(models.Menu{}).
 		Where("icon <> ?", "").
 		Distinct("icon").
 		Pluck("Icon", &icons).Error
 	if err != nil {
 		return nil, fmt.Errorf("GetMenuIconRep -> 获取所有菜单图标 -> %s", err)
-	}
+	}*/
 
 	for _, icon := range icons {
 		i := &requests.IconRes{

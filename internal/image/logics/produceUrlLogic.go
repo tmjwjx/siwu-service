@@ -85,10 +85,13 @@ func ProduceUrlLogic(c *gin.Context) (*requests.ImageUrl, error) {
 	// 处理解码后的图片（例如压缩、加水印等）
 	for i, img := range images {
 
-		if typeParam == "文章" {
+		if typeParam == "文章封面" {
 			if float64(img.Bounds().Dx()/img.Bounds().Dy()) != 1.65 {
 				return nil, fmt.Errorf("上传的图片比例不对")
 			}
+		}
+
+		if typeParam == "文章" {
 			// 添加水印
 			imgWithWatermark := addWatermark(img, "思悟")
 			finalImage = imgWithWatermark
