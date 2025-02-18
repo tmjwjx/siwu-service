@@ -34,13 +34,13 @@ type Result struct {
 
 // ApiDetailsRes 获取当前api详情
 type ApiDetailsRes struct {
-	ID                uint   `json:"id"`                 // api的ID
-	Path              string `json:"path"`               // API路径
-	GroupingId        uint   `json:"grouping_id"`        // API分组ID
-	Grouping          string `json:"grouping"`           // API分组
-	BriefIntroduction string `json:"brief_introduction"` // API简介
-	RequestMethodId   uint   `json:"request_method_id"`  //请求方式 Id
-	RequestMethod     string `json:"request_method"`     // 请求方式
+	ID                uint   `gorm:"column:id" json:"id"`                                 // api的ID
+	Path              string `gorm:"column:path" json:"path"`                             // API路径
+	GroupingId        uint   `gorm:"column:id" json:"grouping_id"`                        // API分组ID
+	Grouping          string `gorm:"column:label" json:"grouping"`                        // API分组
+	BriefIntroduction string `gorm:"column:brief_introduction" json:"brief_introduction"` // API简介
+	RequestMethodId   uint   `gorm:"column:id" json:"request_method_id"`                  //请求方式 Id
+	RequestMethod     string `gorm:"column:label" json:"request_method"`                  // 请求方式
 }
 
 // ApiGroupRes 获取所有api分组列表
@@ -110,4 +110,10 @@ type SearchApiRes struct {
 type SearchApiListRes struct {
 	Api   []SearchApiRes `json:"api"`
 	Total int            `json:"total"`
+}
+
+// MiddleResultG 用于获取所有分组的id和label
+type MiddleResultG struct {
+	ID    uint   `json:"id"`
+	Label string `json:"label"`
 }
