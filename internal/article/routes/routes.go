@@ -15,17 +15,35 @@ func Article(e *gin.Engine) {
 
 	// 搜索
 	articleGroup := e.Group("/article")
-	// token 校验
-	articleGroup.Use(token.AuthMiddleware())
+	// 不需要 token 校验
 	{
 		// 文章搜索框
 		articleGroup.GET("/search_box", controllers.ArticleSearchCtrl)
+
+		// 获取文章详情
+		articleGroup.GET("/detail", controllers.ArticleDetailCtrl)
+
+		// 获取标签下的文章
+		articleGroup.GET("/get_article_by_tag", controllers.GetArticlesByTagCtrl)
+
+		// 会员中心 获取用户文章或收藏列表
+		articleGroup.GET("/get_type_data", controllers.GetUserArticleOrCollectionCtrl)
+	}
+	// token 校验
+	articleGroup.Use(token.AuthMiddleware())
+	{
 		// 编辑界面
 		articleGroup.GET("/edit", controllers.ArticleEditCtrl)
-		// 发布文章
-		articleGroup.POST("/publish", controllers.ArticlePublishCtrl)
 		// 获取文章列表
 		articleGroup.POST("/get_list", controllers.ArticleListCtrl)
+		// 点赞
+		articleGroup.POST("/like", controllers.LikeArticleCtrl)
+		// 收藏
+		articleGroup.POST("/collection", controllers.CollectionCtrl)
+		// 发布文章
+		articleGroup.POST("/publish", controllers.ArticlePublishCtrl)
+		// 关注的用户的文章
+		articleGroup.GET("/get_following_article", controllers.GetFollowingArticleCtrl)
 		// 封禁文章
 		articleGroup.POST("/ban", controllers.ArticleBanCtrl)
 		// 解封文章
@@ -34,22 +52,6 @@ func Article(e *gin.Engine) {
 		articleGroup.POST("/delete", controllers.DeleteArticlesCtrl)
 		// 用户 删除文章
 		articleGroup.GET("/delete_article", controllers.UserDeleteArticlesCtrl)
-
-		// 获取文章详情
-		articleGroup.GET("/detail", controllers.ArticleDetailCtrl)
-		// 点赞
-		articleGroup.POST("/like", controllers.LikeArticleCtrl)
-		// 收藏
-		articleGroup.POST("/collection", controllers.CollectionCtrl)
-
-		// 获取标签下的文章
-		articleGroup.GET("/get_article_by_tag", controllers.GetArticlesByTagCtrl)
-
-		// 会员中心 获取用户文章或收藏列表
-		articleGroup.GET("/get_type_data", controllers.GetUserArticleOrCollectionCtrl)
-
-		// 关注的用户的文章
-		articleGroup.GET("/get_following_article", controllers.GetFollowingArticleCtrl)
 	}
 
 	//// token 校验

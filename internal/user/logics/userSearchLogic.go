@@ -125,7 +125,7 @@ func (u *UserReqContext) ClickAttention(req requests.ClickAttentionReq) error {
 }
 
 // UserRank 用户热度排行
-func (u *UserReqContext) UserRank(id uint, req requests.UserRankReq) ([]*requests.UserRankRes, error) {
+func (u *UserReqContext) UserRank(req requests.UserRankReq) ([]*requests.UserRankRes, error) {
 	// userRankReqSli := make([]*requests.UserRankRes, req.Limit)
 	//
 	// // 查询排行榜：每个用户id，昵称
@@ -199,7 +199,7 @@ func (u *UserReqContext) UserRank(id uint, req requests.UserRankReq) ([]*request
 	userRankReqSli := make([]*requests.UserRankRes, req.Limit)
 
 	// 判断是否是游客模式
-	if id == 0 { // 如果 id == 0 那么就是游客模式
+	if req.Id == 0 { // 如果 id == 0 那么就是游客模式
 		// 查询排行榜：每个用户id，昵称
 		usersRank, err := repositories.QueryUserRank(u.DB, req.Page, req.Limit)
 		if err != nil {
@@ -252,7 +252,7 @@ func (u *UserReqContext) UserRank(id uint, req requests.UserRankReq) ([]*request
 
 		// 查询每个用户是否已关注（用户是否关注了这个排行榜上的用户：用户是否关注了这个排行榜上的用户：未关注：0，已关注：1，这个用户是自己：2）
 		// 查询 id 关注了谁
-		ids, err := repositories.QueryFollowed(u.DB, id)
+		ids, err := repositories.QueryFollowed(u.DB, req.Id)
 		if err != nil {
 			// return nil, fmt.Errorf("UserReqContext.UserRank() -> %v", err)
 			globals.Log.Error(err.Error())
@@ -295,7 +295,7 @@ func (u *UserReqContext) UserRank(id uint, req requests.UserRankReq) ([]*request
 			userRankReqSli[i].AvatarPath = (*userImages)[0]
 
 			// 未关注：0，已关注：1，这个用户是自己：2
-			if v.ID == id {
+			if v.ID == req.Id {
 				userRankReqSli[i].IsFollowed = 2
 			} else {
 				// 判断用户是否关注该id
