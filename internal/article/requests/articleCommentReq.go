@@ -1,12 +1,12 @@
 package requests
 
 type ArticleCommentReq struct {
-	ArticleID    uint     `json:"article_id"`
-	HighestID    uint     `json:"highest_id"`
-	ParentID     uint     `json:"parent_id"`
-	ParentUserID uint     `json:"parent_user_id"` // 上一条评论的发布用户ID
-	Content      string   `json:"content"`
-	Path         []string `json:"path" form:"path"` // 标签头像
+	ArticleID    uint   `json:"article_id"`
+	HighestID    uint   `json:"highest_id"`
+	ParentID     uint   `json:"parent_id"`
+	ParentUserID uint   `json:"parent_user_id"` // 上一条评论的发布用户ID
+	Content      string `json:"content"`
+	Path         string `json:"path" form:"path"` // 评论图片
 }
 
 /*type ArticleCommentRes struct {
