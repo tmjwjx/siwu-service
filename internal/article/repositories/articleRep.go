@@ -1261,8 +1261,8 @@ func GetUserArticleOrCollectionRep(db *gorm.DB, req *requests.UserArticleOrColle
 		query = query.Limit(req.Limit).Offset(offset)
 	}
 
-	// 只获取公开文章
-	if req.Id != id {
+	// 如果不是主页用户本人 则只获取公开文章
+	if req.Id != id || id == 0 {
 		query = query.Where("sw_articles.status = ?", "public").
 			Where("sw_articles.article_condition = ?", 0)
 	}
