@@ -84,10 +84,10 @@ func Workplace(e *gin.Engine) {
 func Comment(e *gin.Engine) {
 
 	// 返回顶级评论列表
-	e.POST("/top_level", controllers.GetTopLevelCommentsCtrl)
+	e.POST("/comment/top_level", controllers.GetTopLevelCommentsCtrl)
 
 	// 返回评论回复列表
-	e.POST("/replies", controllers.GetRepliesRep2Ctrl)
+	e.POST("/comment/replies", controllers.GetRepliesRep2Ctrl)
 
 	// 前台
 	r := e.Group("/comment").Use(token.AuthMiddleware())
