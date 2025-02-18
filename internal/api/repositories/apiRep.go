@@ -7,6 +7,7 @@ import (
 	"forum/internal/models"
 	"forum/pkg/casbin"
 	casbin2 "github.com/casbin/casbin/v2"
+	gormadapter "github.com/casbin/gorm-adapter/v3"
 	"gorm.io/gorm"
 )
 
@@ -153,18 +154,21 @@ func GetApiDetailsRep(db *gorm.DB, id uint) (*requests.ApiDetailsRes, error) {
 func GetGroupListRep(db *gorm.DB) (*requests.ApiGroupRes, error) {
 
 	var apiGroupRes requests.ApiGroupRes
-	var groups []models.Group
-	// 从group表中查询 分组信息
-	err := db.Find(&groups).Error
+	var groups []string
+
+	// 查询分组信息
+	query := db.Table("sw_dict_types").Joins("left join sw_dict_items on sw_dict_items.dict_type_code = sw_dict_types.code")
+
+	err := query.Where("sw_dict_types.name = ?", "API分组").Pluck("sw_dict_items.label", &groups).Error
 	if err != nil {
-		return nil, fmt.Errorf("GetGroupListRep -> 从group表中查询 分组信息失败 -> %s", err)
+		return nil, fmt.Errorf("GetRequestMethodRep -> 查询分组信息失败 -> %s", err)
 	}
 
 	for _, group := range groups {
 
 		apiGroup := &requests.ApiGroup{
-			Value: group.Name,
-			Label: group.Name,
+			Value: group,
+			Label: group,
 		}
 
 		apiGroupRes.Groups = append(apiGroupRes.Groups, apiGroup)
@@ -178,18 +182,21 @@ func GetGroupListRep(db *gorm.DB) (*requests.ApiGroupRes, error) {
 func GetRequestMethodRep(db *gorm.DB) (*requests.ApiReqMethodRes, error) {
 
 	var apiReqMethodRes requests.ApiReqMethodRes
-	var reqMethods []models.RequestMethod
-	// 从request_method表中查询 分组信息
-	err := db.Find(&reqMethods).Error
+	var reqMethods []string
+
+	// 查询请求方法
+	query := db.Table("sw_dict_types").Joins("left join sw_dict_items on sw_dict_items.dict_type_code = sw_dict_types.code")
+
+	err := query.Where("sw_dict_types.name = ?", "API请求方法").Pluck("sw_dict_items.label", &reqMethods).Error
 	if err != nil {
-		return nil, fmt.Errorf("GetRequestMethodRep -> 从request_method表中查询 分组信息失败 -> %s", err)
+		return nil, fmt.Errorf("GetRequestMethodRep -> 查询请求方法失败 -> %s", err)
 	}
 
 	for _, reqMethod := range reqMethods {
 
 		apiReqMethod := &requests.ApiReqMethod{
-			Value: reqMethod.Name,
-			Label: reqMethod.Name,
+			Value: reqMethod,
+			Label: reqMethod,
 		}
 
 		apiReqMethodRes.Methods = append(apiReqMethodRes.Methods, apiReqMethod)
@@ -204,50 +211,99 @@ func DeleteApiRep(e *casbin2.Enforcer, req *requests.DeleteApiReq, db *gorm.DB) 
 	// 开启事务
 	tx := db.Begin()
 	if tx.Error != nil {
+		tx.Rollback()
 		return fmt.Errorf("DeleteApiRep -> 开启事务失败 -> %s", tx.Error)
 	}
 
 	for _, id := range req.ID {
 
 		// 删除api表中的信息
-		result := tx.Model(&models.Api{}).Where("id = ?", id).Delete(nil)
+		result := tx.Where("id = ?", id).Delete(&models.Api{})
 		if result.Error != nil {
 			tx.Rollback() // 回滚事务
 			return fmt.Errorf("DeleteApiRep ->  删除api表中的信息失败 -> %s", result.Error)
-		} else if result.RowsAffected == 0 {
-			return fmt.Errorf("DeleteApiRep ->  该api不存在")
 		}
 
-		// 删除api_group表中的信息
-		result2 := tx.Model(&models.ApiGroup{}).Where("api_id = ?", id).Delete(nil)
-		if result2.Error != nil {
-			tx.Rollback() // 回滚事务
-			return fmt.Errorf("DeleteApiRep ->  删除api_group表中的信息失败 -> %s", result2.Error)
-		}
+		// 只有要删除的api存在，才有必要删除其他两张表中的信息，
+		// 如果不存在，就变相等于删除成功了
+		if result.RowsAffected != 0 {
+			// 删除api_group表中的信息
+			result2 := tx.Model(&models.ApiGroup{}).Where("api_id = ?", id).Delete(nil)
+			if result2.Error != nil {
+				tx.Rollback() // 回滚事务
+				return fmt.Errorf("DeleteApiRep ->  删除api_group表中的信息失败 -> %s", result2.Error)
+			}
 
-		// 删除api_request_method表中的信息
-		result3 := tx.Model(&models.ApiRequestMethod{}).Where("api_id = ?", id).Delete(nil)
-		if result3.Error != nil {
-			tx.Rollback() // 回滚事务
-			return fmt.Errorf("DeleteApiRep ->  删除api_request_method表中的信息失败 -> %s", result3.Error)
+			// 删除api_request_method表中的信息
+			result3 := tx.Model(&models.ApiRequestMethod{}).Where("api_id = ?", id).Delete(nil)
+			if result3.Error != nil {
+				tx.Rollback() // 回滚事务
+				return fmt.Errorf("DeleteApiRep ->  删除api_request_method表中的信息失败 -> %s", result3.Error)
+			}
 		}
+	}
+
+	// 开始casbin相关事务
+	Ctx := e.GetAdapter().(*gormadapter.Adapter).GetDb().Begin()
+	if Ctx.Error != nil {
+		// 回滚普通事务
+		tx.Rollback()
+		// 回滚casbin相关事务
+		Ctx.Rollback()
+		return fmt.Errorf("DeleteApiRep ->  开始casbin相关事务失败 -> %s", Ctx.Error)
+	}
+
+	casbinServer := &casbin.CasbinService{
+		Enforcer: e,
+	}
+
+	// 确保最新的策略数据
+	err := casbinServer.Enforcer.LoadPolicy()
+	if err != nil {
+		// 回滚普通事务
+		tx.Rollback()
+		// 回滚casbin相关事务
+		Ctx.Rollback()
+		return fmt.Errorf("DeleteApiRep -> 策略加载失败， 已有的会忽略 -> %s", err)
 	}
 
 	// 删除casbin_rule表中的信息
 	for _, id := range req.ID {
-		casbinServer := &casbin.CasbinService{
-			Enforcer: e,
-		}
 
-		err := casbinServer.DeletePermForUser(fmt.Sprintf("%v", id))
+		err = casbinServer.DeletePermForUser(fmt.Sprintf("%v", id))
 		if err != nil {
+			// 回滚普通事务
+			tx.Rollback()
+			// 回滚casbin相关事务
+			Ctx.Rollback()
 			return fmt.Errorf("DeleteApiRep ->  删除casbin_rule表中的信息失败 -> %s", err)
 		}
 	}
 
-	// 提交事务
-	err := tx.Commit().Error
+	// 如果需要持久化到数据库
+	if err = casbinServer.Enforcer.SavePolicy(); err != nil {
+		// 回滚普通事务
+		tx.Rollback()
+		// 回滚casbin相关事务
+		Ctx.Rollback()
+		return fmt.Errorf("DeleteApiRep -> 保存策略失败: %s", err)
+	}
+
+	// 提交casbin相关事务
+	err = Ctx.Commit().Error
 	if err != nil {
+		// 回滚普通事务
+		tx.Rollback()
+		// 回滚casbin相关事务
+		Ctx.Rollback()
+		return fmt.Errorf("DeleteApiRep -> 提交casbin相关事务失败 -> %s", err)
+	}
+
+	// 提交事务
+	err = tx.Commit().Error
+	if err != nil {
+		// 回滚普通事务
+		tx.Rollback()
 		return fmt.Errorf("DeleteApiRep -> 提交事务失败 -> %s", err)
 	}
 
@@ -452,21 +508,21 @@ func SearchApiListRep(db *gorm.DB, req *requests.SearchApiListReq) (*requests.Se
 	//建立表关联
 
 	query := db.Table("sw_apis").
-		Select("sw_apis.id, sw_apis.path, sw_apis.brief_introduction, sw_groups.id as group_id, sw_groups.name as group_name, sw_request_methods.id as request_method_id, sw_request_methods.name as request_method_name").
+		Select("sw_apis.id, sw_apis.path, sw_apis.brief_introduction, dg.id as group_id, dg.label as group_name, dm.id as request_method_id, dm.label as request_method_name").
 		Joins("left join sw_api_groups on sw_api_groups.api_id = sw_apis.id").
-		Joins("left join sw_groups on sw_api_groups.group_id = sw_groups.id").
 		Joins("left join sw_api_request_methods on sw_api_request_methods.api_id = sw_apis.id").
-		Joins("left join sw_request_methods on sw_api_request_methods.request_method_id = sw_request_methods.id")
+		Joins("left join sw_dict_items As dg on sw_api_groups.group_id = dg.id").
+		Joins("left join sw_dict_items As dm on sw_api_request_methods.request_method_id = dm.id")
 
 	// 添加查询条件
 	if req.Path != "" {
 		query = query.Where("sw_apis.path LIKE ?", "%"+req.Path+"%")
 	}
 	if req.RequestMethod != "" {
-		query = query.Where("sw_request_methods.name = ?", req.RequestMethod)
+		query = query.Where("dm.label = ?", req.RequestMethod)
 	}
 	if req.Grouping != "" {
-		query = query.Where("sw_groups.name = ?", req.Grouping)
+		query = query.Where("dg.label = ?", req.Grouping)
 	}
 	if req.BriefIntroduction != "" {
 		query = query.Where("sw_apis.brief_introduction = ?", req.BriefIntroduction)
@@ -474,7 +530,6 @@ func SearchApiListRep(db *gorm.DB, req *requests.SearchApiListReq) (*requests.Se
 
 	query = query.Where("sw_apis.deleted_at IS NULL").Order("sw_apis.created_at DESC")
 
-	//err := query.Limit(req.Limit).Offset(req.Page).Scan(&searchApiRes).Error
 	err := query.Scan(&searchApiRes).Error
 	if err != nil {
 		return nil, fmt.Errorf("SearchApiListRep -> 查询api异常 -> %s", err)
@@ -518,6 +573,11 @@ type MethodAndGroup struct {
 	GroupName         string `json:"group_name"`
 }
 
+type MiddleResult struct {
+	Id   uint   `json:"id"`
+	Name string `json:"name"`
+}
+
 // GetApiGroupAndMethod
 // @Description: 根据api的id获取api的 分组的id和name 请求方式的id和name
 // @Author wangyulong 2024-10-16 20:37:20
@@ -528,17 +588,35 @@ type MethodAndGroup struct {
 func GetApiGroupAndMethod(db *gorm.DB, apiID uint) (*MethodAndGroup, error) {
 
 	var result MethodAndGroup
+
 	// 使用GORM进行多表联查
-	err := db.Table("sw_api_request_methods").
-		Select("sw_api_request_methods.request_method_id, sw_request_methods.name as request_method_name, sw_api_groups.group_id, sw_groups.name as group_name").
-		Joins("join sw_request_methods on sw_api_request_methods.request_method_id = sw_request_methods.id").
-		Joins("join sw_api_groups on sw_api_request_methods.api_id = sw_api_groups.api_id").
-		Joins("join sw_groups on sw_api_groups.group_id = sw_groups.id").
-		Where("sw_api_request_methods.api_id = ?", apiID).
-		Scan(&result).Error
+
+	/*err := db.Table("sw_api_request_methods").
+		Select("sw_dict_items.id, sw_dict_items.label As name").
+		Joins("join sw_dict_items on sw_dict_items.id = sw_api_request_methods.request_method_id").
+		Where("sw_api_request_methods.api_id = ?", apiID).Scan(&resMethods).Error
 	if err != nil {
 		return nil, fmt.Errorf("GetApiGrouGetApiGroupAndMethod -> 根据api的id获取api的 分组的id和name 请求方式的id和name失败 -> %s", err)
 	}
+
+	err = db.Table("sw_api_groups").
+		Select("sw_dict_items.id, sw_dict_items.label As name").
+		Joins("join sw_dict_items on sw_dict_items.id = sw_api_groups.group_id").
+		Where("sw_api_groups.api_id = ?", apiID).Scan(&resGroups).Error
+	if err != nil {
+		return nil, fmt.Errorf("GetApiGrouGetApiGroupAndMethod -> 根据api的id获取api的 分组的id和name 请求方式的id和name失败 -> %s", err)
+	}*/
+
+	err := db.Table("sw_api_groups").
+		Select("dg.id As request_method_id, dg.label As group_name, dm.id As group_id, dm.label As request_method_name").
+		Joins("join sw_dict_items As dg on dg.id = sw_api_groups.group_id").
+		Joins("join sw_dict_items As dm on dm.id = sw_api_request_methods.request_method_id").
+		Joins("join sw_api_request_methods on sw_api_request_methods.api_id = sw_api_groups.api_id").
+		Where("sw_api_groups.api_id = ?", apiID).Scan(&result)
+	if err != nil {
+		return nil, fmt.Errorf("GetApiGrouGetApiGroupAndMethod -> 根据api的id获取api的 分组的id和name 请求方式的id和name失败 -> %s", err)
+	}
+
 	return &result, nil
 }
 

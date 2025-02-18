@@ -35,7 +35,7 @@ func GetCommentStatusRep(db *gorm.DB, userId uint, commentId uint) (int, error) 
 // InsertCommentRep 将评论存入数据库中
 func InsertCommentRep(userId uint, articleCommentReq *requests.ArticleCommentReq, db *gorm.DB) (error, int) {
 
-	if articleCommentReq.Content == "" {
+	if articleCommentReq.Content == "" && len(articleCommentReq.Path) == 0 {
 		return nil, 500
 	}
 	// 开启事务
@@ -68,13 +68,10 @@ func InsertCommentRep(userId uint, articleCommentReq *requests.ArticleCommentReq
 		return fmt.Errorf("InsertCommentRep -> 获取新插入的评论的ID失败 -> %s", err), 500
 	}
 
-	//// 将评论的图片存到文件系统中
-	//err, status := controllers.UploadImagesControllers(c, "评论", articleComment.ID)
-	//if err != nil {
-	//	return err, status
-	//}
+	var paths []string
+	paths = append(paths, articleCommentReq.Path)
 	u := &internalUtils.UrlParam{
-		UrlPath: articleCommentReq.Path,
+		UrlPath: paths,
 		Home:    globals.CommentHome,
 		HomeID:  articleComment.ID,
 		DB:      db,
