@@ -242,7 +242,7 @@ func GetUserArticleOrCollectionCtrl(c *gin.Context) {
 	if !exists {
 		//response.Failed(c, http.StatusUnauthorized, response.NewAppErr(globals.StatusUnauthorized, fmt.Errorf("无法获取 id"), nil))
 		//return
-		userId = 0
+		userId = uint(0)
 	}
 	// 类型断言
 	id := userId.(uint)
