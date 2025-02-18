@@ -2,6 +2,7 @@ package logics
 
 import (
 	"context"
+	"errors"
 	"forum/internal/article/repositories"
 	"forum/internal/article/requests"
 	"forum/internal/internalPkg/internalUtils"
@@ -63,10 +64,17 @@ func ArticleDetailLogic(db *gorm.DB, articleId string, userId uint) (data interf
 		globals.Log.Errorf("err = %s", err)
 		return nil, err
 	}
-	// 查询用户是否点赞
-	article.LikeStatus, err = repositories.LikeStatusRep(db, articleId, userId)
-	// 查询用户是否收藏
-	article.CollectionStatus, err = repositories.CollectionStatusRep(db, articleId, userId)
+
+	if article.Id == 0 {
+		return nil, errors.New("文章不存在")
+	}
+
+	if userId != 0 {
+		// 查询用户是否点赞
+		article.LikeStatus, err = repositories.LikeStatusRep(db, articleId, userId)
+		// 查询用户是否收藏
+		article.CollectionStatus, err = repositories.CollectionStatusRep(db, articleId, userId)
+	}
 
 	// 查询相关文章
 	about, err := repositories.AboutArticleRep(db, articleId, userId)

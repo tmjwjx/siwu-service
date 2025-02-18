@@ -155,7 +155,7 @@ func ArticleDetailCtrl(c *gin.Context) {
 		//data := response.NewAppErr(globals.StatusBadRequest, nil, nil)
 		//response.Failed(c, http.StatusBadRequest, data)
 		//return
-		userId = 0
+		userId = uint(0)
 	}
 
 	// 进入业务层
