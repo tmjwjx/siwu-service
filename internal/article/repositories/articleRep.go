@@ -967,7 +967,10 @@ func ArticleDetailRep(db *gorm.DB, id string) (requests.ArticleDetailRes, error)
 
 	// query = query.Joins("LEFT JOIN sw_users ON sw_users.id = sw_articles.user_id")
 
-	query.Find(&articleDetail)
+	err := query.Find(&articleDetail).Error
+	if err != nil {
+		return articleDetail, err
+	}
 
 	articleDetail.FormatTime = internalUtils.TimeFormat(articleDetail.PublishedAt)
 	articleDetail.DailyTime = internalUtils.TimeFormatDaily(articleDetail.PublishedAt)
@@ -1007,6 +1010,8 @@ func AddArticleClickRep(db *gorm.DB, articleId string) error {
 // @return       about
 // @return       err
 func AboutArticleRep(db *gorm.DB, articleId string, userId uint) (about []requests.AboutArticleRes, err error) {
+
+	// articleId 和 userId 暂时搁置 未使用
 
 	// articleId 和 userId 暂时搁置 未使用
 	// 查询相关推荐
