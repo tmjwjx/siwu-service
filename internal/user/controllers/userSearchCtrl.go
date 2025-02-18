@@ -56,7 +56,7 @@ func ClickAttention(c *gin.Context) {
 func UserRank(c *gin.Context) {
 
 	// 从上下文中获取 id
-	str, exists := c.Get("id")
+	// str, exists := c.Get("id")
 	// if !exists {
 	// 	// response.Failed(c, http.StatusUnauthorized, response.NewAppErr(globals.StatusUnauthorized, fmt.Errorf("UserRank() err = 无法获取 id"), nil))
 	// 	globals.Log.Error(response.ErrUserIdNotGetFromContext)
@@ -67,15 +67,15 @@ func UserRank(c *gin.Context) {
 	// 类型断言
 	// id := str.(uint)
 
-	var id uint
-	// 如果无法Get到id，那么就是没有token，说明是游客模式
-	if !exists {
-		id = 0
-		globals.Log.Error("用户热度排行——游客模式")
-	} else {
-		// 类型断言
-		id = str.(uint)
-	}
+	// var id uint
+	// // 如果无法Get到id，那么就是没有token，说明是游客模式
+	// if !exists {
+	// 	id = 0
+	// 	globals.Log.Error("用户热度排行——游客模式")
+	// } else {
+	// 	// 类型断言
+	// 	id = str.(uint)
+	// }
 
 	// p, exists := c.Get("page")
 	// if !exists {
@@ -104,10 +104,18 @@ func UserRank(c *gin.Context) {
 		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("UserRank() err = 数据类型转换错误"), nil))
 		return
 	}
+	// id == 0：游客登录
+	id, err := strconv.Atoi(c.Query("id"))
+	if err != nil {
+		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("UserRank() err = 数据类型转换错误"), nil))
+		return
+	}
 
-	var rankMsg requests.UserRankReq
-	rankMsg.Page = page
-	rankMsg.Limit = limit
+	var rankMsg = requests.UserRankReq{
+		Page:  page,
+		Limit: limit,
+		Id:    uint(id),
+	}
 
 	// 检验数据
 	if page <= 0 {
@@ -125,7 +133,7 @@ func UserRank(c *gin.Context) {
 
 	// 业务逻辑
 	userReqContext := logics.NewUserReqContext(globals.DB, c, globals.SendEmailCfg)
-	userRankRep, err := userReqContext.UserRank(id, rankMsg)
+	userRankRep, err := userReqContext.UserRank(rankMsg)
 	if err != nil {
 		// response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("UserRank() -> %v", err), nil))
 		globals.Log.Errorf(err.Error())

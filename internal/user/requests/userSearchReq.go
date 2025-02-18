@@ -12,8 +12,9 @@ type ClickAttentionReq struct {
 
 // UserRankReq 用户排行请求
 type UserRankReq struct {
-	Page  int `json:"page"`
-	Limit int `json:"limit"`
+	Page  int  `json:"page"`
+	Limit int  `json:"limit"`
+	Id    uint `json:"id"`
 }
 
 // UserRankRes 用户排行响应
