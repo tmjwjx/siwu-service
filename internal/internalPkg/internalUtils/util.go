@@ -33,7 +33,7 @@ func RandomGenerateNickname() (string, error) {
 		fmt.Println("Error generating ID:", err)
 		return "", err
 	}
-	return "siwu" + nickname, nil
+	return "siwu-" + nickname, nil
 }
 
 // RandomGenerateVerifyCode 随机生成验证码

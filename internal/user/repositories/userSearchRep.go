@@ -43,23 +43,40 @@ func QueryAttentionByPage(db *gorm.DB, followerId uint, keyword string, page, li
 	var ids []uint
 
 	// 构造查询
+	// query := db.Model(&models.UserFollow{}).
+	// 	Scopes(sqlUtils.Paginate(page, limit)). // 分页
+	// 	Where("follower_id = ?", followerId).   // 根据关注者id查询
+	// 	Pluck("followed_id", &ids)              // 查询被关注者
+	//
+	// // 执行查询
+	// if err := query.Error; err != nil {
+	// 	return nil, fmt.Errorf("QueryAttentionByPage() err: %v", err)
+	// }
+	//
+	// // 模糊查询来筛选 nickname
+	// newIds, err := QueryUserIdsByNickname(db, ids, keyword)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("QueryAttentionByPage() -> %v", err)
+	// }
+	//
+	// return newIds, nil
+
 	query := db.Model(&models.UserFollow{}).
 		Scopes(sqlUtils.Paginate(page, limit)). // 分页
-		Where("follower_id = ?", followerId).   // 根据关注者id查询
-		Pluck("followed_id", &ids)              // 查询被关注者
+		Where("follower_id = ?", followerId)    // 根据关注者id查询
 
-	// 执行查询
-	if err := query.Error; err != nil {
+	if keyword != "" {
+		// 先通过 UserFollow 表关联到 User 表，再进行模糊查询
+		query = query.Joins("JOIN sw_users ON sw_user_follows.followed_id = sw_users.id").
+			Where("sw_users.nickname LIKE ?", "%"+keyword+"%")
+	}
+
+	// 查询被关注者的ID
+	if err := query.Pluck("sw_user_follows.followed_id", &ids).Error; err != nil {
 		return nil, fmt.Errorf("QueryAttentionByPage() err: %v", err)
 	}
 
-	// 模糊查询来筛选 nickname
-	newIds, err := QueryUserIdsByNickname(db, ids, keyword)
-	if err != nil {
-		return nil, fmt.Errorf("QueryAttentionByPage() -> %v", err)
-	}
-
-	return newIds, nil
+	return ids, nil
 }
 
 // QueryAttention
@@ -108,21 +125,21 @@ func QueryUserIDArticleNumOfPub(db *gorm.DB, userId uint, status string) (int64,
 	return count, nil
 }
 
-// QueryUserIdsByNickname 使用模糊查询来查询 nickname 字段里面包含 keyword 的内容。
-func QueryUserIdsByNickname(db *gorm.DB, ids []uint, keyword string) ([]uint, error) {
-	var userIds []uint
-
-	// 执行查询：根据id在给定的ids切片中，并且nickname字段包含keyword
-	err := db.Model(&models.User{}).
-		Where("id IN (?)", ids).                   // 查询指定id的用户
-		Where("nickname LIKE ?", "%"+keyword+"%"). // 使用LIKE进行模糊查询
-		Pluck("id", &userIds).Error                // 只查询并返回用户id字段
-
-	if err != nil {
-		return nil, fmt.Errorf("QueryUserIdsByNickname() err: %v", err)
-	}
-	return userIds, nil
-}
+// // QueryUserIdsByNickname 使用模糊查询来查询 nickname 字段里面包含 keyword 的内容。
+// func QueryUserIdsByNickname(db *gorm.DB, ids []uint, keyword string) ([]uint, error) {
+// 	var userIds []uint
+//
+// 	// 执行查询：根据id在给定的ids切片中，并且nickname字段包含keyword
+// 	err := db.Model(&models.User{}).
+// 		Where("id IN (?)", ids).                   // 查询指定id的用户
+// 		Where("nickname LIKE ?", "%"+keyword+"%"). // 使用LIKE进行模糊查询
+// 		Pluck("id", &userIds).Error                // 只查询并返回用户id字段
+//
+// 	if err != nil {
+// 		return nil, fmt.Errorf("QueryUserIdsByNickname() err: %v", err)
+// 	}
+// 	return userIds, nil
+// }
 
 // QueryUserArticleRep
 // @Description: 查询用户的文章
