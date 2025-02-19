@@ -6,8 +6,8 @@ import (
 	"forum/internal/internalPkg/sqlUtils"
 	"forum/internal/internalPkg/templates"
 	"forum/pkg/response"
+	"forum/pkg/sendEmail"
 	"forum/pkg/token"
-	"gopkg.in/gomail.v2"
 	"strconv"
 	"strings"
 
@@ -190,9 +190,22 @@ func (u *UserReqContext) ReqVerifyCode(email string) error {
 	// }
 
 	body := fmt.Sprintf(templates.GetEmailFormatTemplate(), verifyCode, int(internalUtils.VerifyCodeEffectiveDuration.Minutes()))
-	if err := SendEmail(globals.SendEmailCfg, email, internalUtils.VerifyCodeSubject, body); err != nil {
-		// return fmt.Errorf("UserReqContext.VerifyCodeReq() -> 向 %s 邮箱发送验证码错误，%v", email, err)
-		globals.Log.Errorf(err.Error())
+	// if err := SendEmail(globals.SendEmailCfg, email, internalUtils.VerifyCodeSubject, body); err != nil {
+	// 	// return fmt.Errorf("UserReqContext.VerifyCodeReq() -> 向 %s 邮箱发送验证码错误，%v", email, err)
+	// 	globals.Log.Errorf(err.Error())
+	// 	return err
+	// }
+
+	// 创建邮件任务消息
+	task := sendEmail.EmailTask{
+		Email:   email,
+		Subject: internalUtils.VerifyCodeSubject,
+		Body:    body,
+	}
+
+	// 将任务推送到 Redis Stream（异步处理）
+	if err := sendEmail.PushEmailTaskToStream(globals.RDB, task); err != nil {
+		globals.Log.Errorf("推送邮件任务到 Redis Stream 失败: %v", err)
 		return err
 	}
 
@@ -206,74 +219,33 @@ func (u *UserReqContext) ReqVerifyCode(email string) error {
 	return nil
 }
 
-// SendVerificationCodeAsync 异步发送验证码
-// func SendVerificationCodeAsync(to string, subject string, body string, resultCh chan string) {
-// 	err := globals.SendEmailCfg.SendEmail(to, subject, body)
-// 	if err != nil {
-// 		globals.Log.Errorf(err.Error())
-// 		resultCh <- "fail"
-// 	} else {
-// 		resultCh <- "success"
-// 	}
-// }
-
 // // SendEmail 给邮箱(to)发送内容(body)
 // // to: 接收人
 // // body: 正文内容
 // // subject: 主题
-// func (s *globals.SendEmailConfig) SendEmail(to string, subject string, body string) error {
+// func SendEmail(s *globals.SendEmailConfig, to string, subject string, body string) error {
 // 	// 判断邮箱是否合法
 // 	if !internalUtils.IsValidEmail(to) {
 // 		globals.Log.Errorf(response.ErrEmailIsInvalid + ":" + to)
 // 		return fmt.Errorf(response.ErrEmailIsInvalid + ":" + to)
-// 		// return fmt.Errorf("UserReqContext.SendEmail() err: 接收者邮箱错误")
 // 	}
 //
 // 	m := gomail.NewMessage()
 // 	// 设置邮件消息的头部字段
-// 	m.SetHeader("From", u.SendEmailCfg.From) // 发送人
-// 	m.SetHeader("To", to)                    // 接收人
-// 	m.SetHeader("Subject", subject)          // 主题
-// 	m.SetBody("text/html", body)             // 正文内容
+// 	m.SetHeader("From", s.From)     // 发送人
+// 	m.SetHeader("To", to)           // 接收人
+// 	m.SetHeader("Subject", subject) // 主题
+// 	m.SetBody("text/html", body)    // 正文内容
 // 	// 创建一个新的邮件拨号器对象，用于通过指定的 SMTP 服务器发送邮件
-// 	d := gomail.NewDialer(u.SendEmailCfg.Host, u.SendEmailCfg.Port, u.SendEmailCfg.Username, u.SendEmailCfg.AuthorizeCode)
+// 	d := gomail.NewDialer(s.Host, s.Port, s.Username, s.AuthorizeCode)
 // 	// 通过拨号器对象发送指定的邮件消息
 // 	if err := d.DialAndSend(m); err != nil {
 // 		// return fmt.Errorf("UserReqContext.SendEmail() err: %v", err)
 // 		globals.Log.Errorf(err.Error())
 // 		return err
 // 	}
-//
 // 	return nil
 // }
-
-// SendEmail 给邮箱(to)发送内容(body)
-// to: 接收人
-// body: 正文内容
-// subject: 主题
-func SendEmail(s *globals.SendEmailConfig, to string, subject string, body string) error {
-	// 判断邮箱是否合法
-	if !internalUtils.IsValidEmail(to) {
-		globals.Log.Errorf(response.ErrEmailIsInvalid + ":" + to)
-		return fmt.Errorf(response.ErrEmailIsInvalid + ":" + to)
-	}
-
-	m := gomail.NewMessage()
-	// 设置邮件消息的头部字段
-	m.SetHeader("From", s.From)     // 发送人
-	m.SetHeader("To", to)           // 接收人
-	m.SetHeader("Subject", subject) // 主题
-	m.SetBody("text/html", body)    // 正文内容
-	// 创建一个新的邮件拨号器对象，用于通过指定的 SMTP 服务器发送邮件
-	d := gomail.NewDialer(s.Host, s.Port, s.Username, s.AuthorizeCode)
-	// 通过拨号器对象发送指定的邮件消息
-	if err := d.DialAndSend(m); err != nil {
-		// return fmt.Errorf("UserReqContext.SendEmail() err: %v", err)
-		globals.Log.Errorf(err.Error())
-		return err
-	}
-	return nil
-}
 
 // Login 登录
 func (u *UserReqContext) Login(logicMsg requests.LogicReq) (*requests.LogicRes, error) {
