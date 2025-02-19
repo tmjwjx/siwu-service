@@ -124,7 +124,7 @@ func getContentType(filePath string) string {
 	}
 }
 
-// 调整图片尺寸
+// 调整图片尺寸(放大或缩小)
 func resizeImage(img image.Image, width, height int) image.Image {
 	switch {
 	case width == 0 && height == 0:

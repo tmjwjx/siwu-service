@@ -68,10 +68,8 @@ func TableInit() {
 
 		// api管理模块
 		&models.Api{},
-		&models.Group{},
-		&models.RequestMethod{},
-		&models.ApiGroup{},
-		&models.ApiRequestMethod{},
+		&models.ApiDictItemGroup{},
+		&models.ApiDictItemRequestMethod{},
 
 		// 菜单管理模块
 		&models.Menu{},
