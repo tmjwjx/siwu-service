@@ -27,4 +27,5 @@ const (
 	ErrMissAuthorizationHeader = "缺少授权标头"
 	ErrTokenIsInvalid          = "无效的 token"
 	ErrTCSRFokenIsInvalid      = "无效的 CSRF token"
+	ErrStorageToRedis          = "存储到redis中失败"
 )
