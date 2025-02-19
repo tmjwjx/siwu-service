@@ -34,3 +34,11 @@ type CompressImageReq struct {
 	Height int    `json:"height" binding:"min=0"`               // 目标高度
 	Level  int    `json:"level" binding:"required,min=0,max=9"` // 压缩级别 (0-9)
 }
+
+// WatermarkParam 与图片水印有关的参数
+type WatermarkParam struct {
+	Watermark string  `yaml:"watermark"` // 图片水印的内容
+	Size      float64 `yaml:"size"`      // 水印的大小
+	Scale     float64 `yaml:"scale"`     // 图片压缩时的缩放比例
+	Margin    float64 `yaml:"margin"`    // 水印距离左下角的距离 ，规则: 从右向左移动margin个位置的距离，从下往上移动3*margin个位置的距离
+}

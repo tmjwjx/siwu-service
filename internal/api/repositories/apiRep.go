@@ -136,7 +136,7 @@ func GetApiDetailsRep(db *gorm.DB, id uint) (*requests.ApiDetailsRes, error) {
 		Joins("left join sw_dict_items As dg on sw_api_groups.group_id = dg.id").
 		Joins("left join sw_dict_items As dm on sw_api_request_methods.request_method_id = dm.id")
 
-	query = query.Where("sw_apis.deleted_at IS NULL").Order("sw_apis.created_at DESC")
+	query = query.Where("sw_apis.deleted_at IS NULL AND sw_apis.id = ?", id).Order("sw_apis.created_at DESC")
 
 	err := query.Scan(&res).Error
 	if err != nil {

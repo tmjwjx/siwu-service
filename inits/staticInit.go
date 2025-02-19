@@ -34,6 +34,24 @@ func PartPathPrefixInit() {
 	path := "http://" + globals.AppConfig.App.Domain + ":" + strconv.Itoa(globals.AppConfig.App.Port) + globals.SConfig.Prefix + "/"
 
 	// UserDefaultImage 默认用户头像路径
+	internalUtils.UserDefaultImage = path + globals.SConfig.UserDefaultImage
+
+	// ArticleDefaultImage 默认文章图片路径
+	internalUtils.ArticleDefaultImage = path + globals.SConfig.ArticleDefaultImage
+
+	// TagDefaultImage 默认标签图片
+	internalUtils.TagDefaultImage = path + globals.SConfig.TagDefaultImage
+
+	// AdvertisementDefaultImage 默认广告图片
+	internalUtils.AdvertisementDefaultImage = path + globals.SConfig.AdvertisementDefaultImage
+
+	// CommentDefaultImage 默认评论图片
+	internalUtils.CommentDefaultImage = path + globals.SConfig.CommentDefaultImage
+
+	// CategoryDefaultImage 默认类目图片
+	internalUtils.CategoryDefaultImage = path + globals.SConfig.CategoryDefaultImage
+
+	/*// UserDefaultImage 默认用户头像路径
 	internalUtils.UserDefaultImage = path + "user_default_head_image.png"
 
 	// ArticleDefaultImage 默认文章图片路径
@@ -49,5 +67,5 @@ func PartPathPrefixInit() {
 	internalUtils.CommentDefaultImage = path + "comment_default_image.jpg"
 
 	// CategoryDefaultImage 默认类目图片
-	internalUtils.CategoryDefaultImage = path + ""
+	internalUtils.CategoryDefaultImage = path + ""*/
 }

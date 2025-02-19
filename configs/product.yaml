@@ -80,6 +80,17 @@ send_email:
 static:
   prefix: "/images"
   path: "./static/images"
+  limit: 2                    # 上传图片文件的大小限制，单位是MB, 数值类型为int64
+  watermark: "思悟"            # 图片水印的内容
+  size: 36                    # 水印的大小
+  scale: 1.65                 # 图片压缩时的缩放比例
+  margin: 10.0                # 水印距离左下角的距离 ，规则: 从右向左移动margin个位置的距离，从下往上移动3*margin个位置的距离
+  user_default_image: ""
+  article_default_image: ""
+  tag_default_image: ""
+  advertisement_default_image: ""
+  comment_default_image: ""
+  category_default_image: ""
 
 # 日志配置
 log:
