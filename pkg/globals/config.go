@@ -66,6 +66,17 @@ type LogConfig struct {
 
 // StaticConfig 静态文件配置
 type StaticConfig struct {
-	Prefix string `yaml:"prefix"` //  URL 路径前缀
-	Path   string `yaml:"path"`   // 本地文件系统中的目录路径
+	Prefix                    string  `yaml:"prefix"`                      //  URL 路径前缀
+	Path                      string  `yaml:"path"`                        // 本地文件系统中的目录路径
+	Limit                     int64   `yaml:"limit"`                       // 上传图片文件的大小限制，单位是MB
+	Watermark                 string  `yaml:"watermark"`                   // 图片水印的内容
+	Size                      float64 `yaml:"size"`                        // 水印的大小
+	Scale                     float64 `yaml:"scale"`                       // 图片压缩时的缩放比例
+	Margin                    float64 `yaml:"margin"`                      // 水印距离左下角的距离 ，规则: 从右向左移动margin个位置的距离，从下往上移动3*margin个位置的距离
+	UserDefaultImage          string  `yaml:"user_default_image"`          //  默认用户头像路径
+	ArticleDefaultImage       string  `yaml:"article_default_image"`       // 默认文章图片路径
+	TagDefaultImage           string  `yaml:"tag_default_image"`           //  默认标签图片
+	AdvertisementDefaultImage string  `yaml:"advertisement_default_image"` // 默认广告图片
+	CommentDefaultImage       string  `yaml:"comment_default_image"`       // 默认评论图片
+	CategoryDefaultImage      string  `yaml:"category_default_image"`      // 默认类目图片
 }

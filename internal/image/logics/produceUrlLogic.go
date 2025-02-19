@@ -65,7 +65,7 @@ func decodeImages(c *gin.Context) ([]image.Image, []string, error) {
 }
 
 // ProduceUrlLogic 图片文件的逻辑处理
-func ProduceUrlLogic(c *gin.Context) (*requests.ImageUrl, error) {
+func ProduceUrlLogic(c *gin.Context, watermarkParam requests.WatermarkParam) (*requests.ImageUrl, error) {
 
 	var finalImage image.Image
 	// 读取图片并进行处理
@@ -86,14 +86,14 @@ func ProduceUrlLogic(c *gin.Context) (*requests.ImageUrl, error) {
 	for i, img := range images {
 
 		if typeParam == "文章封面" {
-			if float64(img.Bounds().Dx()/img.Bounds().Dy()) != 1.65 {
+			if float64(img.Bounds().Dx()/img.Bounds().Dy()) != watermarkParam.Scale {
 				return nil, fmt.Errorf("上传的图片比例不对")
 			}
 		}
 
 		if typeParam == "文章" {
 			// 添加水印
-			imgWithWatermark := addWatermark(img, "思悟")
+			imgWithWatermark := addWatermark(img, watermarkParam)
 			finalImage = imgWithWatermark
 		} else {
 			finalImage = img
@@ -148,12 +148,12 @@ func generateUniqueFilename(format string) string {
 }
 
 // 给图片添加水印
-func addWatermark(img image.Image, watermarkText string) image.Image {
+func addWatermark(img image.Image, watermarkParam requests.WatermarkParam) image.Image {
 	// 使用 gg 库进行绘图
 	dc := gg.NewContextForImage(img)
 
 	// 设置字体大小和水印颜色
-	if err := dc.LoadFontFace("pkg/font/dingliezhuhaifont-20240831GengXinBan)-2.ttf", 36); err != nil {
+	if err := dc.LoadFontFace("pkg/font/dingliezhuhaifont-20240831GengXinBan)-2.ttf", watermarkParam.Size); err != nil {
 		globals.Log.Errorf("加载字体失败: %v", err)
 	}
 
@@ -163,11 +163,11 @@ func addWatermark(img image.Image, watermarkText string) image.Image {
 	w, h := dc.Width(), dc.Height()
 
 	// 计算水印的位置，稍微向内偏移，防止水印超出图片边界
-	margin := 10.0             // 边距，避免水印靠得太边
-	x := float64(w) - margin   // x 位置从右边向左偏移一些
-	y := float64(h) - 3*margin // y 位置从下方向上偏移一些
+	margin := watermarkParam.Margin // 边距，避免水印靠得太边
+	x := float64(w) - margin        // x 位置从右边向左偏移一些
+	y := float64(h) - 3*margin      // y 位置从下方向上偏移一些
 	// 添加文本水印
-	dc.DrawStringAnchored(watermarkText, x, y, 1.0, 1.0)
+	dc.DrawStringAnchored(watermarkParam.Watermark, x, y, 1.0, 1.0)
 
 	// 返回处理后的图片
 	return dc.Image()
