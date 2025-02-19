@@ -67,7 +67,7 @@ func GetApiDetailsCtrl(c *gin.Context) {
 		response.Failed(c, 500, e)
 		return
 	}
-	d := response.NewAppData(globals.StatusOK, "获取所有api列表成功", apiDetailsRes)
+	d := response.NewAppData(globals.StatusOK, "获取当前api详情成功", apiDetailsRes)
 	response.Success(c, 200, d)
 
 }

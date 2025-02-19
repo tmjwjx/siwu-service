@@ -130,7 +130,7 @@ func GetApiDetailsRep(db *gorm.DB, id uint) (*requests.ApiDetailsRes, error) {
 
 	var res requests.ApiDetailsRes
 	query := db.Table("sw_apis").
-		Select("sw_apis.id, sw_apis.path, sw_apis.brief_introduction, dg.id As grouping_id, dg.label As grouping, dm.id As request_method_id, dm.label As request_method").
+		Select("sw_apis.id, sw_apis.path, sw_apis.brief_introduction, dg.id As grouping_id, dg.label As `grouping`, dm.id As request_method_id, dm.label As request_method").
 		Joins("left join sw_api_groups on sw_api_groups.api_id = sw_apis.id").
 		Joins("left join sw_api_request_methods on sw_api_request_methods.api_id = sw_apis.id").
 		Joins("left join sw_dict_items As dg on sw_api_groups.group_id = dg.id").
