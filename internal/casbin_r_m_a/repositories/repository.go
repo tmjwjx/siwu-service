@@ -108,7 +108,7 @@ func GetApiPermRep(casbinService *casbin.CasbinService, id string) (req *request
 	//
 	//	var groupId uint
 	//	// 查询分组id
-	//	err = db.Model(models.ApiGroup{}).Select("GroupId").Where("api_id = ?", id).Scan(&groupId).Error
+	//	err = db.Model(models.ApiDictItemGroup{}).Select("GroupId").Where("api_id = ?", id).Scan(&groupId).Error
 	//	if err != nil {
 	//		return nil, fmt.Errorf("GetApiPermRep -> 获取当前角色的api权限失败 -> %s", err)
 	//	}
