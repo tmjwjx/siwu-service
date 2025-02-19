@@ -174,7 +174,7 @@ func (b *BsManageContext) BsLogin(msg requests.BackstageLoginReq) (*requests.Fin
 	if admin != nil {
 		return res, nil
 	} else {
-		return nil, fmt.Errorf("用户id为%d的用户没有权限进入后台", user.ID)
+		return nil, fmt.Errorf("id为%d没有权限进入后台", user.ID)
 	}
 }
 
