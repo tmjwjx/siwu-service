@@ -32,11 +32,23 @@ func ProduceUrlCtrl(c *gin.Context) {
 
 	// 返回响应
 	if err != nil {
+		if err.Error() == "上传的图片比例不对" {
+			urls := make([]*requests.UrlPath, 0)
+			res := &requests.ImageUrl{
+				Message: "上传的图片比例不对",
+				Data:    urls,
+				Errno:   0,
+			}
+			c.JSON(200, res)
+			return
+		}
+		fmt.Println(err)
 		// 如果文件中没有图片，直接返回空。
 		urls := make([]*requests.UrlPath, 0)
 		res := &requests.ImageUrl{
-			Data:  urls,
-			Errno: 1,
+			Message: "上传的文件中没有图片",
+			Data:    urls,
+			Errno:   1,
 		}
 		c.JSON(500, res)
 	} else {

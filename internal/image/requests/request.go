@@ -18,8 +18,9 @@ package requests
 
 // ImageUrl 响应结构体
 type ImageUrl struct {
-	Data  []*UrlPath `json:"data"`
-	Errno int        `json:"errno"`
+	Message string     `json:"msg"`
+	Data    []*UrlPath `json:"data"`
+	Errno   int        `json:"errno"`
 }
 
 // UrlPath 图片的Url路径
