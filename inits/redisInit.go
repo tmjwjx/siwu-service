@@ -2,7 +2,6 @@ package inits
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"forum/pkg/globals"
 	"github.com/go-redis/redis/v8"
@@ -33,19 +32,5 @@ func RedisInit() {
 		globals.Log.Panicf("Redis连接失败: %v", err)
 	} else {
 		globals.Log.Infof("Redis连接成功")
-	}
-}
-
-// RedisEmailTaskStreamInit 创建 Redis 发送邮件 Stream 消费者组
-func RedisEmailTaskStreamInit() {
-	ctx := context.Background()
-	// 创建消费者组，如果已经存在则忽略 BUSYGROUP 错误
-	err := globals.RDB.XGroupCreateMkStream(ctx, globals.EmailStreamKey, globals.EmailGroupKey, "$").Err()
-	if err != nil && !errors.Is(err, redis.Nil) && err.Error() != "BUSYGROUP Consumer Group name already exists" {
-		globals.Log.Panicf("Failed to create consumer group: %v", err)
-	} else if err == nil {
-		globals.Log.Infof("Consumer group '%s' created successfully.", globals.EmailGroupKey)
-	} else {
-		globals.Log.Infof("Consumer group '%s' already exists, continuing...", globals.EmailGroupKey)
 	}
 }
