@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"forum/pkg/globals"
+	"forum/pkg/sendEmail"
 	"net/http"
 	"os"
 	"os/signal"
@@ -17,12 +18,14 @@ func Run() {
 	// 运行结束时，刷新日志的缓冲区（缓存区的信息写入到文件中）
 	defer globals.Log.Sync()
 
+	// 开协程
+	go sendEmail.StartEmailTaskConsumer(globals.RDB)
+
 	// 启动处理函数
 	SetupRouter()
 
 	// 启动Http服务 + 平滑关闭
 	Start()
-
 }
 
 // Start 启动Http服务+平滑关闭（软关闭）
