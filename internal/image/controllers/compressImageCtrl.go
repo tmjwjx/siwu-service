@@ -1,8 +1,10 @@
 package controllers
 
 import (
+	"fmt"
 	"forum/internal/image/logics"
 	"forum/internal/image/requests"
+	"forum/internal/internalPkg/internalUtils"
 	"forum/pkg/globals"
 	"forum/pkg/response"
 	"github.com/gin-gonic/gin"
@@ -12,10 +14,59 @@ import (
 // CompressImageCtrl 压缩图片
 func CompressImageCtrl(c *gin.Context) {
 
-	var req requests.CompressImageReq
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	// 获取参数
+	path := c.Query("path")
+	width := c.Query("width")
+	height := c.Query("height")
+	level := c.Query("level")
+
+	if path == "" || width == "" || height == "" || level == "" {
+		e := response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("上传的path, width, height, level都不能为空"), nil)
+		response.Failed(c, 500, e)
 		return
+	}
+
+	widthInt, err := internalUtils.ChangeStringToInt(width)
+	if err != nil {
+		e := response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("上传的压缩目标宽度的数值不是整数"), nil)
+		response.Failed(c, 500, e)
+		return
+	}
+	if widthInt < 0 || widthInt > 8000 {
+		e := response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("上传的压缩目标宽度的数值不能超出范围(0-8000)包含0和8000"), nil)
+		response.Failed(c, 500, e)
+		return
+	}
+
+	heightInt, err := internalUtils.ChangeStringToInt(height)
+	if err != nil {
+		e := response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("上传的压缩目标高度的数值不是整数"), nil)
+		response.Failed(c, 500, e)
+		return
+	}
+	if heightInt < 0 || heightInt > 8000 {
+		e := response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("上传的压缩目标宽度的数值不能超出范围(0-8000)包含0和8000"), nil)
+		response.Failed(c, 500, e)
+		return
+	}
+
+	levelInt, err := internalUtils.ChangeStringToInt(level)
+	if err != nil {
+		e := response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("上传的压缩级别的数值不是整数"), nil)
+		response.Failed(c, 500, e)
+		return
+	}
+	if levelInt < 0 || levelInt > 9 {
+		e := response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("上传的压缩级别的数值不能超出范围(0-9)包含0和9"), nil)
+		response.Failed(c, 500, e)
+		return
+	}
+
+	req := requests.CompressImageReq{
+		Path:   path,
+		Width:  widthInt,
+		Height: heightInt,
+		Level:  levelInt,
 	}
 
 	// 逻辑处理

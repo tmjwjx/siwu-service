@@ -12,6 +12,6 @@ func ProduceImageUrl(e *gin.Engine) {
 	e.POST("/produce_image_url", controllers.ProduceUrlCtrl)
 
 	// 压缩图片
-	e.POST("/instantly_compress_image", controllers.CompressImageCtrl)
+	e.GET("/instantly_compress_image", controllers.CompressImageCtrl)
 
 }

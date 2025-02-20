@@ -83,11 +83,11 @@ static:
   limit: 2                    # 上传图片文件的大小限制，单位是MB, 数值类型为int64
   watermark: "思悟"            # 图片水印的内容
   size: 36                    # 水印的大小
-  scale: 1.65                 # 图片压缩时的缩放比例
+  scale: 1.5                 # 图片压缩时的缩放比例（用于文章比例的限制）
   margin: 10.0                # 水印距离左下角的距离 ，规则: 从右向左移动margin个位置的距离，从下往上移动3*margin个位置的距离
-  user_default_image: ""
-  article_default_image: ""
-  tag_default_image: ""
+  user_default_image: "995e61bd-9182-4e12-8a6f-c6b8c3883044.png"  #不用加前缀 比如: http://8.154.36.180:8110/images/ 直接填文件名和文件扩展即可
+  article_default_image: "8cfc551a-1f33-43df-8b3f-024e44213666.jpeg"
+  tag_default_image: "b4e001d7-99ca-49f5-a218-f02f305cb042.jpeg"
   advertisement_default_image: ""
   comment_default_image: ""
   category_default_image: ""

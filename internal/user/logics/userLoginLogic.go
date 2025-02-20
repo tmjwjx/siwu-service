@@ -6,7 +6,7 @@ import (
 	"forum/internal/internalPkg/sqlUtils"
 	"forum/internal/internalPkg/templates"
 	"forum/pkg/response"
-	"forum/pkg/sendEmail"
+	"forum/pkg/sendEmailAsynchronous"
 	"forum/pkg/token"
 	"strconv"
 	"strings"
@@ -197,14 +197,14 @@ func (u *UserReqContext) ReqVerifyCode(email string) error {
 	// }
 
 	// 创建邮件任务消息
-	task := sendEmail.EmailTask{
+	task := sendEmailAsynchronous.EmailTask{
 		Email:   email,
 		Subject: internalUtils.VerifyCodeSubject,
 		Body:    body,
 	}
 
 	// 将任务推送到 Redis Stream（异步处理）
-	if err := sendEmail.PushEmailTaskToStream(globals.RDB, task); err != nil {
+	if err := sendEmailAsynchronous.PushEmailTaskToStream(globals.RDB, task); err != nil {
 		globals.Log.Errorf("推送邮件任务到 Redis Stream 失败: %v", err)
 		return err
 	}

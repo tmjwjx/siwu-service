@@ -43,9 +43,10 @@ func CSRFTokenMW() gin.HandlerFunc {
 
 			// 将 Token 添加到响应头中
 			c.Header("X-CSRF-Token", token)
-		}
 
-		response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, response.DataSuccess, nil))
+			// 成功
+			response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, response.DataSuccess, nil))
+		}
 	}
 }
 
@@ -111,7 +112,7 @@ func CSRFMW() gin.HandlerFunc {
 			}
 
 			// 标记 Token 为已使用
-			err = markCSRFTokenAsUsed(globals.RDB, token)
+			err = markCSRFTokenAsUsed(globals.RDB, token, tokenExpires)
 			if err != nil {
 				globals.Log.Errorf("服务器内部错误,未能将CSRF令牌标记为在Redis中使用:%v", err)
 				response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("服务器内部错误"), nil))
@@ -123,52 +124,3 @@ func CSRFMW() gin.HandlerFunc {
 		csrfHandler(c)
 	}
 }
-
-// func CSRFMW() gin.HandlerFunc {
-// 	csrfMd = csrf.Protect(
-// 		[]byte("8d7c2c6a1d4b7a3d9c8e4f6b5a2d1c3e4f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c"),
-// 		csrf.Secure(false),
-// 		csrf.HttpOnly(true),
-// 		csrf.ErrorHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-// 			w.WriteHeader(http.StatusForbidden)
-// 			w.Write([]byte(`{"code":4003,"err":"无效的 CSRF token"}`))
-// 		})),
-// 	)
-//
-// 	csrfHandler := adapter.Wrap(csrfMd)
-//
-// 	return func(c *gin.Context) {
-// 		// 对非 GET 请求执行自定义 Redis 验证
-// 		if c.Request.Method != http.MethodGet {
-// 			token := c.GetHeader("X-CSRF-Token")
-// 			if token == "" {
-// 				c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"code": 4003, "err": "缺少 CSRF token"})
-// 				return
-// 			}
-//
-// 			// 检查 Redis 中 Token 的状态
-// 			status, err := checkCSRFTokenStatus(globals.RDB, token)
-// 			if errors.Is(err, redis.Nil) {
-// 				c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"code": 4003, "err": "CSRF token 已过期或无效"})
-// 				return
-// 			} else if err != nil {
-// 				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"code": 500, "err": "服务器错误"})
-// 				return
-// 			}
-//
-// 			if status != "unused" {
-// 				c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"code": 4003, "err": "CSRF token 已使用"})
-// 				return
-// 			}
-//
-// 			// 标记 Token 为已使用
-// 			if err := markCSRFTokenAsUsed(globals.RDB, token); err != nil {
-// 				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"code": 500, "err": "服务器错误"})
-// 				return
-// 			}
-// 		}
-//
-// 		// 执行默认的 CSRF 验证
-// 		csrfHandler(c)
-// 	}
-// }

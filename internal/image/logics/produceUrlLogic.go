@@ -86,7 +86,7 @@ func ProduceUrlLogic(c *gin.Context, watermarkParam requests.WatermarkParam) (*r
 	for i, img := range images {
 
 		if typeParam == "文章封面" {
-			if float64(img.Bounds().Dx()/img.Bounds().Dy()) != watermarkParam.Scale {
+			if float64(img.Bounds().Dx())/float64(img.Bounds().Dy()) != watermarkParam.Scale {
 				return nil, fmt.Errorf("上传的图片比例不对")
 			}
 		}

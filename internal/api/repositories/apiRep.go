@@ -361,32 +361,74 @@ func UpdateApiRep(db *gorm.DB, req *requests.UpdateApiReq) error {
 
 	// 查询新的分组的id
 	var groupId uint
-	err = tx.Model(&models.DictItem{}).Select("ID").Where("label = ?", req.Grouping).First(&groupId).Error
-	if err != nil {
+	resg := tx.Model(&models.DictItem{}).Select("ID").Where("label = ?", req.Grouping).First(&groupId)
+	if resg.Error != nil {
 		tx.Rollback() // 回滚事务
-		return fmt.Errorf("UpdateApiRep -> 查询 group_id失败 -> %s", err)
+		return fmt.Errorf("UpdateApiRep -> 查询 group_id 失败 -> %s", resg.Error)
 	}
 
-	// 更新 api_group 表中的 group_id
-	err = tx.Model(&models.ApiDictItemGroup{}).Where("api_id = ?", api.ID).Update("GroupId", groupId).Error
+	// 查询 ApiDictItemGroup 表中是否存在该api相关的记录
+	var count int64
+	err = tx.Model(&models.ApiDictItemGroup{}).Where("api_id = ?", api.ID).Count(&count).Error
 	if err != nil {
 		tx.Rollback() // 回滚事务
-		return fmt.Errorf("UpdateApiRep -> 更新 api_group 表中的 group_id失败 -> %s", err)
+		return fmt.Errorf("UpdateApiRep -> 查询 ApiDictItemGroup 表中是否存在该api相关的记录 失败 -> %s", err)
+	}
+
+	if count > 0 {
+		// 更新 api_group 表中的 group_id
+		resag := tx.Model(&models.ApiDictItemGroup{}).Where("api_id = ?", api.ID).Update("group_id", groupId)
+		if resag.Error != nil {
+			tx.Rollback() // 回滚事务
+			return fmt.Errorf("UpdateApiRep -> 更新 api_group 表中的 group_id失败 -> %s", resag.Error)
+		}
+	} else {
+		// 如果表中不存在该api相关的记录，需要将更新数据插入到表中
+		adig := models.ApiDictItemGroup{
+			ApiId:   api.ID,
+			GroupId: groupId,
+		}
+		err = tx.Model(&models.ApiDictItemGroup{}).Create(&adig).Error
+		if err != nil {
+			tx.Rollback() // 回滚事务
+			return fmt.Errorf("UpdateApiRep -> 向 api_group 表中的 插入数据 失败 -> %s", err)
+		}
 	}
 
 	// 查询 request_method_id
 	var reqMethodId uint
-	err = tx.Model(&models.DictItem{}).Select("ID").Where("label = ?", req.RequestMethod).First(&reqMethodId).Error
-	if err != nil {
+	resm := tx.Model(&models.DictItem{}).Select("ID").Where("label = ?", req.RequestMethod).First(&reqMethodId)
+	if resm.Error != nil {
 		tx.Rollback() // 回滚事务
-		return fmt.Errorf("UpdateApiRep -> 查询 group_id失败 -> %s", err)
+		return fmt.Errorf("UpdateApiRep -> 查询 request_method_id 失败 -> %s", resm.Error)
 	}
 
-	// 更新 api_request_method 表中的 request_method_id
-	err = tx.Model(&models.ApiDictItemRequestMethod{}).Where("api_id = ?", api.ID).Update("RequestMethodId", reqMethodId).Error
+	// 查询 ApiDictItemRequestMethod 表中是否存在该api相关的记录
+	var count2 int64
+	err = tx.Model(&models.ApiDictItemRequestMethod{}).Where("api_id = ?", api.ID).Count(&count2).Error
 	if err != nil {
 		tx.Rollback() // 回滚事务
-		return fmt.Errorf("UpdateApiRep -> 更新 api_request_method 表中的 request_method_id失败 -> %s", err)
+		return fmt.Errorf("UpdateApiRep -> 查询 ApiDictItemRequestMethod 表中是否存在该api相关的记录 失败 -> %s", err)
+	}
+
+	if count2 > 0 {
+		// 更新 api_request_method 表中的 request_method_id
+		resam := tx.Model(&models.ApiDictItemRequestMethod{}).Where("api_id = ?", api.ID).Update("request_method_id", reqMethodId)
+		if resam.Error != nil {
+			tx.Rollback() // 回滚事务
+			return fmt.Errorf("UpdateApiRep -> 更新 api_request_method 表中的 request_method_id失败 -> %s", resam.Error)
+		}
+	} else {
+		// 如果表中不存在该api相关的记录，需要将更新数据插入到表中
+		adim := models.ApiDictItemRequestMethod{
+			ApiId:           api.ID,
+			RequestMethodId: reqMethodId,
+		}
+		err = tx.Model(&models.ApiDictItemRequestMethod{}).Create(&adim).Error
+		if err != nil {
+			tx.Rollback() // 回滚事务
+			return fmt.Errorf("UpdateApiRep -> 向 api_request_method 表中的 插入数据 失败 -> %s", err)
+		}
 	}
 
 	// 提交事务
@@ -402,12 +444,10 @@ func UpdateApiRep(db *gorm.DB, req *requests.UpdateApiReq) error {
 // CreateApiRep 添加api
 func CreateApiRep(db *gorm.DB, req *requests.CreateApiReq) error {
 
-	//var groupId uint
-	//var reqMethodId uint
-
 	// 开启事务
 	tx := db.Begin()
 	if tx.Error != nil {
+		tx.Rollback()
 		return fmt.Errorf("CreateApiRep -> 开启事务失败 -> %s", tx.Error)
 	}
 
@@ -415,32 +455,27 @@ func CreateApiRep(db *gorm.DB, req *requests.CreateApiReq) error {
 		Path:              req.Path,
 		BriefIntroduction: req.BriefIntroduction,
 	}
-	//查询该api是否存在
-	err := tx.Model(models.Api{}).Where("path = ?", req.Path).First(&api).Error
-	if err == nil {
-		return fmt.Errorf("CreateApiRep -> 该api已经存在")
+
+	// 查询该api是否存在
+	resa := tx.Model(models.Api{}).Where("path = ?", req.Path).First(&api)
+	if resa.Error != nil {
+		if errors.Is(resa.Error, gorm.ErrRecordNotFound) {
+			// 如果没有找到，说明该api在数据库表中不存在，可以进行添加
+		} else {
+			tx.Rollback()
+			return fmt.Errorf("CreateApiRep -> 查询该api是否存在 失败 -> %v", resa.Error)
+		}
+	} else if resa.RowsAffected > 0 {
+		tx.Rollback()
+		return fmt.Errorf("该api已经存在")
 	}
 
 	// 向api表中添加api相关信息
-	err = tx.Model(models.Api{}).Create(&api).Error
+	err := tx.Model(models.Api{}).Create(&api).Error
 	if err != nil {
 		tx.Rollback() // 回滚事务
 		return fmt.Errorf("CreateApiRep -> 向api表中添加api相关信息失败 -> %s", err)
 	}
-
-	/*// 查询分组id
-	group := &models.Group{
-		Name: req.Grouping,
-	}
-	err = tx.Model(&models.Group{}).Where("name = ?", req.Grouping).First(&group).Error
-	if err != nil {
-		// 没有查到，说明表中还没有该分组，将分组添加进表中
-		err = tx.Model(&models.Group{}).Create(group).Error
-		if err != nil {
-			tx.Rollback() // 回滚事务
-			return fmt.Errorf("CreateApiRep -> 将分组添加进表中失败 -> %s", err)
-		}
-	}*/
 
 	// 查询分组id
 	group := models.DictItem{
@@ -448,9 +483,17 @@ func CreateApiRep(db *gorm.DB, req *requests.CreateApiReq) error {
 	}
 
 	// 查询dict_item表中是否已经存在该分组
-	err = tx.Model(&models.DictItem{}).Where("label = ?", req.Grouping).First(&group).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+	resg := tx.Model(&models.DictItem{}).Where("label = ?", req.Grouping).First(&group)
+	if resg.Error != nil {
+		if errors.Is(resa.Error, gorm.ErrRecordNotFound) {
+			// 如果没有找到，说明该分组在数据库表中不存在，不可以进行添加
+			tx.Rollback()
+			return fmt.Errorf("该分组不存在")
+		} else {
+			tx.Rollback()
+			return fmt.Errorf("CreateApiRep -> 查询dict_item表中是否已经存在该分组失败 -> %s", resg.Error)
+		}
+		/*if errors.Is(err, gorm.ErrRecordNotFound) {
 			// 没有查到，说明表中还没有该分组，将分组添加进dict_item表中
 			err = tx.Model(&models.DictItem{}).Create(&group).Error
 			if err != nil {
@@ -459,7 +502,7 @@ func CreateApiRep(db *gorm.DB, req *requests.CreateApiReq) error {
 			}
 		} else {
 			return fmt.Errorf("CreateApiRep -> 查询dict_item表中是否已经存在该分组失败 -> %s", err)
-		}
+		}*/
 	}
 
 	// 向api_group表中添加api相关信息
@@ -480,9 +523,17 @@ func CreateApiRep(db *gorm.DB, req *requests.CreateApiReq) error {
 	}
 
 	// 查询dict_item表中是否已经存在该请求方法
-	err = tx.Model(&models.DictItem{}).Where("label = ?", req.RequestMethod).First(reqMethod).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+	resm := tx.Model(&models.DictItem{}).Where("label = ?", req.RequestMethod).First(reqMethod)
+	if resm.Error != nil {
+		if errors.Is(resa.Error, gorm.ErrRecordNotFound) {
+			// 如果没有找到，说明该请求方法在数据库表中不存在，不可以进行添加
+			tx.Rollback()
+			return fmt.Errorf("该请求方法不存在")
+		} else {
+			tx.Rollback()
+			return fmt.Errorf("CreateApiRep -> 查询dict_item表中是否已经存在该请求方法失败 -> %s", resm.Error)
+		}
+		/*if errors.Is(err, gorm.ErrRecordNotFound) {
 			// 没有查到，说明表中还没有该请求方法，将请求方法添加进dict_item表中
 			err = tx.Model(&models.DictItem{}).Create(reqMethod).Error
 			if err != nil {
@@ -491,7 +542,8 @@ func CreateApiRep(db *gorm.DB, req *requests.CreateApiReq) error {
 			}
 		} else {
 			return fmt.Errorf("CreateApiRep -> 查询dict_item表中是否已经存在该请求方法失败 -> %s", err)
-		}
+		}*/
+
 	}
 
 	// 向api_request_method表中添加api相关信息
@@ -509,6 +561,7 @@ func CreateApiRep(db *gorm.DB, req *requests.CreateApiReq) error {
 	// 提交事务
 	err = tx.Commit().Error
 	if err != nil {
+		tx.Rollback()
 		return fmt.Errorf("CreateApiRep -> 提交事务失败 -> %s", err)
 	}
 
@@ -612,22 +665,6 @@ func GetApiGroupAndMethod(db *gorm.DB, apiID uint) (*MethodAndGroup, error) {
 
 	// 使用GORM进行多表联查
 
-	/*err := db.Table("sw_api_dict_item_request_methods").
-		Select("sw_dict_items.id, sw_dict_items.label As name").
-		Joins("join sw_dict_items on sw_dict_items.id = sw_api_dict_item_request_methods.request_method_id").
-		Where("sw_api_dict_item_request_methods.api_id = ?", apiID).Scan(&resMethods).Error
-	if err != nil {
-		return nil, fmt.Errorf("GetApiGrouGetApiGroupAndMethod -> 根据api的id获取api的 分组的id和name 请求方式的id和name失败 -> %s", err)
-	}
-
-	err = db.Table("sw_api_dict_item_groups").
-		Select("sw_dict_items.id, sw_dict_items.label As name").
-		Joins("join sw_dict_items on sw_dict_items.id = sw_api_dict_item_groups.group_id").
-		Where("sw_api_dict_item_groups.api_id = ?", apiID).Scan(&resGroups).Error
-	if err != nil {
-		return nil, fmt.Errorf("GetApiGrouGetApiGroupAndMethod -> 根据api的id获取api的 分组的id和name 请求方式的id和name失败 -> %s", err)
-	}*/
-
 	err := db.Table("sw_api_dict_item_groups").
 		Select("dg.id As group_id, dg.label As group_name, dm.id As request_method_id, dm.label As request_method_name").
 		Joins("join sw_dict_items As dg on dg.id = sw_api_dict_item_groups.group_id").
@@ -640,37 +677,3 @@ func GetApiGroupAndMethod(db *gorm.DB, apiID uint) (*MethodAndGroup, error) {
 
 	return &result, nil
 }
-
-//// GetApiGroupAndMethod2 根据api的id获取api的 分组的id和name 请求方式的id和name
-//func GetApiGroupAndMethod2(db *gorm.DB, id uint) (uint, string, uint, string, error) {
-//	var requestMethodId uint
-//	var requestMethodName string
-//	var groupId uint
-//	var groupName string
-//
-//	// 从api_request_method表中查询 request_method_id
-//	err := db.Model(&models.ApiDictItemRequestMethod{}).Select("RequestMethodId").Where("api_id = ?", id).First(&requestMethodId).Error
-//	if err != nil {
-//		return 0, "", 0, "", fmt.Errorf("GetApiGrouGetApiGroupAndMethod -> 获取api请求方法id失败 -> %s", err)
-//	}
-//
-//	// 从requestMethod表中查询 请求方法的name
-//	err = db.Model(&models.RequestMethod{}).Select("Name").Where("id = ?", requestMethodId).First(&requestMethodName).Error
-//	if err != nil {
-//		return 0, "", 0, "", fmt.Errorf("GetApiGroupAndMethod -> 获取api请求方法name失败 -> %s", err)
-//	}
-//
-//	// 从api_group表中查询 group_id
-//	err = db.Model(models.ApiDictItemGroup{}).Select("group_id").Where("api_id = ?", id).First(&groupId).Error
-//	if err != nil {
-//		return 0, "", 0, "", fmt.Errorf("GetApiGroupAndMethod -> 获取api分组id失败 -> %s", err)
-//	}
-//
-//	// 从group表中查询 api分组的name
-//	err = db.Model(models.Group{}).Select("name").Where("id = ?", groupId).First(&groupName).Error
-//	if err != nil {
-//		return 0, "", 0, "", fmt.Errorf("GetApiGroupAndMethod -> 获取api分组name失败 -> %s", err)
-//	}
-//
-//	return groupId, groupName, requestMethodId, requestMethodName, nil
-//}
