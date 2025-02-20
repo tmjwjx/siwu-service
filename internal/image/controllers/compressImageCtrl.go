@@ -3,6 +3,7 @@ package controllers
 import (
 	"forum/internal/image/logics"
 	"forum/internal/image/requests"
+	"forum/internal/internalPkg/internalUtils"
 	"forum/pkg/globals"
 	"forum/pkg/response"
 	"github.com/gin-gonic/gin"
@@ -12,10 +13,38 @@ import (
 // CompressImageCtrl 压缩图片
 func CompressImageCtrl(c *gin.Context) {
 
-	var req requests.CompressImageReq
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	// 获取参数
+	path := c.Query("path")
+	width := c.Query("width")
+	height := c.Query("height")
+	level := c.Query("level")
+
+	widthInt, err := internalUtils.ChangeStringToInt(width)
+	if err != nil {
+		e := response.NewAppErr(globals.StatusInternalServerError, err, nil)
+		response.Failed(c, 500, e)
 		return
+	}
+
+	heightInt, err := internalUtils.ChangeStringToInt(height)
+	if err != nil {
+		e := response.NewAppErr(globals.StatusInternalServerError, err, nil)
+		response.Failed(c, 500, e)
+		return
+	}
+
+	levelInt, err := internalUtils.ChangeStringToInt(level)
+	if err != nil {
+		e := response.NewAppErr(globals.StatusInternalServerError, err, nil)
+		response.Failed(c, 500, e)
+		return
+	}
+
+	req := requests.CompressImageReq{
+		Path:   path,
+		Width:  widthInt,
+		Height: heightInt,
+		Level:  levelInt,
 	}
 
 	// 逻辑处理
