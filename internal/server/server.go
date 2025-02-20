@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"forum/pkg/globals"
-	"forum/pkg/sendEmail"
+	"forum/pkg/sendEmailAsynchronous"
 	"net/http"
 	"os"
 	"os/signal"
@@ -18,8 +18,8 @@ func Run() {
 	// 运行结束时，刷新日志的缓冲区（缓存区的信息写入到文件中）
 	defer globals.Log.Sync()
 
-	// 开协程
-	go sendEmail.StartEmailTaskConsumer(globals.RDB)
+	// 开协程：启动邮件任务消费者
+	go sendEmailAsynchronous.StartEmailTaskConsumer(globals.RDB)
 
 	// 启动处理函数
 	SetupRouter()

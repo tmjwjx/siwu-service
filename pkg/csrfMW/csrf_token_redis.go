@@ -31,7 +31,7 @@ func checkCSRFTokenStatus(rdb *redis.Client, token string) (string, error) {
 	return status, nil
 }
 
-// 标记 CSRF token 为已使用
-func markCSRFTokenAsUsed(rdb *redis.Client, token string) error {
-	return rdb.Set(context.Background(), "csrf:"+token, "used", 0).Err()
+// 标记 CSRF token 为已使用，并设置过期时间
+func markCSRFTokenAsUsed(rdb *redis.Client, token string, exp time.Duration) error {
+	return rdb.Set(context.Background(), "csrf:"+token, "used", exp).Err()
 }

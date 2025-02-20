@@ -1,4 +1,4 @@
-package sendEmail
+package sendEmailAsynchronous
 
 import (
 	"fmt"

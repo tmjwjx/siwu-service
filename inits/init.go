@@ -19,7 +19,6 @@ func init() {
 
 	// 初始化 redis
 	RedisInit()
-	RedisEmailTaskStreamInit()
 
 	// 初始化表
 	TableInit()
