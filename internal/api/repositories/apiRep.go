@@ -665,22 +665,6 @@ func GetApiGroupAndMethod(db *gorm.DB, apiID uint) (*MethodAndGroup, error) {
 
 	// 使用GORM进行多表联查
 
-	/*err := db.Table("sw_api_dict_item_request_methods").
-		Select("sw_dict_items.id, sw_dict_items.label As name").
-		Joins("join sw_dict_items on sw_dict_items.id = sw_api_dict_item_request_methods.request_method_id").
-		Where("sw_api_dict_item_request_methods.api_id = ?", apiID).Scan(&resMethods).Error
-	if err != nil {
-		return nil, fmt.Errorf("GetApiGrouGetApiGroupAndMethod -> 根据api的id获取api的 分组的id和name 请求方式的id和name失败 -> %s", err)
-	}
-
-	err = db.Table("sw_api_dict_item_groups").
-		Select("sw_dict_items.id, sw_dict_items.label As name").
-		Joins("join sw_dict_items on sw_dict_items.id = sw_api_dict_item_groups.group_id").
-		Where("sw_api_dict_item_groups.api_id = ?", apiID).Scan(&resGroups).Error
-	if err != nil {
-		return nil, fmt.Errorf("GetApiGrouGetApiGroupAndMethod -> 根据api的id获取api的 分组的id和name 请求方式的id和name失败 -> %s", err)
-	}*/
-
 	err := db.Table("sw_api_dict_item_groups").
 		Select("dg.id As group_id, dg.label As group_name, dm.id As request_method_id, dm.label As request_method_name").
 		Joins("join sw_dict_items As dg on dg.id = sw_api_dict_item_groups.group_id").
@@ -693,37 +677,3 @@ func GetApiGroupAndMethod(db *gorm.DB, apiID uint) (*MethodAndGroup, error) {
 
 	return &result, nil
 }
-
-//// GetApiGroupAndMethod2 根据api的id获取api的 分组的id和name 请求方式的id和name
-//func GetApiGroupAndMethod2(db *gorm.DB, id uint) (uint, string, uint, string, error) {
-//	var requestMethodId uint
-//	var requestMethodName string
-//	var groupId uint
-//	var groupName string
-//
-//	// 从api_request_method表中查询 request_method_id
-//	err := db.Model(&models.ApiDictItemRequestMethod{}).Select("RequestMethodId").Where("api_id = ?", id).First(&requestMethodId).Error
-//	if err != nil {
-//		return 0, "", 0, "", fmt.Errorf("GetApiGrouGetApiGroupAndMethod -> 获取api请求方法id失败 -> %s", err)
-//	}
-//
-//	// 从requestMethod表中查询 请求方法的name
-//	err = db.Model(&models.RequestMethod{}).Select("Name").Where("id = ?", requestMethodId).First(&requestMethodName).Error
-//	if err != nil {
-//		return 0, "", 0, "", fmt.Errorf("GetApiGroupAndMethod -> 获取api请求方法name失败 -> %s", err)
-//	}
-//
-//	// 从api_group表中查询 group_id
-//	err = db.Model(models.ApiDictItemGroup{}).Select("group_id").Where("api_id = ?", id).First(&groupId).Error
-//	if err != nil {
-//		return 0, "", 0, "", fmt.Errorf("GetApiGroupAndMethod -> 获取api分组id失败 -> %s", err)
-//	}
-//
-//	// 从group表中查询 api分组的name
-//	err = db.Model(models.Group{}).Select("name").Where("id = ?", groupId).First(&groupName).Error
-//	if err != nil {
-//		return 0, "", 0, "", fmt.Errorf("GetApiGroupAndMethod -> 获取api分组name失败 -> %s", err)
-//	}
-//
-//	return groupId, groupName, requestMethodId, requestMethodName, nil
-//}
