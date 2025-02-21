@@ -13,7 +13,7 @@ import (
 
 // ClickAttention 点击关注和点击取消关注
 func ClickAttention(c *gin.Context) {
-	userReqContext := logics.NewUserReqContext(globals.DB, c, globals.SendEmailCfg)
+	userReqContext := logics.NewUserReqContext(globals.DB, c)
 	// 绑定数据
 	var followMsg requests.ClickAttentionReq
 	if err := c.ShouldBind(&followMsg); err != nil {
@@ -132,7 +132,7 @@ func UserRank(c *gin.Context) {
 	// rankMsg.Limit = limit
 
 	// 业务逻辑
-	userReqContext := logics.NewUserReqContext(globals.DB, c, globals.SendEmailCfg)
+	userReqContext := logics.NewUserReqContext(globals.DB, c)
 	userRankRep, err := userReqContext.UserRank(rankMsg)
 	if err != nil {
 		// response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("UserRank() -> %v", err), nil))
@@ -197,7 +197,7 @@ func Attention(c *gin.Context) {
 	// }
 
 	// 业务逻辑
-	userReqContext := logics.NewUserReqContext(globals.DB, c, globals.SendEmailCfg)
+	userReqContext := logics.NewUserReqContext(globals.DB, c)
 	ids, err := userReqContext.Attention(attentionReq)
 	if err != nil {
 		// response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("Attention() -> %v", err), nil))
@@ -233,7 +233,7 @@ func GetBasicInfo(c *gin.Context) {
 	}
 
 	// 业务逻辑
-	userReqContext := logics.NewUserReqContext(globals.DB, c, globals.SendEmailCfg)
+	userReqContext := logics.NewUserReqContext(globals.DB, c)
 	userInfo, err := userReqContext.GetBasicInfo(id, req)
 	if err != nil {
 		// response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("Attention() -> %v", err), nil))

@@ -23,7 +23,7 @@ func Reset(c *gin.Context) {
 	}
 
 	// 业务逻辑
-	userReqContext := logics.NewUserReqContext(globals.DB, c, globals.SendEmailCfg)
+	userReqContext := logics.NewUserReqContext(globals.DB, c)
 	if err = userReqContext.Reset(reseatReq); err != nil {
 		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("Reset() -> %v", err), nil))
 		return
@@ -49,7 +49,7 @@ func Add(c *gin.Context) {
 	}
 
 	// 业务逻辑
-	userReqContext := logics.NewUserReqContext(globals.DB, c, globals.SendEmailCfg)
+	userReqContext := logics.NewUserReqContext(globals.DB, c)
 	id, err := userReqContext.Add(addReq)
 	if err != nil {
 		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("Add() -> %v", err), nil))
@@ -69,7 +69,7 @@ func Delete(c *gin.Context) {
 	}
 
 	// 业务逻辑
-	userReqContext := logics.NewUserReqContext(globals.DB, c, globals.SendEmailCfg)
+	userReqContext := logics.NewUserReqContext(globals.DB, c)
 	if err = userReqContext.Delete(deleteReq); err != nil {
 		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("Delete() -> %v", err), nil))
 		return
@@ -95,7 +95,7 @@ func Edit(c *gin.Context) {
 	}
 
 	// 业务逻辑
-	userReqContext := logics.NewUserReqContext(globals.DB, c, globals.SendEmailCfg)
+	userReqContext := logics.NewUserReqContext(globals.DB, c)
 	if err = userReqContext.Edit(editReq); err != nil {
 		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("Edit() -> %v", err), nil))
 		return
@@ -132,7 +132,7 @@ func List(c *gin.Context) {
 	}
 
 	// 业务逻辑
-	userReqContext := logics.NewUserReqContext(globals.DB, c, globals.SendEmailCfg)
+	userReqContext := logics.NewUserReqContext(globals.DB, c)
 	listRes, total, err := userReqContext.List(listReq)
 	if err != nil {
 		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("List() -> %v", err), nil))
@@ -152,7 +152,7 @@ func Import(c *gin.Context) {
 	}
 
 	// 业务逻辑
-	userReqContext := logics.NewUserReqContext(globals.DB, c, globals.SendEmailCfg)
+	userReqContext := logics.NewUserReqContext(globals.DB, c)
 	if err = userReqContext.Import(file); err != nil {
 		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("Export() err: %v", err), nil))
 		return
@@ -170,7 +170,7 @@ func Export(c *gin.Context) {
 	c.Header("Content-Transfer-Encoding", "binary")
 
 	// 业务逻辑
-	userReqContext := logics.NewUserReqContext(globals.DB, c, globals.SendEmailCfg)
+	userReqContext := logics.NewUserReqContext(globals.DB, c)
 	if err := userReqContext.Export(); err != nil {
 		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("Export() err: %v", err), nil))
 		return
@@ -188,7 +188,7 @@ func DownloadTemplate(c *gin.Context) {
 	c.Header("Content-Transfer-Encoding", "binary")
 
 	// 业务逻辑
-	userReqContext := logics.NewUserReqContext(globals.DB, c, globals.SendEmailCfg)
+	userReqContext := logics.NewUserReqContext(globals.DB, c)
 	if err := userReqContext.DownloadTemplate(); err != nil {
 		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("DownloadTemplate() err: %v", err), nil))
 		return
@@ -206,7 +206,7 @@ func GetInfo(c *gin.Context) {
 	}
 
 	// 业务逻辑
-	userReqContext := logics.NewUserReqContext(globals.DB, c, globals.SendEmailCfg)
+	userReqContext := logics.NewUserReqContext(globals.DB, c)
 	info, err := userReqContext.GetInfo(uint(id))
 	if err != nil {
 		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("GetInfo() -> %v", err), nil))
