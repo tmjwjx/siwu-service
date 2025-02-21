@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// CustomRecovery recover panic
+// CustomRecovery recover panic。收集全局的 panic。
 // @Description: 在发生 panic 时，将错误打印到日志中，并返回 500。
 // @Author lizhuang 2025-01-23 09:47:40
 // @return       gin.HandlerFunc
