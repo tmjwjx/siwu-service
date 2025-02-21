@@ -15,15 +15,27 @@ import (
 func CompressImageCtrl(c *gin.Context) {
 
 	// 获取参数
-	path := c.Query("path")
+	path := c.Param("path")
 	width := c.Query("width")
 	height := c.Query("height")
 	level := c.Query("level")
 
-	if path == "" || width == "" || height == "" || level == "" {
-		e := response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("上传的path, width, height, level都不能为空"), nil)
+	if path == "" {
+		e := response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("上传的path不能为空"), nil)
 		response.Failed(c, 500, e)
 		return
+	}
+
+	if width == "" {
+		width = "0"
+	}
+
+	if height == "" {
+		height = "0"
+	}
+
+	if level == "" {
+		level = "0"
 	}
 
 	widthInt, err := internalUtils.ChangeStringToInt(width)
