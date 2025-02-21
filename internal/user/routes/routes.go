@@ -2,6 +2,7 @@ package routes
 
 import (
 	"forum/internal/user/controllers"
+	"forum/pkg/flowRestriction"
 	"forum/pkg/token"
 	"github.com/gin-gonic/gin"
 )
@@ -14,8 +15,8 @@ func User(e *gin.Engine) {
 	e.POST("/user/forgot_password", controllers.ForgotPassword)
 	// 用户请求验证码
 	e.GET("/user/req_verify_code", controllers.ReqVerifyCode)
-	// 登录
-	e.POST("/user/login", controllers.Login)
+	// 登录（登录限流）
+	e.POST("/user/login", flowRestriction.LoginRateLimitMiddleware(), controllers.Login)
 
 	e.GET("/user/rank", controllers.UserRank)
 

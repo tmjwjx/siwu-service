@@ -2,6 +2,7 @@ package response
 
 import (
 	"encoding/json"
+	"fmt"
 	"forum/pkg/globals"
 	"github.com/gin-gonic/gin"
 )
@@ -45,6 +46,10 @@ func NewAppData(code globals.AppCode, msg string, data interface{}) *AppData {
 
 // NewAppErr 生产一个失败消息响应结构体
 func NewAppErr(code globals.AppCode, err error, data interface{}) *AppErr {
+	if err == nil {
+		err = fmt.Errorf("")
+	}
+
 	if data == nil {
 		data = gin.H{}
 	}
