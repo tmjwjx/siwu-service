@@ -5,6 +5,7 @@ import (
 	"forum/internal/internalPkg/internalUtils"
 	"forum/internal/internalPkg/sqlUtils"
 	"forum/internal/internalPkg/templates"
+	"forum/pkg/flowRestriction"
 	"forum/pkg/response"
 	"forum/pkg/sendEmailAsynchronous"
 	"forum/pkg/token"
@@ -29,11 +30,10 @@ type UserReqContext struct {
 }
 
 // NewUserReqContext 新建UserReqContext对象
-func NewUserReqContext(db *gorm.DB, c *gin.Context, sendEmailCfg *globals.SendEmailConfig) *UserReqContext {
+func NewUserReqContext(db *gorm.DB, c *gin.Context) *UserReqContext {
 	return &UserReqContext{
 		DB:  db,
 		Ctx: c,
-		// SendEmailCfg: sendEmailCfg,
 	}
 }
 
@@ -279,6 +279,10 @@ func (u *UserReqContext) Login(logicMsg requests.LogicReq) (*requests.LogicRes, 
 	encryptedPassword := user.Password
 	if !internalUtils.CheckPasswordHash(password, encryptedPassword) {
 		// return nil, fmt.Errorf("UserReqContext.Login() err: 密码错误")
+
+		// 记录登录失败（限流）
+		flowRestriction.RecordFailedAttempt(globals.RDB, u.Ctx)
+
 		globals.Log.Errorf(response.ErrPasswordIsWrong)
 		return nil, fmt.Errorf(response.ErrPasswordIsWrong)
 	}

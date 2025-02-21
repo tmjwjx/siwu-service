@@ -2,6 +2,7 @@ package routes
 
 import (
 	"forum/internal/image/controllers"
+	"forum/pkg/globals"
 	"github.com/gin-gonic/gin"
 )
 
@@ -12,6 +13,6 @@ func ProduceImageUrl(e *gin.Engine) {
 	e.POST("/produce_image_url", controllers.ProduceUrlCtrl)
 
 	// 压缩图片
-	e.GET("/instantly_compress_image", controllers.CompressImageCtrl)
+	e.GET(globals.SConfig.Prefix+"/:path", controllers.CompressImageCtrl)
 
 }

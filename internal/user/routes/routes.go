@@ -2,6 +2,7 @@ package routes
 
 import (
 	"forum/internal/user/controllers"
+	"forum/pkg/flowRestriction"
 	"forum/pkg/token"
 	"github.com/gin-gonic/gin"
 )
@@ -14,10 +15,13 @@ func User(e *gin.Engine) {
 	e.POST("/user/forgot_password", controllers.ForgotPassword)
 	// 用户请求验证码
 	e.GET("/user/req_verify_code", controllers.ReqVerifyCode)
-	// 登录
-	e.POST("/user/login", controllers.Login)
+	// 登录（登录限流）
+	e.POST("/user/login", flowRestriction.LoginRateLimitMiddleware(), controllers.Login)
 
 	e.GET("/user/rank", controllers.UserRank)
+
+	// 初始化用户信息(会员中心)
+	e.GET("/user/init_userinfo", controllers.InitUserInfoCtrl)
 
 	// 分组
 	r := e.Group("/user")
@@ -77,9 +81,6 @@ func User(e *gin.Engine) {
 	r.GET("/getInfo", controllers.GetInfo)
 	// // 上传用户头像
 	// r.POST("/upload/headshot", controllers.UploadHeadshot)
-
-	// 初始化用户信息(会员中心)
-	r.GET("/init_userinfo", controllers.InitUserInfoCtrl)
 
 	// 编辑个签
 	r.POST("/edit_signature", controllers.EditSignatureCtrl)

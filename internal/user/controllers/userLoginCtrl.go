@@ -58,7 +58,7 @@ func Register(c *gin.Context) {
 	// }
 
 	// 业务逻辑
-	userReqContext := logics.NewUserReqContext(globals.DB, c, globals.SendEmailCfg)
+	userReqContext := logics.NewUserReqContext(globals.DB, c)
 	userInfo, err := userReqContext.Register(registerReq)
 	if err != nil {
 		// response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, err, nil))
@@ -154,7 +154,7 @@ func ReqVerifyCode(c *gin.Context) {
 	// }
 
 	// 业务逻辑
-	userReqContext := logics.NewUserReqContext(globals.DB, c, globals.SendEmailCfg)
+	userReqContext := logics.NewUserReqContext(globals.DB, c)
 	if err := userReqContext.ReqVerifyCode(email); err != nil {
 		// response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("ReqVerifyCode() -> %v", err), nil))
 		globals.Log.Errorf(err.Error())
@@ -198,7 +198,7 @@ func Login(c *gin.Context) {
 	// }
 
 	// 业务逻辑
-	userReqContext := logics.NewUserReqContext(globals.DB, c, globals.SendEmailCfg)
+	userReqContext := logics.NewUserReqContext(globals.DB, c)
 	userInfo, err := userReqContext.Login(loginReq)
 	if err != nil {
 		globals.Log.Errorf(err.Error())
@@ -206,13 +206,6 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	// 通过email查询id
-	// user := repositories.QueryUserByEmail(userReqContext.DB, loginReq.Email)
-	// if user == nil {
-	// 	globals.Log.Errorf(response.ErrEmailNotExist + ":" + loginReq.Email)
-	// 	response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf(response.ErrEmailNotExist+":"+loginReq.Email), nil))
-	// 	return
-	// }
 	// 生成token
 	tok, err := token.GenerateToken(userInfo.Id)
 	if err != nil {
@@ -267,7 +260,7 @@ func ForgotPassword(c *gin.Context) {
 	// }
 
 	// 业务逻辑
-	userReqContext := logics.NewUserReqContext(globals.DB, c, globals.SendEmailCfg)
+	userReqContext := logics.NewUserReqContext(globals.DB, c)
 	if err := userReqContext.ForgotPassword(forgotPasswordReq); err != nil {
 		// response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("Register() -> %v", err), nil))
 		globals.Log.Errorf(err.Error())
@@ -290,7 +283,7 @@ func Logout(c *gin.Context) {
 	tokenString = tokenString[len("Bearer "):]
 
 	// 业务逻辑
-	bsManageContext := logics.NewUserReqContext(globals.DB, c, globals.SendEmailCfg)
+	bsManageContext := logics.NewUserReqContext(globals.DB, c)
 	if err := bsManageContext.Logout(tokenString); err != nil {
 		globals.Log.Errorf(err.Error())
 		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, err, nil))
