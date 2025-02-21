@@ -18,7 +18,7 @@ func StaticInit() {
 		log.Fatalf("Run -> 无法解码为结构: %s", err)
 	}
 
-	globals.Router.Static(globals.SConfig.Prefix, globals.SConfig.Path)
+	//globals.Router.Static(globals.SConfig.Prefix, globals.SConfig.Path)
 
 	// 创建存储静态文件的目录路径文件夹
 	err := internalUtils.CreateFolder(globals.SConfig.Path)
@@ -51,21 +51,4 @@ func PartPathPrefixInit() {
 	// CategoryDefaultImage 默认类目图片
 	internalUtils.CategoryDefaultImage = path + globals.SConfig.CategoryDefaultImage
 
-	/*// UserDefaultImage 默认用户头像路径
-	internalUtils.UserDefaultImage = path + "user_default_head_image.png"
-
-	// ArticleDefaultImage 默认文章图片路径
-	internalUtils.ArticleDefaultImage = path + "article_default_image.jpg"
-
-	// TagDefaultImage 默认标签图片
-	internalUtils.TagDefaultImage = path + "tag_default_image.jpg"
-
-	// AdvertisementDefaultImage 默认广告图片
-	internalUtils.AdvertisementDefaultImage = path + "advertisement_default_image.jpg"
-
-	// CommentDefaultImage 默认评论图片
-	internalUtils.CommentDefaultImage = path + "comment_default_image.jpg"
-
-	// CategoryDefaultImage 默认类目图片
-	internalUtils.CategoryDefaultImage = path + ""*/
 }
