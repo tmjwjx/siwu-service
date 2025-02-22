@@ -14,8 +14,8 @@ import (
 // @param        gid string
 // @return       *requests.InitUserInfoRes
 // @return       error
-func InitUserInfoLogic(db *gorm.DB, qid string, gid string) (*requests.InitUserInfoRes, error) {
-	req, err := repositories.InitUserInfoRep(db, qid, gid)
+func InitUserInfoLogic(db *gorm.DB, qid string, gid string, tag string) (*requests.InitUserInfoRes, error) {
+	req, err := repositories.InitUserInfoRep(db, qid, gid, tag)
 	return req, err
 }
 
