@@ -90,7 +90,7 @@ func AssignApiPermCtrl(c *gin.Context) {
 	}
 
 	// 逻辑处理
-	err = logics.AssignApiPermLogic(globals.DB, &req)
+	err = logics.AssignApiPermLogic(globals.DB, &req, globals.CasbinEnforcer)
 
 	// 返回响应
 	if err != nil {

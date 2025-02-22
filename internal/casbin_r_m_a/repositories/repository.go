@@ -5,6 +5,7 @@ import (
 	"forum/internal/casbin_r_m_a/requests"
 	"forum/internal/models"
 	"forum/pkg/casbin"
+	casbin2 "github.com/casbin/casbin/v2"
 	"gorm.io/gorm"
 )
 
@@ -156,19 +157,20 @@ func GetApiPermRep(casbinService *casbin.CasbinService, id string) (req *request
 }
 
 // AssignApiPermRep 为角色分配api权限
-func AssignApiPermRep(db *gorm.DB, req *requests.AssignApiPermReq) error {
+func AssignApiPermRep(db *gorm.DB, req *requests.AssignApiPermReq, e *casbin2.Enforcer) error {
+
+	casbinService := casbin.CasbinService{
+		Enforcer: e,
+	}
 
 	var apiIds []string
-	casbinService, err := casbin.NewCasbinService(db)
-	if err != nil {
-		return fmt.Errorf("AssignApiPermRep -> 为角色分配api权限失败 -> %s", err)
-	}
+
 	for _, apiId := range req.Apis {
 		id := fmt.Sprintf("%v", apiId)
 		apiIds = append(apiIds, id)
 	}
 	// 为角色分配api权限
-	err = casbinService.ModifyRolePolicy(fmt.Sprintf("%v", req.ID), apiIds)
+	err := casbinService.ModifyRolePolicy(fmt.Sprintf("%v", req.ID), apiIds)
 	if err != nil {
 		return fmt.Errorf("AssignApiPermRep -> 为角色分配api权限失败 -> %s", err)
 	}

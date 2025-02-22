@@ -20,14 +20,14 @@ func Administrator(e *gin.Engine) {
 		// 添加管理员
 		administratorGroup.POST("/add", controllers.AddAdministratorCtrl)
 		// 删除管理员
-		administratorGroup.DELETE("/delete", controllers.DeleteAdministrator)
-		//// 编辑管理员信息
-		//administratorGroup.POST("/update", controllers.UpdateAdministrator)
-		//// 查询管理员列表
-		//administratorGroup.GET("/list", controllers.GetAdministratorList)
-		//// 查询管理员详情
-		//administratorGroup.GET("/info", controllers.GetAdministratorInfo)
-		//// 重置管理员密码
-		//administratorGroup.POST("/reset", controllers.ResetAdministratorPassword)
+		administratorGroup.DELETE("/delete", controllers.DeleteAdministratorCtrl)
+		// 编辑管理员信息
+		administratorGroup.POST("/update", controllers.UpdateAdministratorCtrl)
+		// 查询管理员列表
+		administratorGroup.GET("/batch_query", controllers.GetAdministratorListCtrl)
+		// 查询管理员详情
+		administratorGroup.GET("/query", controllers.GetAdministratorInfoCtrl)
+		// 重置管理员密码
+		administratorGroup.POST("/reset_password", controllers.ResetAdministratorPasswordCtrl)
 	}
 }

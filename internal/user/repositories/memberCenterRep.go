@@ -13,7 +13,7 @@ import (
 // InitUserInfoRep
 // @Description: 初始化用户信息
 // @Author wangyulong 2024-10-09 16:00:48
-func InitUserInfoRep(db *gorm.DB, qid string, gid string) (*requests.InitUserInfoRes, error) {
+func InitUserInfoRep(db *gorm.DB, qid string, gid string, tag string) (*requests.InitUserInfoRes, error) {
 
 	middleInfo := requests.MiddleInfo{}
 
@@ -86,24 +86,27 @@ func InitUserInfoRep(db *gorm.DB, qid string, gid string) (*requests.InitUserInf
 	}
 	initUserInfoRes.FansCount = len(follower)
 
-	initUserInfoRes.Tag = "思悟"
+	initUserInfoRes.Tag = tag
 
-	if qid == gid {
-		initUserInfoRes.ConcernStatus = 2
-	} else {
-		// 将string类型的值转换成uint类型
-		qid2, err := utils.ChangeStringToUint(qid)
-		if err != nil {
-			return nil, fmt.Errorf("InitUserInfoRep -> %s", err)
-		}
+	if qid != "0" {
+		if qid == gid {
+			initUserInfoRes.ConcernStatus = 2
+		} else {
+			// 将string类型的值转换成uint类型
+			qid2, err := utils.ChangeStringToUint(qid)
+			if err != nil {
+				return nil, fmt.Errorf("InitUserInfoRep -> %s", err)
+			}
 
-		for _, id := range follower {
-			if id == qid2 {
-				initUserInfoRes.ConcernStatus = 1
-				break
+			for _, id := range follower {
+				if id == qid2 {
+					initUserInfoRes.ConcernStatus = 1
+					break
+				}
 			}
 		}
-		//initUserInfoRes.ConcernStatus = 0
+	} else {
+		initUserInfoRes.ConcernStatus = 0
 	}
 
 	return initUserInfoRes, nil

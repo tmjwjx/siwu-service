@@ -17,11 +17,18 @@ func User(e *gin.Engine) {
 	e.GET("/user/req_verify_code", controllers.ReqVerifyCode)
 	// 登录（登录限流）
 	e.POST("/user/login", flowRestriction.LoginRateLimitMiddleware(), controllers.Login)
-
+	// 用户排行
 	e.GET("/user/rank", controllers.UserRank)
+	// 搜索用户关注的人
+	e.GET("/user/attention", controllers.Attention)
+	// 通过用户id获取到用户简略信息
+	e.POST("/user/get_basic_information", controllers.GetBasicInfo)
 
-	// 初始化用户信息(会员中心)
-	e.GET("/user/init_userinfo", controllers.InitUserInfoCtrl)
+	// 初始化用户信息(会员中心)(游客模式)
+	e.GET("/tourist/init_userinfo", controllers.InitUserInfoCtrl2)
+
+	// 获取用户账号设置(游客模式)
+	e.GET("/tourist/account_settings", controllers.UserAccountResponseCtrl2)
 
 	// 分组
 	r := e.Group("/user")
@@ -30,12 +37,7 @@ func User(e *gin.Engine) {
 
 	// 关注
 	r.POST("/click_attention", controllers.ClickAttention)
-	// 用户排行
-	// r.GET("/rank", controllers.UserRank)
-	// 搜索用户关注的人
-	r.GET("/attention", controllers.Attention)
-	// 通过用户id获取到用户简略信息
-	r.POST("/get_basic_information", controllers.GetBasicInfo)
+
 	// 登出
 	r.POST("/logout", controllers.Logout)
 
@@ -79,8 +81,9 @@ func User(e *gin.Engine) {
 	r.GET("/download_template", controllers.DownloadTemplate)
 	// 获取当前用户基本信息
 	r.GET("/getInfo", controllers.GetInfo)
-	// // 上传用户头像
-	// r.POST("/upload/headshot", controllers.UploadHeadshot)
+
+	// 初始化用户信息(会员中心)
+	r.GET("/init_userinfo", controllers.InitUserInfoCtrl)
 
 	// 编辑个签
 	r.POST("/edit_signature", controllers.EditSignatureCtrl)

@@ -140,7 +140,30 @@ func resizeImage(img image.Image, width, height int) image.Image {
 
 // JPEG质量计算
 func calculateJPEGQuality(level int) int {
-	return level * 10 // level 0=10, level9=100
+	if level == 0 {
+		level = 9
+	} else if level == 1 {
+		level = 8
+	} else if level == 2 {
+		level = 7
+	} else if level == 3 {
+		level = 6
+	} else if level == 4 {
+		level = 5
+	} else if level == 5 {
+		level = 4
+	} else if level == 6 {
+		level = 3
+	} else if level == 7 {
+		level = 2
+	} else if level == 8 {
+		level = 1
+	} else if level == 9 {
+		level = 0
+	} else {
+		level = 9
+	}
+	return level
 }
 
 // PNG压缩级别计算

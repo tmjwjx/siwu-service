@@ -214,14 +214,18 @@ func Attention(c *gin.Context) {
 func GetBasicInfo(c *gin.Context) {
 	// 从上下文中获取 id
 	str, exists := c.Get("id")
+	var id uint
 	if !exists {
 		// response.Failed(c, http.StatusUnauthorized, response.NewAppErr(globals.StatusUnauthorized, fmt.Errorf("GetBasicInfo() err = 无法获取 id"), nil))
-		globals.Log.Error(response.ErrUserIdNotGetFromContext)
-		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf(response.ErrUserIdNotGetFromContext), nil))
-		return
+		// globals.Log.Error(response.ErrUserIdNotGetFromContext)
+		// response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf(response.ErrUserIdNotGetFromContext), nil))
+		// return
+
+		id = 0
+	} else {
+		// 类型断言
+		id = str.(uint)
 	}
-	// 类型断言
-	id := str.(uint)
 
 	// 绑定数据
 	var req requests.GetBasicInfoReq

@@ -670,7 +670,7 @@ func UpdatePraiseCountRep(req *requests.PraiseCount, db *gorm.DB, userId uint) e
 	err := tx.Commit().Error
 	if err != nil {
 		tx.Rollback() // 回滚事务
-		return fmt.Errorf("DeleteCommentRep -> 提交事务失败 -> %s", err)
+		return fmt.Errorf("UpdatePraiseCountRep -> 提交事务失败 -> %s", err)
 	}
 
 	return nil

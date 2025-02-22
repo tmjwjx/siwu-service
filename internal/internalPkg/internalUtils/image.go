@@ -241,7 +241,7 @@ func InsertFile(db *gorm.DB, attachment *models.Attachment) error {
 	}
 
 	// 向数据库中存入文件数据
-	result := tx.Model(&models.Attachment{}).Where("id = ?", attachment.ID).Omit("created_at").Save(attachment).Debug()
+	result := tx.Model(&models.Attachment{}).Save(attachment)
 	if result.Error != nil {
 		tx.Rollback()
 		return fmt.Errorf("InsertFile -> 向数据库中存入文件数据 -> %s", result.Error)
@@ -271,12 +271,14 @@ func AssignDefaultValue(home globals.Home, images *[]string) {
 	if home == globals.UserHome {
 		*images = append(*images, UserDefaultImage)
 	} else if home == globals.ArticleHome {
-		*images = append(*images, UserDefaultImage)
+		*images = append(*images, ArticleDefaultImage)
 	} else if home == globals.TagHome {
 		*images = append(*images, TagDefaultImage)
 	} else if home == globals.CommentHome {
 		*images = append(*images, CommentDefaultImage)
 	} else if home == globals.CategoryHome {
 		*images = append(*images, CategoryDefaultImage)
+	} else if home == globals.AdministratorHome {
+		*images = append(*images, AdministratorDefaultImage)
 	}
 }

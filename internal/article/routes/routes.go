@@ -20,18 +20,22 @@ func Article(e *gin.Engine) {
 		// 文章搜索框
 		articleGroup.GET("/search_box", controllers.ArticleSearchCtrl)
 
-		// 获取文章详情
-		articleGroup.GET("/detail", controllers.ArticleDetailCtrl)
-
 		// 获取标签下的文章
 		articleGroup.GET("/get_article_by_tag", controllers.GetArticlesByTagCtrl)
 
 		// 会员中心 获取用户文章或收藏列表
-		articleGroup.GET("/get_type_data", controllers.GetUserArticleOrCollectionCtrl)
+		articleGroup.GET("/tourists/get_type_data", controllers.TouristsGetUserArticleOrCollectionCtrl)
+		// 获取文章详情
+		articleGroup.GET("/tourists/detail", controllers.TouristsArticleDetailCtrl)
+
 	}
 	// token 校验
 	articleGroup.Use(token.AuthMiddleware())
 	{
+		// 会员中心 获取用户文章或收藏列表
+		articleGroup.GET("/get_type_data", controllers.GetUserArticleOrCollectionCtrl)
+		// 获取文章详情
+		articleGroup.GET("/detail", controllers.ArticleDetailCtrl)
 		// 编辑界面
 		articleGroup.GET("/edit", controllers.ArticleEditCtrl)
 		// 获取文章列表
