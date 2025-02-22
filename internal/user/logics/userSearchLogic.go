@@ -346,74 +346,201 @@ func (u *UserReqContext) GetBasicInfo(userId uint, req requests.GetBasicInfoReq)
 	// 存放结果
 	var res = make([]*requests.GetBasicInfoRes, 0)
 
-	// 查询 userId 全部关注的人
-	ids, err := repositories.QueryAttention(u.DB, userId)
-	if err != nil {
-		// return nil, fmt.Errorf("UserReqContext.GetBasicInfo() err: %v", err)
-		globals.Log.Error(err.Error())
-		return nil, err
-	}
+	// 游客登录
+	if userId == 0 {
 
-	for _, id := range req.Ids {
-		// 查找用户id
-		user := repositories.QueryUserById(u.DB, id)
-		if user == nil {
-			// return nil, fmt.Errorf("UserReqContext.GetBasicInfo() : id为%d的用户不存在", userId)
-			globals.Log.Error(response.ErrUserIdNotExist + ":" + strconv.Itoa(int(id)))
-			return nil, fmt.Errorf(response.ErrUserIdNotExist + ":" + strconv.Itoa(int(id)))
-		}
-
-		// 查询用户的头像路径
-		userImages, err := internalUtils.GetImages(u.DB, globals.UserHome, id)
-		if err != nil {
-			// return nil, fmt.Errorf("UserReqContext.GetBasicInfo() %v", err)
-			globals.Log.Error(err.Error())
-			return nil, err
-		}
-		// 没有图片
-		if userImages == nil {
-			// return nil, fmt.Errorf("UserReqContext.GetBasicInfo() err = 无法找到id为%d的用户头像图片", userId)
-			globals.Log.Errorf(response.ErrUnableFindUserAvatar + ":" + strconv.Itoa(int(id)))
-			return nil, fmt.Errorf(response.ErrUnableFindUserAvatar + ":" + strconv.Itoa(int(id)))
-		}
-		avatarPath := (*userImages)[0]
-
-		// 判断 userID 是否关注 id。未关注：0，已关注：1。
-		isFollowed := 0
-		for _, v := range ids {
-			if v == id {
-				isFollowed = 1
+		for _, id := range req.Ids {
+			// 查找用户id
+			user := repositories.QueryUserById(u.DB, id)
+			if user == nil {
+				globals.Log.Error(response.ErrUserIdNotExist + ":" + strconv.Itoa(int(id)))
+				return nil, fmt.Errorf(response.ErrUserIdNotExist + ":" + strconv.Itoa(int(id)))
 			}
+
+			// 查询用户的头像路径
+			userImages, err := internalUtils.GetImages(u.DB, globals.UserHome, id)
+			if err != nil {
+				globals.Log.Error(err.Error())
+				return nil, err
+			}
+			// 没有图片
+			if userImages == nil {
+				globals.Log.Errorf(response.ErrUnableFindUserAvatar + ":" + strconv.Itoa(int(id)))
+				return nil, fmt.Errorf(response.ErrUnableFindUserAvatar + ":" + strconv.Itoa(int(id)))
+			}
+			avatarPath := (*userImages)[0]
+
+			// 查询用户的文章数量
+			authorArticles, err := repositories.QueryUserIDArticleNumOfPub(u.DB, id, "public")
+			if err != nil {
+				globals.Log.Error(err.Error())
+				return nil, err
+			}
+
+			highlightName := internalUtils.Highlight(user.Nickname, req.Keyword)
+			res = append(res, &requests.GetBasicInfoRes{
+				ID:              user.ID,
+				CreatedAt:       user.CreatedAt,
+				UpdatedAt:       user.UpdatedAt,
+				Nickname:        highlightName,
+				Email:           user.Email,
+				Heat:            user.Heat,
+				AttentionCount:  user.AttentionCount,
+				FansCount:       user.FansCount,
+				PrivateSettings: user.PrivateSettings,
+				Status:          user.Status,
+				LastLoginTime:   user.LastLoginTime,
+				IsFollowed:      0,
+				AvatarPath:      avatarPath,
+				AuthorArticles:  int(authorArticles),
+			})
 		}
 
-		// 查询用户的文章数量
-		authorArticles, err := repositories.QueryUserIDArticleNumOfPub(u.DB, id, "public")
+	} else {
+
+		// 查询 userId 全部关注的人
+		ids, err := repositories.QueryAttention(u.DB, userId)
 		if err != nil {
 			// return nil, fmt.Errorf("UserReqContext.GetBasicInfo() err: %v", err)
 			globals.Log.Error(err.Error())
 			return nil, err
 		}
 
-		highlightName := internalUtils.Highlight(user.Nickname, req.Keyword)
-		res = append(res, &requests.GetBasicInfoRes{
-			ID:        user.ID,
-			CreatedAt: user.CreatedAt,
-			UpdatedAt: user.UpdatedAt,
-			// Nickname:        user.Nickname,
-			Nickname:        highlightName,
-			Email:           user.Email,
-			Heat:            user.Heat,
-			AttentionCount:  user.AttentionCount,
-			FansCount:       user.FansCount,
-			PrivateSettings: user.PrivateSettings,
-			Status:          user.Status,
-			LastLoginTime:   user.LastLoginTime,
-			IsFollowed:      isFollowed,
-			AvatarPath:      avatarPath,
-			AuthorArticles:  int(authorArticles),
-		})
+		for _, id := range req.Ids {
+			// 查找用户id
+			user := repositories.QueryUserById(u.DB, id)
+			if user == nil {
+				// return nil, fmt.Errorf("UserReqContext.GetBasicInfo() : id为%d的用户不存在", userId)
+				globals.Log.Error(response.ErrUserIdNotExist + ":" + strconv.Itoa(int(id)))
+				return nil, fmt.Errorf(response.ErrUserIdNotExist + ":" + strconv.Itoa(int(id)))
+			}
+
+			// 查询用户的头像路径
+			userImages, err := internalUtils.GetImages(u.DB, globals.UserHome, id)
+			if err != nil {
+				// return nil, fmt.Errorf("UserReqContext.GetBasicInfo() %v", err)
+				globals.Log.Error(err.Error())
+				return nil, err
+			}
+			// 没有图片
+			if userImages == nil {
+				// return nil, fmt.Errorf("UserReqContext.GetBasicInfo() err = 无法找到id为%d的用户头像图片", userId)
+				globals.Log.Errorf(response.ErrUnableFindUserAvatar + ":" + strconv.Itoa(int(id)))
+				return nil, fmt.Errorf(response.ErrUnableFindUserAvatar + ":" + strconv.Itoa(int(id)))
+			}
+			avatarPath := (*userImages)[0]
+
+			// 判断 userID 是否关注 id。未关注：0，已关注：1。
+			isFollowed := 0
+			for _, v := range ids {
+				if v == id {
+					isFollowed = 1
+				}
+			}
+
+			// 查询用户的文章数量
+			authorArticles, err := repositories.QueryUserIDArticleNumOfPub(u.DB, id, "public")
+			if err != nil {
+				// return nil, fmt.Errorf("UserReqContext.GetBasicInfo() err: %v", err)
+				globals.Log.Error(err.Error())
+				return nil, err
+			}
+
+			highlightName := internalUtils.Highlight(user.Nickname, req.Keyword)
+			res = append(res, &requests.GetBasicInfoRes{
+				ID:        user.ID,
+				CreatedAt: user.CreatedAt,
+				UpdatedAt: user.UpdatedAt,
+				// Nickname:        user.Nickname,
+				Nickname:        highlightName,
+				Email:           user.Email,
+				Heat:            user.Heat,
+				AttentionCount:  user.AttentionCount,
+				FansCount:       user.FansCount,
+				PrivateSettings: user.PrivateSettings,
+				Status:          user.Status,
+				LastLoginTime:   user.LastLoginTime,
+				IsFollowed:      isFollowed,
+				AvatarPath:      avatarPath,
+				AuthorArticles:  int(authorArticles),
+			})
+		}
+
 	}
+
 	return res, nil
+
+	// // 存放结果
+	// var res = make([]*requests.GetBasicInfoRes, 0)
+	//
+	// // 查询 userId 全部关注的人
+	// ids, err := repositories.QueryAttention(u.DB, userId)
+	// if err != nil {
+	// 	// return nil, fmt.Errorf("UserReqContext.GetBasicInfo() err: %v", err)
+	// 	globals.Log.Error(err.Error())
+	// 	return nil, err
+	// }
+	//
+	// for _, id := range req.Ids {
+	// 	// 查找用户id
+	// 	user := repositories.QueryUserById(u.DB, id)
+	// 	if user == nil {
+	// 		// return nil, fmt.Errorf("UserReqContext.GetBasicInfo() : id为%d的用户不存在", userId)
+	// 		globals.Log.Error(response.ErrUserIdNotExist + ":" + strconv.Itoa(int(id)))
+	// 		return nil, fmt.Errorf(response.ErrUserIdNotExist + ":" + strconv.Itoa(int(id)))
+	// 	}
+	//
+	// 	// 查询用户的头像路径
+	// 	userImages, err := internalUtils.GetImages(u.DB, globals.UserHome, id)
+	// 	if err != nil {
+	// 		// return nil, fmt.Errorf("UserReqContext.GetBasicInfo() %v", err)
+	// 		globals.Log.Error(err.Error())
+	// 		return nil, err
+	// 	}
+	// 	// 没有图片
+	// 	if userImages == nil {
+	// 		// return nil, fmt.Errorf("UserReqContext.GetBasicInfo() err = 无法找到id为%d的用户头像图片", userId)
+	// 		globals.Log.Errorf(response.ErrUnableFindUserAvatar + ":" + strconv.Itoa(int(id)))
+	// 		return nil, fmt.Errorf(response.ErrUnableFindUserAvatar + ":" + strconv.Itoa(int(id)))
+	// 	}
+	// 	avatarPath := (*userImages)[0]
+	//
+	// 	// 判断 userID 是否关注 id。未关注：0，已关注：1。
+	// 	isFollowed := 0
+	// 	for _, v := range ids {
+	// 		if v == id {
+	// 			isFollowed = 1
+	// 		}
+	// 	}
+	//
+	// 	// 查询用户的文章数量
+	// 	authorArticles, err := repositories.QueryUserIDArticleNumOfPub(u.DB, id, "public")
+	// 	if err != nil {
+	// 		// return nil, fmt.Errorf("UserReqContext.GetBasicInfo() err: %v", err)
+	// 		globals.Log.Error(err.Error())
+	// 		return nil, err
+	// 	}
+	//
+	// 	highlightName := internalUtils.Highlight(user.Nickname, req.Keyword)
+	// 	res = append(res, &requests.GetBasicInfoRes{
+	// 		ID:        user.ID,
+	// 		CreatedAt: user.CreatedAt,
+	// 		UpdatedAt: user.UpdatedAt,
+	// 		// Nickname:        user.Nickname,
+	// 		Nickname:        highlightName,
+	// 		Email:           user.Email,
+	// 		Heat:            user.Heat,
+	// 		AttentionCount:  user.AttentionCount,
+	// 		FansCount:       user.FansCount,
+	// 		PrivateSettings: user.PrivateSettings,
+	// 		Status:          user.Status,
+	// 		LastLoginTime:   user.LastLoginTime,
+	// 		IsFollowed:      isFollowed,
+	// 		AvatarPath:      avatarPath,
+	// 		AuthorArticles:  int(authorArticles),
+	// 	})
+	// }
+	// return res, nil
 }
 
 // GetUserArticleLogic
