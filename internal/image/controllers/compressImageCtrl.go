@@ -20,6 +20,8 @@ func CompressImageCtrl(c *gin.Context) {
 	height := c.Query("height")
 	level := c.Query("level")
 
+	fmt.Println("------------------------------->", path)
+
 	if path == "" {
 		e := response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("上传的path不能为空"), nil)
 		response.Failed(c, 500, e)
