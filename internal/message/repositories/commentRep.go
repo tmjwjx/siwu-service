@@ -119,54 +119,51 @@ func IsCommentLikeRep(db *gorm.DB, userId uint, commentId uint) (bool, error) {
 // @Author tianjiajie 2025-01-18 11:25:24
 func CommentRep(db *gorm.DB, req *requests.MessageReq, userId uint) (res []requests.CommentMessageRes, err error) {
 	query := db.Table("sw_article_comments").
-		Joins("left join sw_articles on sw_article_comments.article_id = sw_articles.id").                                                   // 文章
-		Joins("left join sw_users on sw_article_comments.user_id = sw_users.id").                                                            // 用户
-		Joins("left join sw_comment_likes on sw_comment_likes.comment_id = sw_article_comments.id AND sw_comment_likes.deleted_at IS NULL"). // 点赞
-		Joins("left join sw_article_comments sac on sac.id = sw_article_comments.parent_id").                                                // 上一级评论
-		Joins("left join sw_attachments on sw_attachments.home_id = sw_article_comments.user_id AND sw_attachments.home = ?", "user").       // 查询用户头像
+		// 添加必要连接
+		Joins("LEFT JOIN sw_articles ON sw_articles.id = sw_article_comments.article_id").
+		Joins("LEFT JOIN sw_users ON sw_users.id = sw_article_comments.user_id").
+		Joins("LEFT JOIN sw_attachments ON sw_attachments.home_id = sw_users.id AND sw_attachments.home = 'user'").
+		Joins("LEFT JOIN sw_article_comments parent_comment ON parent_comment.id = sw_article_comments.parent_id").
 		Order("sw_article_comments.created_at DESC").
-		Debug().
 		Limit(req.Limit).
 		Offset((req.Page - 1) * req.Limit)
 
-	// 选择
-	query = query.Select("DISTINCT sw_article_comments.user_id, "+
-		"sw_users.nickname, "+
-		"sw_articles.title, "+
-		"sw_articles.id as article_id, "+
-		"sw_article_comments.content, "+
-		"sw_article_comments.created_at, "+
-		"sw_article_comments.id AS comment_id, "+
-		"sw_article_comments.likes_count, "+
-		"sw_article_comments.parent_id, "+
-		"sw_article_comments.created_at, "+
-		"sac.content AS comment, "+
-		"sw_attachments.path,"+
-		"IF(sw_comment_likes.user_id = ?, 1, 0) AS status", userId)
+	query = query.Select(`
+        DISTINCT sw_article_comments.id,
+        sw_article_comments.user_id,
+        sw_users.nickname,
+        sw_articles.title,
+        sw_articles.id AS article_id,
+        sw_article_comments.content,
+        sw_article_comments.likes_count,
+        sw_article_comments.parent_id,
+        sw_article_comments.created_at,
+        parent_comment.content AS parent_comment,
+        sw_attachments.path,
+        EXISTS(
+            SELECT 1 FROM sw_comment_likes
+            WHERE comment_id = sw_article_comments.id
+            AND user_id = ?
+            AND deleted_at IS NULL
+        ) AS status
+    `, userId)
 
-	// 查询条件 文章下的评论
-	query = query.Where("sw_articles.user_id = ? or sw_article_comments.parent_id IN (SELECT id FROM sw_article_comments WHERE user_id = ?)", userId, userId).
-		Where("sw_article_comments.user_id != ?", userId)
+	query = query.Where("((sw_articles.user_id = ? AND sw_article_comments.user_id != ?)OR(parent_comment.user_id = ? AND sw_article_comments.user_id != ?))", userId, userId, userId, userId)
 
-	// 查询条件 评论下的评论
-	//query = query.Where("sw_article_comments.parent_id IN (SELECT id FROM sw_article_comments WHERE user_id = ?)", userId)
-
-	if err = query.
-		Find(&res).Error; err != nil {
+	if err = query.Find(&res).Error; err != nil {
 		return res, err
 	}
 
-	// 格式化时间
+	// 时间格式化
 	for i := range res {
 		res[i].FormatTime = internalUtils.TimeFormat(res[i].CreatedAt)
 		res[i].DailyTime = internalUtils.TimeFormatDaily(res[i].CreatedAt)
 	}
 
-	// 评论消息已读
-	err = CommentRead(db, userId)
-	if err != nil {
+	// 标记已读
+	if err = CommentRead(db, userId); err != nil {
 		return res, err
 	}
 
-	return res, err
+	return res, nil
 }

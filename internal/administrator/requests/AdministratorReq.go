@@ -36,18 +36,20 @@ type GetAdministratorListReq struct {
 // @Description: 查询管理员列表响应
 // @Author tianjiajie 2025-02-21 20:39:34
 type GetAdministratorListRes struct {
-	ID     uint   `json:"id"`     // ID
-	Email  string `json:"email"`  // 邮箱，唯一
-	Avatar string `json:"avatar"` // 头像
-	Name   string `json:"name"`   // 名称
+	ID            uint   `json:"id"`              // ID
+	Email         string `json:"email"`           // 邮箱，唯一
+	Avatar        string `json:"avatar"`          // 头像
+	Name          string `json:"name"`            // 名称
+	LastLoginTime string `json:"last_login_time"` // 最后一次的登录时间
 }
 
 // GetAdministratorInfoRes
 // @Description: 查询管理员信息响应
 // @Author tianjiajie 2025-02-21 20:39:34
 type GetAdministratorInfoRes struct {
-	ID     uint   `json:"id"`     // ID
-	Email  string `json:"email"`  // 邮箱，唯一
-	Avatar string `json:"avatar"` // 头像
-	Name   string `json:"name"`   // 名称
+	ID            uint   `json:"id"`              // ID
+	Email         string `json:"email"`           // 邮箱，唯一
+	Avatar        string `json:"avatar"`          // 头像
+	Name          string `json:"name"`            // 名称
+	LastLoginTime string `json:"last_login_time"` // 最后一次的登录时间
 }
