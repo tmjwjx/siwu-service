@@ -25,6 +25,9 @@ func User(e *gin.Engine) {
 	// 初始化用户信息(会员中心)(游客模式)
 	e.GET("/tourist/init_userinfo", controllers.InitUserInfoCtrl2)
 
+	// 获取用户账号设置(游客模式)
+	e.GET("/tourist/account_settings", controllers.UserAccountResponseCtrl2)
+
 	// 分组
 	r := e.Group("/user")
 	// token 校验
@@ -79,7 +82,7 @@ func User(e *gin.Engine) {
 	r.GET("/getInfo", controllers.GetInfo)
 
 	// 初始化用户信息(会员中心)
-	r.GET("/user/init_userinfo", controllers.InitUserInfoCtrl)
+	r.GET("/init_userinfo", controllers.InitUserInfoCtrl)
 
 	// 编辑个签
 	r.POST("/edit_signature", controllers.EditSignatureCtrl)

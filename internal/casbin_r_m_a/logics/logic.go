@@ -32,8 +32,8 @@ func GetApiPermLogic(e *casbin2.Enforcer, id string) (req *requests.GetApiPermRe
 }
 
 // AssignApiPermLogic 为角色分配api权限
-func AssignApiPermLogic(db *gorm.DB, req *requests.AssignApiPermReq) error {
-	err := repositories.AssignApiPermRep(db, req)
+func AssignApiPermLogic(db *gorm.DB, req *requests.AssignApiPermReq, e *casbin2.Enforcer) error {
+	err := repositories.AssignApiPermRep(db, req, e)
 	return err
 }
 
