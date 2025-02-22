@@ -4,7 +4,8 @@ package requests
 // @Description: 添加管理员
 // @Author tianjiajie 2025-02-21 15:25:26
 type AddAdministratorReq struct {
-	Email string `json:"email" binding:"email"`
+	Email   string `json:"email" binding:"email"`
+	RoleIds []int  `json:"role_ids" binding:"required"`
 }
 
 // AdministratorReq
@@ -41,6 +42,8 @@ type GetAdministratorListRes struct {
 	Avatar        string `json:"avatar"`          // 头像
 	Name          string `json:"name"`            // 名称
 	LastLoginTime string `json:"last_login_time"` // 最后一次的登录时间
+	CreatedAt     string `json:"created_at"`      // 创建时间
+	RoleIds       []int  `json:"role_ids"`        // 角色ID
 }
 
 // GetAdministratorInfoRes
@@ -52,4 +55,6 @@ type GetAdministratorInfoRes struct {
 	Avatar        string `json:"avatar"`          // 头像
 	Name          string `json:"name"`            // 名称
 	LastLoginTime string `json:"last_login_time"` // 最后一次的登录时间
+	CreatedAt     string `json:"created_at"`      // 创建时间
+	RoleIds       []int  `json:"role_ids"`        // 角色ID
 }
