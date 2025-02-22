@@ -20,8 +20,8 @@ func User(e *gin.Engine) {
 
 	e.GET("/user/rank", controllers.UserRank)
 
-	// 初始化用户信息(会员中心)
-	e.GET("/user/init_userinfo", controllers.InitUserInfoCtrl)
+	// 初始化用户信息(会员中心)(游客模式)
+	e.GET("/tourist/init_userinfo", controllers.InitUserInfoCtrl2)
 
 	// 分组
 	r := e.Group("/user")
@@ -79,8 +79,9 @@ func User(e *gin.Engine) {
 	r.GET("/download_template", controllers.DownloadTemplate)
 	// 获取当前用户基本信息
 	r.GET("/getInfo", controllers.GetInfo)
-	// // 上传用户头像
-	// r.POST("/upload/headshot", controllers.UploadHeadshot)
+
+	// 初始化用户信息(会员中心)
+	r.GET("/user/init_userinfo", controllers.InitUserInfoCtrl)
 
 	// 编辑个签
 	r.POST("/edit_signature", controllers.EditSignatureCtrl)

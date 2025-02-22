@@ -28,7 +28,7 @@ func InitUserInfoCtrl(c *gin.Context) {
 	}
 
 	// 逻辑处理
-	req, err := logics.InitUserInfoLogic(globals.DB, fmt.Sprintf("%v", id), authorId)
+	req, err := logics.InitUserInfoLogic(globals.DB, fmt.Sprintf("%v", id), authorId, globals.SConfig.Watermark)
 
 	// 返回响应
 	if err != nil {
@@ -83,5 +83,23 @@ func EditSignatureCtrl(c *gin.Context) {
 		return
 	}
 	d := response.NewAppData(globals.StatusOK, "编辑个签成功", req)
+	response.Success(c, 200, d)
+}
+
+func InitUserInfoCtrl2(c *gin.Context) {
+	// 从查询参数中获取前端本页面用户的id
+	authorId := c.Query("author_id")
+
+	// 逻辑处理
+	// 如果是游客的话，用户ID传"0"
+	req, err := logics.InitUserInfoLogic(globals.DB, "0", authorId, globals.SConfig.Watermark)
+
+	// 返回响应
+	if err != nil {
+		e := response.NewAppErr(globals.StatusInternalServerError, err, nil)
+		response.Failed(c, 500, e)
+		return
+	}
+	d := response.NewAppData(globals.StatusOK, "用户信息响应成功", req)
 	response.Success(c, 200, d)
 }
