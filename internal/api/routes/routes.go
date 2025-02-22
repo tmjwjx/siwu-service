@@ -10,11 +10,6 @@ import (
 
 func Api(e *gin.Engine) {
 
-	//casbinService, err := casbin.NewCasbinService(globals.DB)
-	//if err != nil {
-	//	fmt.Println("Api(e *gin.Engine) -> 创建 casbinService 失败, err = ", err)
-	//}
-
 	r0 := e.Group("/acl").Use(token.AuthMiddleware())
 	// 获取当前api详情
 	r0.GET("/api/detail", controlles.GetApiDetailsCtrl)

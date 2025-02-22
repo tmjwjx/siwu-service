@@ -208,6 +208,28 @@ func UserAccountResponseCtrl(c *gin.Context) {
 	}
 }
 
+// UserAccountResponseCtrl2 返回用户账号设置数据给前端(游客模式)
+func UserAccountResponseCtrl2(c *gin.Context) {
+
+	// 获取参数
+	// 从查询参数中获取前端本页面用户的id
+	authorId := c.Query("author_id")
+
+	// 逻辑处理
+	userAccountRes, err := logics.UserAccountResponseLogic(authorId, globals.DB)
+
+	// 返回响应
+	if err != nil {
+		// 返回错误响应
+		e := response.NewAppErr(globals.StatusInternalServerError, err, nil)
+		response.Failed(c, 500, e)
+	} else {
+		// 返回用户数据
+		d := response.NewAppData(globals.StatusOK, "用户账号设置数据响应成功", userAccountRes)
+		response.Success(c, 200, d)
+	}
+}
+
 // UserPrivateSetRequestCtrl 更新用户私信设置
 func UserPrivateSetRequestCtrl(c *gin.Context) {
 
