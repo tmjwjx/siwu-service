@@ -16,7 +16,6 @@ import (
 // @return       err
 // @Author tianjiajie 2025-02-21 21:58:11
 func UpdateAdministratorRep(db *gorm.DB, req requests.UpdateAdministratorReq) (err error) {
-
 	// 更新管理员信息
 	tx := db.Begin()
 	tx = tx.Model(models.Administrator{}).Where("id = ?", req.ID)
@@ -104,6 +103,21 @@ func GetAdministratorInfoRep(db *gorm.DB, id string) (administrator requests.Get
 		Where("id = ?", id).
 		Where("deleted_at IS NULL").
 		Find(&administrator).Error
+
+	// 查询角色 todo
+
+	// 格式化时间
+	c, err := time.Parse("2006-01-02T15:04:05Z07:00", administrator.CreatedAt)
+	if err != nil {
+		return
+	}
+	l, err := time.Parse("2006-01-02T15:04:05Z07:00", administrator.LastLoginTime)
+	if err != nil {
+		return
+	}
+	administrator.CreatedAt = internalUtils.TimeFormatDetail(&c)
+	administrator.LastLoginTime = internalUtils.TimeFormatDetail(&l)
+
 	return administrator, err
 }
 
@@ -119,6 +133,23 @@ func GetAdministratorListRep(db *gorm.DB, req requests.GetAdministratorListReq) 
 		Limit(req.Limit).
 		Offset((req.Page - 1) * req.Limit).
 		Find(&res).Error
+
+	// 查询角色 todo
+
+	// 格式化时间
+	for i := range res {
+		c, err := time.Parse("2006-01-02T15:04:05Z07:00", res[i].CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+		l, err := time.Parse("2006-01-02T15:04:05Z07:00", res[i].LastLoginTime)
+		if err != nil {
+			return nil, err
+		}
+		res[i].CreatedAt = internalUtils.TimeFormatDetail(&c)
+		res[i].LastLoginTime = internalUtils.TimeFormatDetail(&l)
+	}
+
 	return res, err
 }
 

@@ -17,7 +17,7 @@ import (
 // @return       err
 // @Author tianjiajie 2025-02-21 21:56:20
 func UpdateAdministratorLogic(db *gorm.DB, req requests.UpdateAdministratorReq, id any) (err error) {
-	//// 身份验证
+	//// 身份验证 todo
 	//if id != req.ID {
 	//	return errors.New("不是本人操作")
 	//}
@@ -65,7 +65,7 @@ func GetAdministratorInfoLogic(db *gorm.DB, id string) (data interface{}, err er
 		administrator.Avatar = (*str)[0]
 	}
 
-	data = gin.H{"administrator": administrator}
+	data = administrator
 	return data, nil
 }
 
@@ -91,7 +91,7 @@ func GetAdministratorListLogic(db *gorm.DB, req requests.GetAdministratorListReq
 		}
 	}
 
-	data = gin.H{"administrator_list": administratorList}
+	data = gin.H{"manager_list": administratorList}
 	return data, nil
 }
 

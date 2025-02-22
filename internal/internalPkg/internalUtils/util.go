@@ -183,6 +183,19 @@ func TimeFormat(t *time.Time) (format string) {
 	return format
 }
 
+// TimeFormatDetail
+// @Description: 格式化时间(详细)
+// @param        t *time.Time
+// @return       format
+// @Author tianjiajie 2025-02-22 20:40:02
+func TimeFormatDetail(t *time.Time) (format string) {
+	if t == nil {
+		return ""
+	}
+	format = t.Format("2006-01-02 15:04:05")
+	return format
+}
+
 // MessagePush
 // @Description: 向用户实时发送更新数据
 // @param        data string

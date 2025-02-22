@@ -21,7 +21,7 @@ func Administrator(e *gin.Engine) {
 		administratorGroup.POST("/add", controllers.AddAdministratorCtrl)
 		// 删除管理员
 		administratorGroup.DELETE("/delete", controllers.DeleteAdministratorCtrl)
-		// 编辑管理员信
+		// 编辑管理员信息
 		administratorGroup.POST("/update", controllers.UpdateAdministratorCtrl)
 		// 查询管理员列表
 		administratorGroup.GET("/batch_query", controllers.GetAdministratorListCtrl)
