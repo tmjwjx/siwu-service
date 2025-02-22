@@ -58,4 +58,7 @@ var (
 
 	// CategoryDefaultImage 默认类目图片
 	CategoryDefaultImage = ""
+	// AdministratorDefaultImage 默认管理员图片
+
+	AdministratorDefaultImage = ""
 )
