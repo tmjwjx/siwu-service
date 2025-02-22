@@ -2,13 +2,15 @@ package routes
 
 import (
 	"forum/internal/roleManage/controllers"
+	"forum/pkg/casbin"
+	"forum/pkg/globals"
 	"github.com/gin-gonic/gin"
 )
 
 // Role 角色分路由
 func Role(e *gin.Engine) {
 	// 分组
-	r := e.Group("/role")
+	r := e.Group("/role").Use(casbin.CasbinAuth(globals.CasbinEnforcer))
 	// token 校验
 	// r.Use(token.AuthMiddleware())
 
