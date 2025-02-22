@@ -10,4 +10,5 @@ const (
 	CategoryHome      Home = "category"
 	AdvertisementHome Home = "advertisement"
 	CommentHome       Home = "comment"
+	AdministratorHome Home = "administrator"
 )

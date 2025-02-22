@@ -271,12 +271,14 @@ func AssignDefaultValue(home globals.Home, images *[]string) {
 	if home == globals.UserHome {
 		*images = append(*images, UserDefaultImage)
 	} else if home == globals.ArticleHome {
-		*images = append(*images, UserDefaultImage)
+		*images = append(*images, ArticleDefaultImage)
 	} else if home == globals.TagHome {
 		*images = append(*images, TagDefaultImage)
 	} else if home == globals.CommentHome {
 		*images = append(*images, CommentDefaultImage)
 	} else if home == globals.CategoryHome {
 		*images = append(*images, CategoryDefaultImage)
+	} else if home == globals.AdministratorHome {
+		*images = append(*images, AdministratorDefaultImage)
 	}
 }
