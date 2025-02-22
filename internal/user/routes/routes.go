@@ -21,6 +21,8 @@ func User(e *gin.Engine) {
 	e.GET("/user/rank", controllers.UserRank)
 	// 搜索用户关注的人
 	e.GET("/user/attention", controllers.Attention)
+	// 通过用户id获取到用户简略信息
+	e.POST("/user/get_basic_information", controllers.GetBasicInfo)
 
 	// 初始化用户信息(会员中心)(游客模式)
 	e.GET("/tourist/init_userinfo", controllers.InitUserInfoCtrl2)
@@ -35,8 +37,7 @@ func User(e *gin.Engine) {
 
 	// 关注
 	r.POST("/click_attention", controllers.ClickAttention)
-	// 通过用户id获取到用户简略信息
-	r.POST("/get_basic_information", controllers.GetBasicInfo)
+
 	// 登出
 	r.POST("/logout", controllers.Logout)
 
