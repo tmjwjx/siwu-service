@@ -381,7 +381,5 @@ func ProcessImagePath(originalURL string) (string, error) {
 
 	outFile = globals.SConfig.Path + "/" + fileName
 
-	fmt.Println("-------------------------------+++++++++++++++>", outFile)
-
 	return outFile, nil
 }
