@@ -1,6 +1,7 @@
 package internalUtils
 
 import (
+	"errors"
 	"fmt"
 	"forum/internal/models"
 	"forum/pkg/globals"
@@ -220,42 +221,40 @@ func InsertFile(db *gorm.DB, attachment *models.Attachment) error {
 	// 开启事务
 	tx := db.Begin()
 	if tx.Error != nil {
+		tx.Rollback()
 		return fmt.Errorf("InsertFile -> 开启事务失败 -> %s", tx.Error)
 	}
 
-	// 删除旧的图片记录
-	//d := tx.Model(&models.Attachment{}).Where("home = ? and home_id = ?", attachment.Home, attachment.HomeID).Delete(nil)
-	//if d.Error != nil {
-	//	tx.Rollback() // 回滚事务
-	//	return fmt.Errorf("InsertFile -> 删除旧的图片记录异常 -> %s", d.Error)
-	//} else if d.RowsAffected == 0 {
-	//	tx.Rollback() // 回滚事务
-	//	return fmt.Errorf("InsertFile -> 没有找到匹配的记录或记录已经被删除")
-	//}
-
 	// 查询记录是否存在
 	var existingAttachment models.Attachment
-	if tx.Model(&models.Attachment{}).Where("home = ? AND home_id = ?", attachment.Home, attachment.HomeID).First(&existingAttachment).Error == nil {
+	result := tx.Model(&models.Attachment{}).Where("home = ? AND home_id = ?", attachment.Home, attachment.HomeID).First(&existingAttachment)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			// 如果该记录不存在，就添加该记录
+			err := tx.Model(&models.Attachment{}).Create(attachment).Error
+			if err != nil {
+				tx.Rollback()
+				return fmt.Errorf("InsertFile -> 向数据库中添加该记录失败 -> %s", tx.Error)
+			}
+		} else {
+			tx.Rollback()
+			return fmt.Errorf("InsertFile -> 查询记录是否存在失败 -> %s", tx.Error)
+		}
+	} else {
 		// 如果记录存在，设置 ID
 		attachment.ID = existingAttachment.ID
+		// 更新表中的记录
+		result2 := tx.Model(&models.Attachment{}).Where("id = ?", attachment.ID).Updates(attachment)
+		if result2.Error != nil {
+			tx.Rollback()
+			return fmt.Errorf("InsertFile -> 更新表中的记录失败 -> %s", result2.Error)
+		}
 	}
-
-	// 向数据库中存入文件数据
-	result := tx.Model(&models.Attachment{}).Save(attachment)
-	if result.Error != nil {
-		tx.Rollback()
-		return fmt.Errorf("InsertFile -> 向数据库中存入文件数据 -> %s", result.Error)
-	}
-
-	//result := tx.Model(&models.Attachment{}).Where("home = ? and home_id = ?", attachment.Home, attachment.HomeID).Save(attachment)
-	//if result.Error != nil {
-	//	tx.Rollback() // 回滚事务
-	//	return fmt.Errorf("InsertFile -> 向数据库中存入文件数据 -> %s", result.Error)
-	//}
 
 	//提交事务
 	err := tx.Commit().Error
 	if err != nil {
+		tx.Rollback()
 		return fmt.Errorf("InsertFile -> 提交事务失败 -> %s", err)
 	}
 
