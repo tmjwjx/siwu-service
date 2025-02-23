@@ -95,6 +95,9 @@ func CompressImageCtrl(c *gin.Context) {
 	// 设置响应的Content-Type
 	c.Header("Content-Type", contentType)
 
+	// 设置响应的Accept-Ranges
+	c.Header("Accept-Ranges", "bytes")
+
 	// 直接返回压缩后的图片数据
 	c.Data(http.StatusOK, contentType, processed)
 

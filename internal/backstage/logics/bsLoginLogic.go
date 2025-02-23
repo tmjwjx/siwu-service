@@ -86,7 +86,7 @@ func (b *BsManageContext) BsLogin(msg requests.BackstageLoginReq) (*requests.Fin
 	if err != nil {
 		return nil, fmt.Errorf("UserReqContext.BsLogin() %v", err)
 	}
-	roleIds, err := casbinService.GetRolesForUser(user.ID)
+	roleIds, err := casbinService.GetRolesForUser(user.Email)
 	if err != nil {
 		return nil, fmt.Errorf("UserReqContext.BsLogin() %v", err)
 	}
