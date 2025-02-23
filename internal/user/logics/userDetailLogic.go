@@ -6,12 +6,11 @@ import (
 	"forum/internal/user/repositories"
 	"forum/internal/user/requests"
 	"forum/pkg/globals"
-	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
 // PersonalDataLogic 将用户信息存入数据库
-func PersonalDataLogic(userId uint, userDataReq *requests.UserDataReq, c *gin.Context, db *gorm.DB) (error, int) {
+func PersonalDataLogic(userId uint, userDataReq *requests.UserDataReq, db *gorm.DB) (error, int) {
 	// 将除图片文件外的数据存入数据库
 	err := repositories.UserDataRequest(userId, userDataReq, db)
 	if err != nil {
