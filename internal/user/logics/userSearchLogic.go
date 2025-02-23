@@ -342,7 +342,8 @@ func (u *UserReqContext) Attention(req requests.AttentionReq) (*requests.Attenti
 }
 
 // GetBasicInfo 通过ids获取到用户简略信息
-func (u *UserReqContext) GetBasicInfo(userId uint, req requests.GetBasicInfoReq) ([]*requests.GetBasicInfoRes, error) {
+func (u *UserReqContext) GetBasicInfo(req requests.GetBasicInfoReq) ([]*requests.GetBasicInfoRes, error) {
+	userId := req.UserId
 	// 存放结果
 	var res = make([]*requests.GetBasicInfoRes, 0)
 
