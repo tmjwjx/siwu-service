@@ -89,26 +89,21 @@ func QueryUserListByPage(db *gorm.DB, req requests.ListReq) ([]*models.User, int
 
 	// 存放查询结果
 	var users []*models.User
-
-	// 使用条件查询
 	query := db.Model(&models.User{})
 
-	// 添加 nickname 模糊查询
+	// 添加条件查询
 	if nickname != "" {
 		query = query.Where("nickname LIKE ?", "%"+nickname+"%")
 	}
-	// 是否查询邮箱
 	if email != "" {
 		query = query.Where("email = ?", email)
 	}
-	// status = 0 表示查询全部 status = 0 的用户
 	if userStatus != 0 {
 		query = query.Where("status = ?", userStatus)
 	}
-	// 添加 heat 和 fans_count 的条件
 	query = query.Where("heat >= ? AND fans_count >= ?", heat, fansCount)
 
-	// 解析 lastLoginTimeBegin 和 lastLoginTimeEnd 字符串为 time.Time 类型
+	// 时间条件处理
 	if lastLoginTimeBegin != "" {
 		parsedLastLoginTimeBegin, err := time.Parse("2006-01-02", lastLoginTimeBegin)
 		if err != nil {
@@ -116,7 +111,6 @@ func QueryUserListByPage(db *gorm.DB, req requests.ListReq) ([]*models.User, int
 		}
 		query = query.Where("last_login_time >= ?", parsedLastLoginTimeBegin)
 	}
-
 	if lastLoginTimeEnd != "" {
 		parsedLastLoginTimeEnd, err := time.Parse("2006-01-02", lastLoginTimeEnd)
 		if err != nil {
@@ -124,8 +118,6 @@ func QueryUserListByPage(db *gorm.DB, req requests.ListReq) ([]*models.User, int
 		}
 		query = query.Where("last_login_time <= ?", parsedLastLoginTimeEnd)
 	}
-
-	// 解析 createTimeBegin 和 createTimeEnd 字符串为 time.Time 类型
 	if createTimeBegin != "" {
 		parsedCreateTimeBegin, err := time.Parse("2006-01-02", createTimeBegin)
 		if err != nil {
@@ -141,16 +133,23 @@ func QueryUserListByPage(db *gorm.DB, req requests.ListReq) ([]*models.User, int
 		query = query.Where("created_at <= ?", parsedCreateTimeEnd)
 	}
 
-	// 执行查询，获取用户列表
-	if err := query.Find(&users).Error; err != nil {
+	// 获取符合条件的总数
+	var total int64
+	if err := query.Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
 
-	// 对符合条件的用户进行 RoleId 查询和过滤
-	var filteredUsers []*models.User // 最终的结果
+	// 添加逆序排序并直接在数据库层进行分页
+	query = query.Order("id DESC") // 使用id作为排序依据，从大到小排序
+	offset := (page - 1) * limit
+	if err := query.Offset(offset).Limit(limit).Find(&users).Error; err != nil {
+		return nil, 0, err
+	}
+
+	// RoleId 过滤
+	var filteredUsers []*models.User
 	for _, user := range users {
 		var userRoleIds []uint
-
 		// 获取该用户对应的全部角色id
 		casbinService, err := casbin.NewCasbinService(globals.DB)
 		if err != nil {
@@ -161,23 +160,13 @@ func QueryUserListByPage(db *gorm.DB, req requests.ListReq) ([]*models.User, int
 			return nil, 0, fmt.Errorf("QueryUserListByPage() %v", err)
 		}
 
-		// 判断 userRoleIds 是否包含传入的 roleIds
+		// 判断 userRoleIds 是否包含传入的 roleIds，如果包含，则将该用户加入结果集
 		if lo.EveryBy(roleIds, func(roleId uint) bool { return lo.Contains(userRoleIds, roleId) }) {
-			filteredUsers = append(filteredUsers, user) // 如果包含，则将该用户加入结果集
+			filteredUsers = append(filteredUsers, user)
 		}
 	}
 
-	// 最后对结果集进行分页
-	offset := (page - 1) * limit
-	if len(filteredUsers) > offset {
-		end := offset + limit
-		if end > len(filteredUsers) {
-			end = len(filteredUsers)
-		}
-		return filteredUsers[offset:end], len(filteredUsers), nil
-	}
-
-	return []*models.User{}, len(filteredUsers), nil
+	return filteredUsers, int(total), nil
 }
 
 // // QueryAdminRoleByUserId 查询用户拥有的角色id

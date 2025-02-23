@@ -12,7 +12,6 @@ import (
 	"github.com/xuri/excelize/v2"
 	"gorm.io/gorm"
 	"mime/multipart"
-	"slices"
 	"time"
 )
 
@@ -234,7 +233,7 @@ func (u *UserReqContext) List(req requests.ListReq) ([]*requests.ListRes, int, e
 	}
 
 	// 根据前端的要求，翻转 listRes
-	slices.Reverse(listRes)
+	// slices.Reverse(listRes)
 
 	return listRes, total, nil
 }
