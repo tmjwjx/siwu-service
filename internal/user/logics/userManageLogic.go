@@ -111,12 +111,12 @@ func (u *UserReqContext) Delete(req requests.DeleteReq) error {
 			return fmt.Errorf("UserReqContext.Delete() err: %v", err)
 		}
 		// 获取该用户对应的全部角色id
-		roleIds, err := casbinService.GetRolesForUser(v)
+		roleIds, err := casbinService.GetRolesForUser("v")
 		if err != nil {
 			return fmt.Errorf("UserReqContext.Delete() err: %v", err)
 		}
 		// 根据用户 id 删除 roleIds
-		if err = casbinService.DeleteRoleForUser(v, roleIds); err != nil {
+		if err = casbinService.DeleteRoleForUser("v", roleIds); err != nil {
 			return fmt.Errorf("UserReqContext.Delete() err: %v", err)
 		}
 	}
@@ -150,7 +150,7 @@ func (u *UserReqContext) Edit(req requests.EditReq) error {
 	if err != nil {
 		return fmt.Errorf("UserReqContext.Delete() err: %v", err)
 	}
-	if err = casbinService.UpdateRoleForUser(req.UserId, req.RoleIds); err != nil {
+	if err = casbinService.UpdateRoleForUser("req.UserId", req.RoleIds); err != nil {
 		return fmt.Errorf("UserReqContext.Delete() err: %v", err)
 	}
 
@@ -203,7 +203,7 @@ func (u *UserReqContext) List(req requests.ListReq) ([]*requests.ListRes, int, e
 		if err != nil {
 			return nil, 0, fmt.Errorf("UserReqContext.List() %v", err)
 		}
-		roleIds, err := casbinService.GetRolesForUser(v.ID)
+		roleIds, err := casbinService.GetRolesForUser("v.ID")
 		if err != nil {
 			return nil, 0, fmt.Errorf("UserReqContext.List() %v", err)
 		}
@@ -425,7 +425,7 @@ func (u *UserReqContext) GetInfo(id uint) (*requests.GetInfoRes, error) {
 	if err != nil {
 		return nil, fmt.Errorf("UserReqContext.GetInfo() %v", err)
 	}
-	roleIds, err := casbinService.GetRolesForUser(user.ID)
+	roleIds, err := casbinService.GetRolesForUser("user.ID")
 	if err != nil {
 		return nil, fmt.Errorf("UserReqContext.GetInfo() %v", err)
 	}
