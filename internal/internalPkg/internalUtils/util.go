@@ -251,20 +251,15 @@ func Highlight(content string, keyword string) string {
 // @param        db *gorm.DB
 // @param        page int
 // @param        limit int
-// @return       b
-// @return       err
-// @Author tianjiajie 2025-02-24 17:28:43
-func GetCount(db *gorm.DB, page int, limit int) (b bool, err error) {
-	var sum int64
-	err = db.Count(&sum).Error
-	if err != nil {
+// @return       bool
+// @return       error
+// @Author tianjiajie 2025-02-24 19:58:05
+func GetCount(db *gorm.DB, page int, limit int) (bool, error) {
+	var total int64
+	if err := db.Offset(-1).Limit(-1).Count(&total).Error; err != nil {
 		return false, err
 	}
-	if sum > int64(page*limit) {
-		return true, nil
-	} else {
-		return false, nil
-	}
+	return total > int64(page*limit), nil
 }
 
 /*// ChangeStringToUint
