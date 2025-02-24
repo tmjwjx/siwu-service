@@ -312,21 +312,21 @@ func (u *UserReqContext) UserRank(req requests.UserRankReq) ([]*requests.UserRan
 }
 
 // Attention 搜索用户关注的人
-func (u *UserReqContext) Attention(req requests.AttentionReq) (*requests.AttentionRes, error) {
+func (u *UserReqContext) Attention(req requests.AttentionReq) (*requests.AttentionRes, bool, error) {
 	// 判断该用户是否存在
 	user := repositories.QueryUserById(u.DB, req.UserId)
 	if user == nil {
 		// return nil, fmt.Errorf("UserReqContext.Attention() : id为%d的用户不存在", req.UserId)
 		globals.Log.Error(response.ErrUserIdNotExist + ":" + strconv.Itoa(int(req.UserId)))
-		return nil, fmt.Errorf(response.ErrUserIdNotExist + ":" + strconv.Itoa(int(req.UserId)))
+		return nil, false, fmt.Errorf(response.ErrUserIdNotExist + ":" + strconv.Itoa(int(req.UserId)))
 	}
 
 	// 查询
-	ids, err := repositories.QueryAttentionByPage(u.DB, req.UserId, req.Keyword, req.Page, req.Limit)
+	ids, isHaveData, err := repositories.QueryAttentionByPage(u.DB, req.UserId, req.Keyword, req.Page, req.Limit)
 	if err != nil {
 		// return nil, fmt.Errorf("UserReqContext.Attention() err: %v", err)
 		globals.Log.Error(err.Error())
-		return nil, err
+		return nil, false, err
 	}
 
 	// // 筛除数据（避免 ids 里面存在 user.Id ）
@@ -338,7 +338,7 @@ func (u *UserReqContext) Attention(req requests.AttentionReq) (*requests.Attenti
 
 	res := &requests.AttentionRes{Ids: ids}
 
-	return res, nil
+	return res, isHaveData, nil
 }
 
 // GetBasicInfo 通过ids获取到用户简略信息

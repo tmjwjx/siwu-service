@@ -39,44 +39,87 @@ func QueryUserRank(db *gorm.DB, page int, limit int) ([]*models.User, error) {
 // @param        keyword string 模糊查询昵称
 // @param        page
 // @param        limit int
-func QueryAttentionByPage(db *gorm.DB, followerId uint, keyword string, page, limit int) ([]uint, error) {
+// func QueryAttentionByPage(db *gorm.DB, followerId uint, keyword string, page, limit int) ([]uint, error) {
+// 	var ids []uint
+//
+// 	// 构造查询
+// 	// query := db.Model(&models.UserFollow{}).
+// 	// 	Scopes(sqlUtils.Paginate(page, limit)). // 分页
+// 	// 	Where("follower_id = ?", followerId).   // 根据关注者id查询
+// 	// 	Pluck("followed_id", &ids)              // 查询被关注者
+// 	//
+// 	// // 执行查询
+// 	// if err := query.Error; err != nil {
+// 	// 	return nil, fmt.Errorf("QueryAttentionByPage() err: %v", err)
+// 	// }
+// 	//
+// 	// // 模糊查询来筛选 nickname
+// 	// newIds, err := QueryUserIdsByNickname(db, ids, keyword)
+// 	// if err != nil {
+// 	// 	return nil, fmt.Errorf("QueryAttentionByPage() -> %v", err)
+// 	// }
+// 	//
+// 	// return newIds, nil
+//
+// 	query := db.Model(&models.UserFollow{}).
+// 		Scopes(sqlUtils.Paginate(page, limit)). // 分页
+// 		Where("follower_id = ?", followerId)    // 根据关注者id查询
+//
+// 	if keyword != "" {
+// 		// 先通过 UserFollow 表关联到 User 表，再进行模糊查询
+// 		query = query.Joins("JOIN sw_users ON sw_user_follows.followed_id = sw_users.id").
+// 			Where("sw_users.nickname LIKE ?", "%"+keyword+"%")
+// 	}
+//
+// 	// 查询被关注者的ID
+// 	if err := query.Pluck("sw_user_follows.followed_id", &ids).Error; err != nil {
+// 		return nil, fmt.Errorf("QueryAttentionByPage() err: %v", err)
+// 	}
+//
+// 	return ids, nil
+// }
+
+// QueryAttentionByPage
+// @Description: 分页搜索用户关注的人。
+// @Author lizhuang 2025-01-17 14:15:42
+// @param        db *gorm.DB
+// @param        followerId uint 关注者ID
+// @param        keyword string 模糊查询昵称
+// @param        page int 第几页
+// @param        limit int 每页条数
+// @return       []uint 被关注者的ID列表
+// @return       bool 是否还有更多数据
+// @return       error 错误信息
+func QueryAttentionByPage(db *gorm.DB, followerId uint, keyword string, page, limit int) ([]uint, bool, error) {
 	var ids []uint
 
-	// 构造查询
-	// query := db.Model(&models.UserFollow{}).
-	// 	Scopes(sqlUtils.Paginate(page, limit)). // 分页
-	// 	Where("follower_id = ?", followerId).   // 根据关注者id查询
-	// 	Pluck("followed_id", &ids)              // 查询被关注者
-	//
-	// // 执行查询
-	// if err := query.Error; err != nil {
-	// 	return nil, fmt.Errorf("QueryAttentionByPage() err: %v", err)
-	// }
-	//
-	// // 模糊查询来筛选 nickname
-	// newIds, err := QueryUserIdsByNickname(db, ids, keyword)
-	// if err != nil {
-	// 	return nil, fmt.Errorf("QueryAttentionByPage() -> %v", err)
-	// }
-	//
-	// return newIds, nil
-
 	query := db.Model(&models.UserFollow{}).
-		Scopes(sqlUtils.Paginate(page, limit)). // 分页
-		Where("follower_id = ?", followerId)    // 根据关注者id查询
+		Where("follower_id = ?", followerId) // 根据关注者id查询
 
 	if keyword != "" {
-		// 先通过 UserFollow 表关联到 User 表，再进行模糊查询
+		// 关联 User 表进行昵称模糊查询
 		query = query.Joins("JOIN sw_users ON sw_user_follows.followed_id = sw_users.id").
 			Where("sw_users.nickname LIKE ?", "%"+keyword+"%")
 	}
 
-	// 查询被关注者的ID
-	if err := query.Pluck("sw_user_follows.followed_id", &ids).Error; err != nil {
-		return nil, fmt.Errorf("QueryAttentionByPage() err: %v", err)
+	// 先获取总数，用于判断是否还有更多数据
+	var total int64
+	if err := query.Count(&total).Error; err != nil {
+		return nil, false, fmt.Errorf("QueryAttentionByPage() count err: %v", err)
 	}
 
-	return ids, nil
+	// 添加分页并查询结果
+	if err := query.Scopes(sqlUtils.Paginate(page, limit)).
+		Pluck("sw_user_follows.followed_id", &ids).Error; err != nil {
+		return nil, false, fmt.Errorf("QueryAttentionByPage() err: %v", err)
+	}
+
+	// 判断是否还有更多数据
+	// 当前偏移量 = (page-1) * limit
+	// 如果偏移量 + 当前页数据量 < 总数，则还有数据
+	hasMore := (page-1)*limit+len(ids) < int(total)
+
+	return ids, hasMore, nil
 }
 
 // QueryAttention
