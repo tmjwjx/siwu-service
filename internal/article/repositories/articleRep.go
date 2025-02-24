@@ -280,7 +280,7 @@ func ReduceArticleHeat(db *gorm.DB, articleId uint, num int) (err error) {
 // @return       articleList
 // @return       err
 // @Author tianjiajie 2025-01-22 10:55:49
-func GetFollowingArticleRep(db *gorm.DB, req requests.GetFollowArticleReq, userId uint) (articleList []requests.SearchArticleListRes, err error) {
+func GetFollowingArticleRep(db *gorm.DB, req requests.GetFollowArticleReq, userId uint) (articleList []requests.SearchArticleListRes, b bool, err error) {
 	// 查询关注的用户的文章列表
 	query := db.Model(&models.Article{}).Preload("Tags").
 		Select("DISTINCT sw_articles.*, sw_users.nickname").
@@ -306,8 +306,11 @@ func GetFollowingArticleRep(db *gorm.DB, req requests.GetFollowArticleReq, userI
 	// 执行查询
 	if err = query.Find(&articleList).Error; err != nil {
 		globals.Log.Errorf("err = %s", err)
-		return nil, err
+		return nil, false, err
 	}
+
+	// 查看后续是否还有数据
+	b, _ = internalUtils.GetCount(query, req.Page, req.Limit)
 
 	// 格式化时间
 	for i := 0; i < len(articleList); i++ {
@@ -315,7 +318,7 @@ func GetFollowingArticleRep(db *gorm.DB, req requests.GetFollowArticleReq, userI
 		articleList[i].DailyTime = internalUtils.TimeFormatDaily(articleList[i].PublishedAt)
 	}
 
-	return articleList, nil
+	return articleList, b, nil
 }
 
 // GetTodayViewsRep
@@ -685,7 +688,7 @@ func QueryCategory(db *gorm.DB) (categories []models.Category, err error) {
 // }
 
 // SearchArticlesRep 搜索文章
-func SearchArticlesRep(db *gorm.DB, req *requests.ArticleSearchReq) (articles []requests.SearchArticleListRes, err error) {
+func SearchArticlesRep(db *gorm.DB, req *requests.ArticleSearchReq) (articles []requests.SearchArticleListRes, b bool, err error) {
 
 	condition := internalUtils.ArticlesOrder(req.Kind) // 选择排序方式  0热度 1时间
 
@@ -726,13 +729,16 @@ func SearchArticlesRep(db *gorm.DB, req *requests.ArticleSearchReq) (articles []
 		return // 结束函数执行
 	}
 
+	// 查看后续是否还有数据
+	b, _ = internalUtils.GetCount(query, req.Page, req.Limit)
+
 	// 格式化时间
 	for i := 0; i < len(articles); i++ {
 		articles[i].FormatTime = internalUtils.TimeFormat(articles[i].PublishedAt)
 		articles[i].DailyTime = internalUtils.TimeFormatDaily(articles[i].PublishedAt)
 	}
 
-	return articles, err
+	return articles, b, err
 }
 
 // SearchArticlesListRep
@@ -831,6 +837,9 @@ func SearchArticlesListRep(db *gorm.DB, req *requests.ArticleListReq) (data inte
 		return nil, err
 	}
 
+	// 查看后续是否还有数据
+	b, _ := internalUtils.GetCount(query, req.Page, req.Limit)
+
 	// 格式化时间
 	for i := 0; i < len(articleList); i++ {
 		articleList[i].FormatTime = internalUtils.TimeFormat(articleList[i].PublishedAt)
@@ -838,7 +847,10 @@ func SearchArticlesListRep(db *gorm.DB, req *requests.ArticleListReq) (data inte
 	}
 
 	// 返回结果
-	data = gin.H{"article_list": articleList, "total": totalCount}
+	data = gin.H{
+		"article_list": articleList,
+		"total":        totalCount,
+		"next":         b}
 	return data, nil
 }
 
@@ -1188,7 +1200,7 @@ func UpdateCollectionRep(db *gorm.DB, req requests.ArticleCollectionReq, userId 
 // @return       articles
 // @return       err
 // @Author tianjiajie 2024-10-15 17:07:21
-func GetArticlesByTagRep(db *gorm.DB, req *requests.GetArticleByTagReq) (articles []requests.SearchArticleListRes, err error) {
+func GetArticlesByTagRep(db *gorm.DB, req *requests.GetArticleByTagReq) (articles []requests.SearchArticleListRes, b bool, err error) {
 
 	globals.Log.Infof("req = %v", req)
 	condition := internalUtils.ArticlesOrder(req.Kind) // 选择排序方式  0热度 1时间
@@ -1217,13 +1229,16 @@ func GetArticlesByTagRep(db *gorm.DB, req *requests.GetArticleByTagReq) (article
 		return // 结束函数执行
 	}
 
+	// 查看后续是否还有数据
+	b, _ = internalUtils.GetCount(query, req.Page, req.Limit)
+
 	// 格式化时间
 	for i := 0; i < len(articles); i++ {
 		articles[i].FormatTime = internalUtils.TimeFormat(articles[i].PublishedAt)
 		articles[i].DailyTime = internalUtils.TimeFormatDaily(articles[i].PublishedAt)
 	}
 
-	return articles, nil
+	return articles, b, nil
 }
 
 // GetUserArticleOrCollectionRep
@@ -1234,7 +1249,7 @@ func GetArticlesByTagRep(db *gorm.DB, req *requests.GetArticleByTagReq) (article
 // @return       articles
 // @return       err
 // @Author tianjiajie 2024-10-18 16:38:47
-func GetUserArticleOrCollectionRep(db *gorm.DB, req *requests.UserArticleOrCollectionReq, id int) (articles []requests.SearchArticleListRes, total int64, err error) {
+func GetUserArticleOrCollectionRep(db *gorm.DB, req *requests.UserArticleOrCollectionReq, id int) (articles []requests.SearchArticleListRes, total int64, b bool, err error) {
 
 	condition := internalUtils.ArticlesOrder(1) // 选择排序方式  0热度 1时间
 
@@ -1276,7 +1291,7 @@ func GetUserArticleOrCollectionRep(db *gorm.DB, req *requests.UserArticleOrColle
 	err = query.Count(&total).Error
 	if err != nil {
 		globals.Log.Errorf("Error counting articles: %v", err)
-		return nil, 0, err
+		return nil, 0, false, err
 	}
 
 	// 执行查询
@@ -1285,11 +1300,14 @@ func GetUserArticleOrCollectionRep(db *gorm.DB, req *requests.UserArticleOrColle
 		return // 结束函数执行
 	}
 
+	// 查看后续是否还有数据
+	b, _ = internalUtils.GetCount(query, req.Page, req.Limit)
+
 	// 格式化时间
 	for i := 0; i < len(articles); i++ {
 		articles[i].FormatTime = internalUtils.TimeFormat(articles[i].PublishedAt)
 		articles[i].DailyTime = internalUtils.TimeFormatDaily(articles[i].PublishedAt)
 	}
 
-	return articles, total, nil
+	return articles, total, b, nil
 }

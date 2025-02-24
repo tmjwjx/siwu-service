@@ -23,18 +23,21 @@ import (
 // @return       err
 // @Author tianjiajie 2025-01-22 11:37:55
 func GetFollowingArticleLogic(db *gorm.DB, req requests.GetFollowArticleReq, userId uint) (data interface{}, err error) {
-	articleList, err := repositories.GetFollowingArticleRep(db, req, userId)
+	articleList, b, err := repositories.GetFollowingArticleRep(db, req, userId)
 	if err != nil {
 		return nil, err
 	}
-	data = gin.H{"article_list": articleList}
+	data = gin.H{
+		"article_list": articleList,
+		"next":         b,
+	}
 	return data, nil
 }
 
 // ArticleSearchLogic 搜索文章
 func ArticleSearchLogic(db *gorm.DB, req *requests.ArticleSearchReq) (data interface{}, err error) {
 
-	articles, err := repositories.SearchArticlesRep(db, req)
+	articles, b, err := repositories.SearchArticlesRep(db, req)
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +48,10 @@ func ArticleSearchLogic(db *gorm.DB, req *requests.ArticleSearchReq) (data inter
 		articles[i].Summary = internalUtils.Highlight(articles[i].Summary, req.Keyword)
 	}
 
-	data = gin.H{"selectedList": articles}
+	data = gin.H{
+		"selectedList": articles,
+		"next":         b,
+	}
 
 	return data, nil
 }
@@ -171,11 +177,14 @@ func ArticleEditLogic(db *gorm.DB) (data interface{}, err error) {
 // @Author tianjiajie 2024-10-15 16:59:17
 func GetArticlesByTagLogic(db *gorm.DB, req *requests.GetArticleByTagReq) (data interface{}, err error) {
 
-	articleList, err := repositories.GetArticlesByTagRep(db, req)
+	articleList, b, err := repositories.GetArticlesByTagRep(db, req)
 	if err != nil {
 		return nil, err
 	}
-	data = gin.H{"article_list": articleList}
+	data = gin.H{
+		"article_list": articleList,
+		"next":         b,
+	}
 	return data, nil
 
 }
@@ -185,7 +194,7 @@ func GetArticlesByTagLogic(db *gorm.DB, req *requests.GetArticleByTagReq) (data 
 // @Author tianjiajie 2024-10-18 15:37:28
 func GetUserArticleOrCollectionLogic(db *gorm.DB, req *requests.UserArticleOrCollectionReq, id int) (data interface{}, err error) {
 
-	articleList, total, err := repositories.GetUserArticleOrCollectionRep(db, req, id)
+	articleList, total, b, err := repositories.GetUserArticleOrCollectionRep(db, req, id)
 	if err != nil {
 		return nil, err
 	}
@@ -209,6 +218,7 @@ func GetUserArticleOrCollectionLogic(db *gorm.DB, req *requests.UserArticleOrCol
 
 	data = gin.H{
 		"dataList": articleList,
-		"total":    total}
+		"total":    total,
+		"next":     b}
 	return data, nil
 }
