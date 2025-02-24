@@ -51,7 +51,7 @@ func UserDataRequestCtrl(c *gin.Context) {
 	}
 
 	// 业务处理
-	err, status := logics.PersonalDataLogic(uintValue, &userDataReq, c, globals.DB)
+	err, status := logics.PersonalDataLogic(uintValue, &userDataReq, globals.DB)
 
 	// 返回响应
 	if err != nil {

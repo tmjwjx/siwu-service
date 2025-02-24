@@ -155,7 +155,7 @@ func QueryUserListByPage(db *gorm.DB, req requests.ListReq) ([]*models.User, int
 		if err != nil {
 			return nil, 0, fmt.Errorf("QueryUserListByPage() %v", err)
 		}
-		userRoleIds, err = casbinService.GetRolesForUser(user.ID)
+		userRoleIds, err = casbinService.GetRolesForUser(user.Email)
 		if err != nil {
 			return nil, 0, fmt.Errorf("QueryUserListByPage() %v", err)
 		}

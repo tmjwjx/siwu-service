@@ -198,16 +198,16 @@ func UserAccountRequest(userAccountReq *requests.UserAccountReq, db *gorm.DB) er
 			return fmt.Errorf("UserAccountRequest -> 密码加密失败 -> %s", err)
 		}
 
-		// 更新 User 表中的 email , password
+		// 更新 User 表中的, password
 		err = tx.Model(&user).Updates(map[string]interface{}{
-			"email":    userAccountReq.Email,
 			"password": hashPassword,
 		}).Error
 		if err != nil {
 			tx.Rollback() // 回滚事务
 			return fmt.Errorf("UserAccountRequest -> 更新 User 表中的 email , password -> %s", err)
 		}
-	} else {
+	}
+	/*else {
 		// 更新 User 表中的 email , password
 		err = tx.Model(&user).Updates(map[string]interface{}{
 			"email": userAccountReq.Email,
@@ -216,7 +216,7 @@ func UserAccountRequest(userAccountReq *requests.UserAccountReq, db *gorm.DB) er
 			tx.Rollback() // 回滚事务
 			return fmt.Errorf("UserAccountRequest -> 更新 User 表中的 email -> %s", err)
 		}
-	}
+	}*/
 
 	// 查询该用户的外键是否存在
 	var userDetail models.UserDetail

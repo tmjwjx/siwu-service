@@ -20,8 +20,6 @@ func CompressImageCtrl(c *gin.Context) {
 	height := c.Query("height")
 	level := c.Query("level")
 
-	fmt.Println("------------------------------->", path)
-
 	if path == "" {
 		e := response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("上传的path不能为空"), nil)
 		response.Failed(c, 500, e)
@@ -94,6 +92,9 @@ func CompressImageCtrl(c *gin.Context) {
 
 	// 设置响应的Content-Type
 	c.Header("Content-Type", contentType)
+
+	// 设置响应的Accept-Ranges
+	c.Header("Accept-Ranges", "bytes")
 
 	// 直接返回压缩后的图片数据
 	c.Data(http.StatusOK, contentType, processed)

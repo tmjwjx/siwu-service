@@ -280,18 +280,21 @@ func GetTopLevelCommentsRep(userId uint, db *gorm.DB, req *requests.TopCommentsR
 		}
 	}
 
+	var lastFlag string
 	// 分页返回数据
 	page := (req.Offset - 1) * req.Limit
 	if length > page {
 		end := page + req.Limit
-		if end > length {
+		if end > length || end == length {
 			end = length
+			lastFlag = "没有更多评论了"
 		}
 
 		firstCommentsList = firstCommentsList[page:end]
 		res := &requests.TopCommentsRes{
 			FirstCommentsList: firstCommentsList,
 			CommentsTotal:     totalCount,
+			LastFlag:          lastFlag,
 		}
 
 		return res, nil
@@ -300,6 +303,7 @@ func GetTopLevelCommentsRep(userId uint, db *gorm.DB, req *requests.TopCommentsR
 	topCommentsRes := &requests.TopCommentsRes{
 		FirstCommentsList: make([]*requests.FirstComment, 0),
 		CommentsTotal:     0,
+		LastFlag:          lastFlag,
 	}
 
 	return topCommentsRes, nil
@@ -477,23 +481,28 @@ func GetRepliesRep2Rep(userId uint, db *gorm.DB, req *requests.RepliesReq2) (*re
 		}
 	}
 
+	var lastFlag string
+
 	// 分页返回数据
 	page := (req.Offset - 1) * req.Limit
 	if length > page {
 		end := page + req.Limit
-		if end > length {
+		if end > length || end == length {
 			end = length
+			lastFlag = "没有更多评论了"
 		}
 
 		secondCommentsList = secondCommentsList[page:end]
 		res := &requests.RepliesRes{
 			SecondCommentsList: secondCommentsList,
+			LastFlag:           lastFlag,
 		}
 		return res, nil
 	}
 
 	repliesRes := &requests.RepliesRes{
 		SecondCommentsList: make([]*requests.SecondComment, 0),
+		LastFlag:           lastFlag,
 	}
 
 	return repliesRes, nil

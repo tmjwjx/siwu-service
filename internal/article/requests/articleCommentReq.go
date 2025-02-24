@@ -42,7 +42,8 @@ type TopCommentsReq struct {
 // @Author wangyulong 2024-10-15 21:10:39
 type TopCommentsRes struct {
 	FirstCommentsList []*FirstComment `json:"first_comments_list"`
-	CommentsTotal     int             `json:"comments_total"`
+	CommentsTotal     int             `json:"comments_total"` // 该篇文章的总数量
+	LastFlag          string          `json:"last_flag"`      // 用于判断是否还有评论
 }
 
 type FirstComment struct {
@@ -76,6 +77,7 @@ type RepliesReq2 struct {
 // @Author wangyulong 2024-10-15 21:09:34
 type RepliesRes struct {
 	SecondCommentsList []*SecondComment `json:"second_comments_list"`
+	LastFlag           string           `json:"last_flag"` // 用于判断是否还有评论
 }
 
 type SecondComment struct {

@@ -53,7 +53,7 @@ func User(e *gin.Engine) {
 	// 前端获取用户账号设置数据
 	r.GET("/account_settings", controllers.UserAccountResponseCtrl)
 
-	// 上传用户私信设置
+	// 更新用户私信设置
 	r.POST("/private_settings", controllers.UserPrivateSetRequestCtrl)
 
 	// 前端获取用户私信设置数据

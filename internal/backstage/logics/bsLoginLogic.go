@@ -61,10 +61,10 @@ func (b *BsManageContext) BsLogin(msg requests.BackstageLoginReq) (*requests.Fin
 	}
 
 	// 改变 LastLoginTime
-	now := time.Now() // 获取当前时间
-	if err := sqlUtils.UpdateObjects(b.DB, &models.User{Model: gorm.Model{ID: user.ID}}, map[string]interface{}{"last_login_time": now}); err != nil {
-		return nil, fmt.Errorf("BsManageContext.BsLogin() -> %v", err)
-	}
+	// now := time.Now() // 获取当前时间
+	// if err := sqlUtils.UpdateObjects(b.DB, &models.User{Model: gorm.Model{ID: user.ID}}, map[string]interface{}{"last_login_time": now}); err != nil {
+	// 	return nil, fmt.Errorf("BsManageContext.BsLogin() -> %v", err)
+	// }
 
 	// 查询用户的头像路径
 	userImages, err := internalUtils.GetImages(b.DB, globals.UserHome, user.ID)
@@ -86,7 +86,7 @@ func (b *BsManageContext) BsLogin(msg requests.BackstageLoginReq) (*requests.Fin
 	if err != nil {
 		return nil, fmt.Errorf("UserReqContext.BsLogin() %v", err)
 	}
-	roleIds, err := casbinService.GetRolesForUser(user.ID)
+	roleIds, err := casbinService.GetRolesForUser(user.Email)
 	if err != nil {
 		return nil, fmt.Errorf("UserReqContext.BsLogin() %v", err)
 	}
@@ -172,6 +172,14 @@ func (b *BsManageContext) BsLogin(msg requests.BackstageLoginReq) (*requests.Fin
 	// 从管理者表格中查询管理者
 	admin := repositories.QueryAdminByEmail(b.DB, email)
 	if admin != nil {
+		// 修改 LastLoginTime
+		now := time.Now() // 获取当前时间
+		if err = sqlUtils.UpdateObjects(b.DB, &models.Administrator{Model: gorm.Model{ID: admin.ID}}, map[string]interface{}{"last_login_time": now}); err != nil {
+			// return nil, fmt.Errorf("UserReqContext.Login() -> %v", err)
+			globals.Log.Errorf(err.Error())
+			return nil, err
+		}
+
 		return res, nil
 	} else {
 		return nil, fmt.Errorf("id为%d没有权限进入后台", user.ID)
