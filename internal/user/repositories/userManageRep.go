@@ -11,49 +11,6 @@ import (
 	"time"
 )
 
-// // UpdateAdminRoles 更新用户的角色（要确保 userId 存在）
-// func UpdateAdminRoles(db *gorm.DB, userId uint, newRoleIds []uint) error {
-// 	// 查询当前 userId 拥有的 RoleNames
-// 	var currentRoleIds []uint
-// 	err := db.Model(&models.AdminRole{}).Select("role_id").Where("admin_id = ?", userId).Find(&currentRoleIds).Error
-// 	if err != nil {
-// 		return fmt.Errorf("UpdateAdminRoles() err: %v", err)
-// 	}
-//
-// 	var deleteRoleIds []uint // 要删除的role_id
-// 	var addRoleIds []uint    // 要添加的role_id
-//
-// 	// 找出 userId 需要删除的 RoleNames (当前有的，但不在新列表中)
-// 	for _, v := range currentRoleIds {
-// 		if !lo.Contains(newRoleIds, v) {
-// 			deleteRoleIds = append(deleteRoleIds, v)
-// 		}
-// 	}
-// 	// 找出 userId 需要增加的 RoleNames (新列表中有的，但当前没有)
-// 	for _, v := range newRoleIds {
-// 		if !lo.Contains(currentRoleIds, v) {
-// 			addRoleIds = append(addRoleIds, v)
-// 		}
-// 	}
-//
-// 	// 删除
-// 	for _, v := range deleteRoleIds {
-// 		_, err := sqlUtils.DeleteObjectsByModel(db, &models.AdminRole{}, map[string]interface{}{"admin_id": userId, "role_id": v})
-// 		if err != nil {
-// 			return fmt.Errorf("UpdateAdminRoles() err: %v", err)
-// 		}
-// 	}
-// 	// 插入
-// 	for _, v := range addRoleIds {
-// 		err = sqlUtils.InsertObject(db, &models.AdminRole{AdminId: userId, RoleId: v})
-// 		if err != nil {
-// 			return fmt.Errorf("UpdateAdminRoles() err: %v", err)
-// 		}
-// 	}
-//
-// 	return nil
-// }
-
 // QueryRoleById 通过角色id查询该角色的信息
 func QueryRoleById(db *gorm.DB, id uint) *models.Role {
 	var role models.Role
@@ -169,12 +126,12 @@ func QueryUserListByPage(db *gorm.DB, req requests.ListReq) ([]*models.User, int
 	return filteredUsers, int(total), nil
 }
 
-// // QueryAdminRoleByUserId 查询用户拥有的角色id
-// func QueryAdminRoleByUserId(db *gorm.DB, userId uint) []uint {
-// 	var roleIds []uint
-// 	db.Model(&models.AdminRole{}).Where("admin_id = ?", userId).Select("role_id").Scan(&roleIds)
-// 	return roleIds
-// }
+// QueryUserEmailById 根据用户id查询email
+func QueryUserEmailById(db *gorm.DB, userId uint) string {
+	var email string
+	db.Model(&models.User{}).Where("id = ?", userId).Select("email").Scan(&email)
+	return email
+}
 
 // QueryAllUser 查询所有用户
 func QueryAllUser(db *gorm.DB) ([]models.User, error) {

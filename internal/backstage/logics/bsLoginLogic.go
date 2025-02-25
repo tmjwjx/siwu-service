@@ -37,8 +37,162 @@ func NewBsManageContext(db *gorm.DB, c *gin.Context) *BsManageContext {
 	}
 }
 
+//
+// // BsLogin
+// // @Description: 后台登陆业务
+// // @Author lizhuang 2024-10-21 20:36:41
+// // @receiver     b
+// // @param        msg requests.BackstageLoginReq
+// // @return       error
+// func (b *BsManageContext) BsLogin(msg requests.BackstageLoginReq) (*requests.FinalBackstageLoginRes, int, error) {
+// 	// 判断邮箱和密码是否匹配
+// 	email := msg.Email
+// 	password := msg.Password
+//
+// 	// 根据邮箱查用户
+// 	user := repositories.QueryUserByEmail(b.DB, email)
+// 	if user == nil {
+// 		return nil, 400, fmt.Errorf("BsManageContext.BsLogin() err: 不存在该邮箱用户")
+// 	}
+//
+// 	// 比较加密密码
+// 	encryptedPassword := user.Password
+// 	if !internalUtils.CheckPasswordHash(password, encryptedPassword) {
+// 		return nil, 400, fmt.Errorf("BsManageContext.BsLogin() err: 密码错误")
+// 	}
+//
+// 	// 改变 LastLoginTime
+// 	// now := time.Now() // 获取当前时间
+// 	// if err := sqlUtils.UpdateObjects(b.DB, &models.User{Model: gorm.Model{ID: user.ID}}, map[string]interface{}{"last_login_time": now}); err != nil {
+// 	// 	return nil, fmt.Errorf("BsManageContext.BsLogin() -> %v", err)
+// 	// }
+//
+// 	// 查询用户的头像路径
+// 	userImages, err := internalUtils.GetImages(b.DB, globals.UserHome, user.ID)
+// 	if err != nil {
+// 		return nil, 500, err
+// 	}
+// 	// 没有图片
+// 	if userImages == nil {
+// 		return nil, 500, fmt.Errorf("无法找到id为%d的用户头像图片", user.ID)
+// 	}
+// 	avatarPath := (*userImages)[0]
+//
+// 	var roleNames = make([]string, 0)
+// 	sort := math.MaxInt
+// 	code := ""
+//
+// 	// 获取该用户对应的全部角色id
+// 	casbinService, err := casbin.NewCasbinService(globals.DB)
+// 	if err != nil {
+// 		return nil, 500, err
+// 	}
+// 	roleIds, err := casbinService.GetRolesForUser(user.Email)
+// 	if err != nil {
+// 		return nil, 500, err
+// 	}
+//
+// 	for _, v := range roleIds {
+// 		// 查询角色id对应的角色信息
+// 		role := repositories.QueryRoleById(b.DB, v)
+// 		roleNames = append(roleNames, role.Name)
+//
+// 		// 获取当前用户所拥有的排序最高的角色编码
+// 		if sort > role.Sort {
+// 			sort = role.Sort
+// 			code = role.Code
+// 		}
+// 	}
+//
+// 	var backstageLoginRes = &requests.BackstageLoginRes{
+// 		Id:         user.ID,
+// 		Nickname:   user.Nickname,
+// 		Email:      user.Email,
+// 		UserStatus: user.Status,
+// 		RoleIds:    roleIds,
+// 		RoleNames:  roleNames,
+// 		AvatarPath: avatarPath,
+// 		Code:       code,
+// 	}
+//
+// 	// 查询超级管理员的ID
+// 	superAdminId, err := repositories.QuerySuperAdminId(b.DB)
+// 	if err != nil {
+// 		return nil, 500, err
+// 	}
+//
+// 	var menuPerm *[]requests.MenuPerm // 用于存储当前用户角色的所有菜单权限并集
+// 	var permCode *[]string            // 用于存储当前用户角色的权限标识并集
+//
+// 	var flag int // 用于判断该用户是否是超级管理员
+//
+// 	// 判断该用户是否是超级管理员
+// 	for _, roleId := range roleIds {
+// 		if roleId == superAdminId {
+// 			flag = 1
+// 			break
+// 		}
+// 	}
+//
+// 	if flag == 1 {
+// 		menuPerm, err = b.GetMenuPermRep(b.DB, nil, 1)
+// 		if err != nil {
+// 			// return nil, fmt.Errorf("UserReqContext.BsLogin() -> menuPerm -> %v", err)
+// 			return nil, 500, err
+// 		}
+// 		permCode, err = b.GetPermCodeRep(casbinService, b.DB, nil, 1)
+// 		if err != nil {
+// 			// return nil, fmt.Errorf("UserReqContext.BsLogin() -> permCode -> %v", err)
+// 			return nil, 500, err
+// 		}
+//
+// 	} else {
+// 		menuPerm, err = b.GetMenuPermRep(b.DB, roleIds, 0)
+// 		if err != nil {
+// 			// return nil, fmt.Errorf("UserReqContext.BsLogin()2 %v", err)
+// 			return nil, 500, err
+// 		}
+// 		permCode, err = b.GetPermCodeRep(casbinService, b.DB, roleIds, 0)
+// 		if err != nil {
+// 			// return nil, fmt.Errorf("UserReqContext.BsLogin() -> permCode -> %v", err)
+// 			return nil, 500, err
+// 		}
+// 	}
+//
+// 	res := &requests.FinalBackstageLoginRes{
+// 		UserInfo: backstageLoginRes,
+// 		Perm:     menuPerm,
+// 		CodeList: permCode,
+// 	}
+//
+// 	// return backstageLoginRes, nil
+//
+// 	// // 补丁：只允许管理者进入后台（以后要额外添加一张表用来存储管理者）
+// 	// for _, v := range backstageLoginRes.RoleNames {
+// 	// 	if v == "管理员" || v == "超级管理员" {
+// 	// 		return res, nil
+// 	// 	}
+// 	// }
+//
+// 	// 从管理者表格中查询管理者
+// 	admin := repositories.QueryAdminByEmail(b.DB, email)
+// 	if admin != nil {
+// 		// 修改 LastLoginTime
+// 		now := time.Now() // 获取当前时间
+// 		if err = sqlUtils.UpdateObjects(b.DB, &models.Administrator{Model: gorm.Model{ID: admin.ID}}, map[string]interface{}{"last_login_time": now}); err != nil {
+// 			// return nil, fmt.Errorf("UserReqContext.Login() -> %v", err)
+// 			globals.Log.Errorf(err.Error())
+// 			return nil, 500, err
+// 		}
+//
+// 		return res, 500, nil
+// 	} else {
+// 		return nil, 400, fmt.Errorf("id为%d没有权限进入后台", user.ID)
+// 	}
+// }
+
 // BsLogin
-// @Description: 后台登陆业务
+// @Description: 后台登陆
 // @Author lizhuang 2024-10-21 20:36:41
 // @receiver     b
 // @param        msg requests.BackstageLoginReq
@@ -49,44 +203,38 @@ func (b *BsManageContext) BsLogin(msg requests.BackstageLoginReq) (*requests.Fin
 	password := msg.Password
 
 	// 根据邮箱查用户
-	user := repositories.QueryUserByEmail(b.DB, email)
-	if user == nil {
+	admin := repositories.QueryAdminByEmail(b.DB, email)
+	if admin == nil {
 		return nil, 400, fmt.Errorf("BsManageContext.BsLogin() err: 不存在该邮箱用户")
 	}
 
 	// 比较加密密码
-	encryptedPassword := user.Password
+	encryptedPassword := admin.Password
 	if !internalUtils.CheckPasswordHash(password, encryptedPassword) {
 		return nil, 400, fmt.Errorf("BsManageContext.BsLogin() err: 密码错误")
 	}
 
-	// 改变 LastLoginTime
-	// now := time.Now() // 获取当前时间
-	// if err := sqlUtils.UpdateObjects(b.DB, &models.User{Model: gorm.Model{ID: user.ID}}, map[string]interface{}{"last_login_time": now}); err != nil {
-	// 	return nil, fmt.Errorf("BsManageContext.BsLogin() -> %v", err)
+	// // 查询用户的头像路径
+	// userImages, err := internalUtils.GetImages(b.DB, globals.UserHome, user.ID)
+	// if err != nil {
+	// 	return nil, 500, err
 	// }
-
-	// 查询用户的头像路径
-	userImages, err := internalUtils.GetImages(b.DB, globals.UserHome, user.ID)
-	if err != nil {
-		return nil, 500, err
-	}
-	// 没有图片
-	if userImages == nil {
-		return nil, 500, fmt.Errorf("无法找到id为%d的用户头像图片", user.ID)
-	}
-	avatarPath := (*userImages)[0]
+	// // 没有图片
+	// if userImages == nil {
+	// 	return nil, 500, fmt.Errorf("无法找到id为%d的用户头像图片", user.ID)
+	// }
+	// avatarPath := (*userImages)[0]
 
 	var roleNames = make([]string, 0)
 	sort := math.MaxInt
 	code := ""
 
-	// 获取该用户对应的全部角色id
+	// 获取该管理员对应的全部角色id
 	casbinService, err := casbin.NewCasbinService(globals.DB)
 	if err != nil {
 		return nil, 500, err
 	}
-	roleIds, err := casbinService.GetRolesForUser(user.Email)
+	roleIds, err := casbinService.GetRolesForUser(admin.Email)
 	if err != nil {
 		return nil, 500, err
 	}
@@ -104,14 +252,14 @@ func (b *BsManageContext) BsLogin(msg requests.BackstageLoginReq) (*requests.Fin
 	}
 
 	var backstageLoginRes = &requests.BackstageLoginRes{
-		Id:         user.ID,
-		Nickname:   user.Nickname,
-		Email:      user.Email,
-		UserStatus: user.Status,
-		RoleIds:    roleIds,
-		RoleNames:  roleNames,
-		AvatarPath: avatarPath,
-		Code:       code,
+		Id:       admin.ID,
+		Nickname: admin.Name,
+		Email:    admin.Email,
+		// UserStatus: admin.Status,
+		RoleIds:   roleIds,
+		RoleNames: roleNames,
+		// AvatarPath: avatarPath,
+		Code: code,
 	}
 
 	// 查询超级管理员的ID
@@ -158,36 +306,36 @@ func (b *BsManageContext) BsLogin(msg requests.BackstageLoginReq) (*requests.Fin
 		}
 	}
 
+	// 修改 LastLoginTime
+	now := time.Now() // 获取当前时间
+	if err = sqlUtils.UpdateObjects(b.DB, &models.Administrator{Model: gorm.Model{ID: admin.ID}}, map[string]interface{}{"last_login_time": now}); err != nil {
+		globals.Log.Errorf(err.Error())
+		return nil, 500, err
+	}
+
 	res := &requests.FinalBackstageLoginRes{
 		UserInfo: backstageLoginRes,
 		Perm:     menuPerm,
 		CodeList: permCode,
 	}
 
-	// return backstageLoginRes, nil
-
-	// // 补丁：只允许管理者进入后台（以后要额外添加一张表用来存储管理者）
-	// for _, v := range backstageLoginRes.RoleNames {
-	// 	if v == "管理员" || v == "超级管理员" {
-	// 		return res, nil
+	// // 从管理者表格中查询管理者
+	// admin := repositories.QueryAdminByEmail(b.DB, email)
+	// if admin != nil {
+	// 	// 修改 LastLoginTime
+	// 	now := time.Now() // 获取当前时间
+	// 	if err = sqlUtils.UpdateObjects(b.DB, &models.Administrator{Model: gorm.Model{ID: admin.ID}}, map[string]interface{}{"last_login_time": now}); err != nil {
+	// 		// return nil, fmt.Errorf("UserReqContext.Login() -> %v", err)
+	// 		globals.Log.Errorf(err.Error())
+	// 		return nil, 500, err
 	// 	}
+	//
+	// 	return res, 500, nil
+	// } else {
+	// 	return nil, 400, fmt.Errorf("id为%d没有权限进入后台", user.ID)
 	// }
 
-	// 从管理者表格中查询管理者
-	admin := repositories.QueryAdminByEmail(b.DB, email)
-	if admin != nil {
-		// 修改 LastLoginTime
-		now := time.Now() // 获取当前时间
-		if err = sqlUtils.UpdateObjects(b.DB, &models.Administrator{Model: gorm.Model{ID: admin.ID}}, map[string]interface{}{"last_login_time": now}); err != nil {
-			// return nil, fmt.Errorf("UserReqContext.Login() -> %v", err)
-			globals.Log.Errorf(err.Error())
-			return nil, 500, err
-		}
-
-		return res, 500, nil
-	} else {
-		return nil, 400, fmt.Errorf("id为%d没有权限进入后台", user.ID)
-	}
+	return res, 500, nil
 }
 
 // BsLogout 后台登出
