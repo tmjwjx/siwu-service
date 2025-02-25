@@ -311,12 +311,12 @@ func NewDefaultAvatar(home globals.Home, homeID uint, db *gorm.DB) DefaultAvatar
 // @Description: 生成默认头像
 // @Author wangyulong 2025-02-24 11:43:37
 // @return       string 放回的头像url路径
-func GenerateAvatar(da DefaultAvatar) error {
+func GenerateAvatar(da DefaultAvatar) (string, error) {
 	b := make([]byte, 16)
 
 	_, err := rand.Read(b)
 	if err != nil {
-		return fmt.Errorf("GenerateAvatar -> rand.Read(b) 失败 -> %v", err)
+		return "", fmt.Errorf("GenerateAvatar -> rand.Read(b) 失败 -> %v", err)
 	}
 
 	fileName := fmt.Sprintf("%x", b)
@@ -334,9 +334,9 @@ func GenerateAvatar(da DefaultAvatar) error {
 	// 将文件插入数据库中
 	err = InsertFile(da.DB, attachment)
 	if err != nil {
-		return fmt.Errorf("GenerateAvatar -> 将文件插入数据库中 失败 -> %v", err)
+		return "", fmt.Errorf("GenerateAvatar -> 将文件插入数据库中 失败 -> %v", err)
 	}
 
-	return nil
+	return url, nil
 
 }

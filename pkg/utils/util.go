@@ -50,11 +50,29 @@ func SelIdForSuperAdmin() (string, error) {
 	var superAdmin models.Role
 
 	// 查询超级管理员对应的ID
-	result := globals.DB.Model(models.Role{}).Select("id").Where("name = ?", "超级管理员").First(&superAdmin)
+	result := globals.DB.Model(&models.Role{}).Select("id").Where("name = ?", "超级管理员").First(&superAdmin)
 	if result.Error != nil {
 		return "", fmt.Errorf("SelApiId -> 查询超级管理员对应的ID异常 -> %s", result.Error)
 	} else if result.RowsAffected == 0 {
 		return "", fmt.Errorf("SelApiId -> 没有查询到超级管理员对应的ID")
 	}
 	return fmt.Sprintf("%v", superAdmin.ID), nil
+}
+
+// SelEmailForAdmin
+// @Description: 根据管理员的ID查询其Email
+// @Author wangyulong 2025-02-25 17:39:39
+// @param        ID string
+// @return       string
+// @return       error
+func SelEmailForAdmin(ID uint) (string, error) {
+
+	var email string
+
+	// 根据管理员的ID查询其Email
+	res := globals.DB.Model(&models.Administrator{}).Select("email").Where("id = ?", ID).First(&email)
+	if res.Error != nil {
+		return "", fmt.Errorf("SelEmailForAdmin -> 根据管理员的ID查询其Email 异常 -> %v", res.Error)
+	}
+	return email, nil
 }
