@@ -19,8 +19,8 @@ import (
 // @param        c *gin.Context
 func BsLogin(c *gin.Context) {
 	// 绑定数据
-	var bsLogicMsg requests.BackstageLoginReq
-	if err := c.ShouldBind(&bsLogicMsg); err != nil {
+	var bsLogicReq requests.BackstageLoginReq
+	if err := c.ShouldBind(&bsLogicReq); err != nil {
 		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("BsLogin() -> %v", err), nil))
 		return
 	}
@@ -28,34 +28,48 @@ func BsLogin(c *gin.Context) {
 	// 判断数据是否合法
 
 	// 检验邮箱是否合法
-	if !internalUtils.IsValidEmail(bsLogicMsg.Email) {
+	if !internalUtils.IsValidEmail(bsLogicReq.Email) {
 		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("BsLogin() : 邮箱不合法"), nil))
 		return
 	}
 	// 检验密码是否合法
-	if !internalUtils.IsValidPassword(bsLogicMsg.Password) {
+	if !internalUtils.IsValidPassword(bsLogicReq.Password) {
 		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("BsLogin() : 密码必须要同时包含字母、数字、特殊字符，长度在8到20位之间"), nil))
 		return
 	}
 
 	// 业务逻辑
 	bsManageContext := logics.NewBsManageContext(globals.DB, c)
-	backstageLoginRes, err := bsManageContext.BsLogin(bsLogicMsg)
+	backstageLoginRes, state, err := bsManageContext.BsLogin(bsLogicReq)
 	if err != nil {
-		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("BsLogin() -> %v", err), nil))
+		response.Failed(c, state, response.NewAppErr(globals.AppCode(state*10), fmt.Errorf("BsLogin() -> %v", err), nil))
 		return
 	}
 
+	// // 通过email查询id
+	// user := repositories.QueryUserByEmail(globals.DB, bsLogicReq.Email)
+	// if user == nil {
+	// 	response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("BsLogin() err: 不存在email为 %v 的用户", bsLogicReq.Email), nil))
+	// 	return
+	// }
+	// // 生成token
+	// tok, err := token.GenerateToken(user.ID)
+	// if err != nil {
+	// 	response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("BsLogin() -> %v", err), nil))
+	// 	return
+	// }
+	// backstageLoginRes.Token = tok
+
 	// 通过email查询id
-	user := repositories.QueryUserByEmail(globals.DB, bsLogicMsg.Email)
-	if user == nil {
-		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("BsLogin() err: 不存在email为 %v 的用户", bsLogicMsg.Email), nil))
+	admin := repositories.QueryAdminByEmail(globals.DB, bsLogicReq.Email)
+	if admin == nil {
+		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("不存在email为 %v 的管理员", bsLogicReq.Email), nil))
 		return
 	}
 	// 生成token
-	tok, err := token.GenerateToken(user.ID)
+	tok, err := token.GenerateToken(admin.ID)
 	if err != nil {
-		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("BsLogin() -> %v", err), nil))
+		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, err, nil))
 		return
 	}
 	backstageLoginRes.Token = tok

@@ -106,28 +106,15 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-// 登录限流相关常量
-const (
-	MaxAttemptsBeforeLock = 3     // 开始限制前的最大尝试次数
-	WindowSize            = 600   // 滑动窗口大小（秒，即10分钟）
-	BaseLockTime          = 60    // 基础锁定时间（秒，即1分钟）
-	MaxLockTime           = 86400 // 最大锁定时间（秒，即24小时）
-
-	// Redis键前缀
-	LoginFailListKeyPrefix = "login_fail_list:%s" // 失败时间戳列表键
-	LoginLockKeyPrefix     = "login_lock:%s"      // 锁定状态键
-	LockValue              = "locked"             // 锁定键的值
-)
-
 // CalculateLockTime 计算锁定时间（指数增长）
 func CalculateLockTime(failCount int) time.Duration {
-	if failCount < MaxAttemptsBeforeLock {
+	if failCount < globals.MaxAttemptsBeforeLock {
 		return 0 // 未达到限制次数时不锁定
 	}
 	// 从第3次失败开始，锁定时间指数增长：第3次60秒，第4次120秒，第5次240秒...
-	baseTime := time.Duration(BaseLockTime) * time.Second
-	waitTime := baseTime * time.Duration(math.Pow(2, float64(failCount-MaxAttemptsBeforeLock)))
-	maxWait := time.Duration(MaxLockTime) * time.Second
+	baseTime := time.Duration(globals.BaseLockTime) * time.Second
+	waitTime := baseTime * time.Duration(math.Pow(2, float64(failCount-globals.MaxAttemptsBeforeLock)))
+	maxWait := time.Duration(globals.MaxLockTime) * time.Second
 	if waitTime > maxWait {
 		return maxWait
 	}
@@ -145,8 +132,8 @@ func CalculateLockTime(failCount int) time.Duration {
 // @return       string 错误信息
 func CheckRateLimit(rdb *redis.Client, c *gin.Context) (bool, int, int, string) {
 	ip := c.ClientIP()
-	listKey := fmt.Sprintf(LoginFailListKeyPrefix, ip)
-	lockKey := fmt.Sprintf(LoginLockKeyPrefix, ip)
+	listKey := fmt.Sprintf(globals.LoginFailListKeyPrefix, ip)
+	lockKey := fmt.Sprintf(globals.LoginLockKeyPrefix, ip)
 
 	// 检查是否处于锁定状态
 	if locked, err := rdb.Exists(c, lockKey).Result(); err == nil && locked > 0 {
@@ -161,14 +148,14 @@ func CheckRateLimit(rdb *redis.Client, c *gin.Context) (bool, int, int, string) 
 	// 获取滑动窗口内的失败次数
 	now := time.Now().Unix() // 时间戳
 	// 下面的代码意思是：计算最近 WindowSize（600秒）内的登录失败次数。范围是：[当前时间-窗口大小，当前时间]。使用 "+inf" 简化了代码，避免了动态计算最大时间戳的麻烦
-	windowStart := now - int64(WindowSize) // 窗口开始时间（秒）
+	windowStart := now - int64(globals.WindowSize) // 窗口开始时间（秒）
 	count, err := rdb.ZCount(c, listKey, fmt.Sprintf("%d", windowStart), "+inf").Result()
 	if err != nil && !errors.Is(err, redis.Nil) {
 		return false, 0, 0, "系统内部错误"
 	}
 
 	// 计算剩余尝试次数
-	remaining := MaxAttemptsBeforeLock - int(count)
+	remaining := globals.MaxAttemptsBeforeLock - int(count)
 	if remaining < 0 {
 		remaining = 0
 	}
@@ -179,8 +166,8 @@ func CheckRateLimit(rdb *redis.Client, c *gin.Context) (bool, int, int, string) 
 // RecordFailedAttempt 记录登录失败
 func RecordFailedAttempt(rdb *redis.Client, c *gin.Context) {
 	ip := c.ClientIP()
-	listKey := fmt.Sprintf(LoginFailListKeyPrefix, ip)
-	lockKey := fmt.Sprintf(LoginLockKeyPrefix, ip)
+	listKey := fmt.Sprintf(globals.LoginFailListKeyPrefix, ip)
+	lockKey := fmt.Sprintf(globals.LoginLockKeyPrefix, ip)
 
 	// 记录当前失败的时间戳
 	now := time.Now().Unix()
@@ -194,10 +181,10 @@ func RecordFailedAttempt(rdb *redis.Client, c *gin.Context) {
 	}
 
 	// 设置滑动窗口的过期时间
-	rdb.Expire(c, listKey, WindowSize*time.Second)
+	rdb.Expire(c, listKey, globals.WindowSize*time.Second)
 
 	// 获取当前窗口内的失败次数
-	windowStart := now - int64(WindowSize)
+	windowStart := now - int64(globals.WindowSize)
 	count, err := rdb.ZCount(c, listKey, fmt.Sprintf("%d", windowStart), "+inf").Result()
 	if err != nil {
 		globals.Log.Errorf(err.Error())
@@ -205,9 +192,9 @@ func RecordFailedAttempt(rdb *redis.Client, c *gin.Context) {
 	}
 
 	// 如果达到或超过限制次数，设置指数增长的锁定时间
-	if count >= MaxAttemptsBeforeLock {
+	if count >= globals.MaxAttemptsBeforeLock {
 		waitTime := CalculateLockTime(int(count))
-		rdb.Set(c, lockKey, LockValue, waitTime)
+		rdb.Set(c, lockKey, globals.LockValue, waitTime)
 	}
 
 	// 清理窗口外的旧记录

@@ -2,6 +2,7 @@ package casbin
 
 import (
 	"fmt"
+	"forum/internal/internalPkg/internalUtils"
 	"forum/pkg/globals"
 	"forum/pkg/response"
 	"forum/pkg/utils"
@@ -20,8 +21,8 @@ func CasbinAuth(e *casbin.Enforcer) gin.HandlerFunc {
 			return
 		}
 
-		// 获取用户id
-		id, exists := c.Get("id")
+		// 获取管理员id
+		adminID, exists := c.Get("id")
 		if !exists {
 			e := response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("NewCasbinAuth -> 获取用户id失败"), nil)
 			response.Failed(c, 500, e)
@@ -29,23 +30,39 @@ func CasbinAuth(e *casbin.Enforcer) gin.HandlerFunc {
 			return
 		}
 
+		// 查询管理员的email
+		uintValue, err := internalUtils.ChangeAnyToUint(adminID)
+		if err != nil {
+			e := response.NewAppErr(globals.StatusInternalServerError, err, nil)
+			response.Failed(c, 500, e)
+			c.Abort()
+			return
+		}
+
+		email, err := utils.SelEmailForAdmin(uintValue)
+		if err != nil {
+			e := response.NewAppErr(globals.StatusInternalServerError, err, nil)
+			response.Failed(c, 500, e)
+			c.Abort()
+			return
+		}
 		//权限验证
 
-		// 查询超级管理员对应的id
+		/*// 查询超级管理员对应的id
 		superAdminID, err := utils.SelIdForSuperAdmin()
 		if superAdminID == "" && err != nil {
 			e := response.NewAppErr(globals.StatusBadRequest, err, nil)
 			response.Failed(c, 400, e)
 			c.Abort()
 			return
-		}
+		}*/
 
 		// 验证用户是否是超级管理员
 		casbinServer := &CasbinService{
 			Enforcer: e,
 		}
 
-		ok, err := casbinServer.VerifySuperAdministrator(fmt.Sprintf("%v", id), superAdminID)
+		ok, err := casbinServer.VerifySuperAdministrator(email, "超级管理员")
 		if err != nil {
 			e := response.NewAppErr(globals.StatusBadRequest, err, nil)
 			response.Failed(c, 400, e)
@@ -65,7 +82,7 @@ func CasbinAuth(e *casbin.Enforcer) gin.HandlerFunc {
 				return
 			}
 
-			ok, err = e.Enforce(fmt.Sprintf("%v", id), fmt.Sprintf("%v", apiId))
+			ok, err = e.Enforce(email, fmt.Sprintf("%v", apiId))
 			if err != nil {
 				e := response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("NewCasbinAuth -> 权限验证失败"), nil)
 				response.Failed(c, 500, e)

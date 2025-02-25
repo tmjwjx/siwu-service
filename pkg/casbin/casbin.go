@@ -17,6 +17,16 @@ type CasbinService struct {
 	//Adapter  *gormadapter.Adapter
 }
 
+// NewCasbinObject
+// @Description: 生成casbinService结构体
+// @Author wangyulong 2025-02-25 20:23:25
+// @return       CasbinService
+func NewCasbinObject() CasbinService {
+	return CasbinService{
+		Enforcer: globals.CasbinEnforcer,
+	}
+}
+
 // NewCasbinService
 // @Description: 创建 casbin_r_m_a 结构体
 // @Author wangyulong 2025-01-17 09:31:09
@@ -79,33 +89,45 @@ func NewCasbinService(db *gorm.DB) (*CasbinService, error) {
 	}, nil
 }
 
-// GetApiPerm 获取当前角色的api权限
-func (c *CasbinService) GetApiPerm(id string) ([]uint, error) {
+// GetApiPermForRole
+// @Description: 获取当前角色的api权限
+// @Author wangyulong 2025-02-25 22:22:09
+// @receiver     c
+// @param        email string
+// @return       []uint : api的ID
+// @return       error
+func (c *CasbinService) GetApiPermForRole(email string) ([]uint, error) {
 
 	// 确保最新的策略数据
 	err := c.Enforcer.LoadPolicy()
 	if err != nil {
-		return nil, fmt.Errorf("(c *CasbinService) GetApiPerm -> 策略加载失败， 已有的会忽略 -> %s", err)
+		return nil, fmt.Errorf("(c *CasbinService) GetApiPermForRole -> 策略加载失败， 已有的会忽略 -> %s", err)
 	}
 
 	var resources []uint
-	permissions, err := c.Enforcer.GetPermissionsForUser(id)
+	permissions, err := c.Enforcer.GetPermissionsForUser(email)
 	if err != nil {
-		return nil, fmt.Errorf("GetApiPerm -> 获取当前角色的api权限失败 -> %s", err)
+		return nil, fmt.Errorf("GetApiPermForRole -> 获取当前角色的api权限失败 -> %s", err)
 	}
 	for _, p := range permissions {
 		obj := p[1] // p[1] 是资源字段
 		apiId, err := utils.ChangeStringToUint(obj)
 		if err != nil {
-			return nil, fmt.Errorf("GetApiPerm -> 获取当前角色的api权限失败 -> %s", err)
+			return nil, fmt.Errorf("GetApiPermForRole -> 获取当前角色的api权限失败 -> %s", err)
 		}
 		resources = append(resources, apiId)
 	}
 	return resources, nil
 }
 
-// ModifyRolePolicy 重置角色权限
-func (c *CasbinService) ModifyRolePolicy(roleId string, apiIds []string) error {
+// ModifyRolePolicy
+// @Description: 重置角色权限
+// @Author wangyulong 2025-02-25 22:22:51
+// @receiver     c
+// @param        email string
+// @param        apiIds []string
+// @return       error
+func (c *CasbinService) ModifyRolePolicy(email string, apiIds []string) error {
 
 	// 不直接操作数据库，利用enforcer简化操作
 	err := c.Enforcer.LoadPolicy()
@@ -115,14 +137,14 @@ func (c *CasbinService) ModifyRolePolicy(roleId string, apiIds []string) error {
 
 	// 将角色的所有api权限全部删除
 	//_, err = c.Enforcer.DeletePermissionsForUser(strconv.FormatUint(uint64(roleId), 10))
-	_, err = c.Enforcer.DeletePermissionsForUser(roleId)
+	_, err = c.Enforcer.DeletePermissionsForUser(email)
 	if err != nil {
 		return fmt.Errorf("(c *CasbinService) ModifyRolePolicy -> 删除角色组权限失败 -> %s", err)
 	}
 
 	// 为角色分配新的api权限
 	for _, id := range apiIds {
-		_, err = c.Enforcer.AddPolicy(roleId, id)
+		_, err = c.Enforcer.AddPolicy(email, id)
 		if err != nil {
 			return fmt.Errorf("(c *CasbinService) ModifyRolePolicy -> 修改角色组权限成功 -> %s", err)
 		}
@@ -147,28 +169,29 @@ func SelApiId(requestUrl string) (uint, error) {
 	return apiId, nil
 }*/
 
-// AssignRolesForUser
-// @Description: 为用户分配角色
+// AssignRolesForAdminOrUser
+// @Description: 为管理员或用户分配角色
 // @Author wangyulong 2025-01-15 11:32:04
 // @receiver     c
-// @param        userId uint 用户ID
+// @param        email string 管理员或用户email
 // @param        ids []uint 角色IDs
 // @return       error
-func (c *CasbinService) AssignRolesForUser(userId uint, ids []uint) error {
+func (c *CasbinService) AssignRolesForAdminOrUser(email string, roelIds []uint) error {
 	// 确保最新的策略数据
 	err := c.Enforcer.LoadPolicy()
 	if err != nil {
 		return fmt.Errorf("(c *CasbinService) ModifyRolePolicy -> 策略加载失败， 已有的会忽略 -> %s", err)
 	}
 
+	roles, err := c.GetRoleForId(roelIds)
+
 	// 遍历要分配的角色
-	for _, id := range ids {
-		role := fmt.Sprintf("%v", id)
+	for _, role := range roles {
 
 		// 为用户添加单个角色
-		ok, err := c.Enforcer.AddRoleForUser(fmt.Sprintf("%v", userId), role)
+		ok, err := c.Enforcer.AddRoleForUser(email, role)
 		if err != nil {
-			return fmt.Errorf("(c *CasbinService) AssignRolesForUser -> 为用户分配角色失败: %s", err)
+			return fmt.Errorf("(c *CasbinService) AssignRolesForAdminOrUser -> 为用户分配角色失败: %s", err)
 		}
 		if !ok {
 
@@ -177,7 +200,7 @@ func (c *CasbinService) AssignRolesForUser(userId uint, ids []uint) error {
 
 	// 如果需要持久化到数据库
 	if err := c.Enforcer.SavePolicy(); err != nil {
-		return fmt.Errorf("(c *CasbinService) AssignRolesForUser -> 保存策略失败: %s", err)
+		return fmt.Errorf("(c *CasbinService) AssignRolesForAdminOrUser -> 保存策略失败: %s", err)
 	}
 
 	return nil
@@ -191,50 +214,47 @@ func (c *CasbinService) AssignRolesForUser(userId uint, ids []uint) error {
 	//
 	//ok, err := c.Enforcer.AddRolesForUser(fmt.Sprintf("%v", userId), tempIDS)
 	//if err != nil {
-	//	return fmt.Errorf("(c *CasbinService) AssignRolesForUser -> 为用户分配角色失败 %s", err)
+	//	return fmt.Errorf("(c *CasbinService) AssignRolesForAdminOrUser -> 为用户分配角色失败 %s", err)
 	//}
 	//if !ok {
-	//	return fmt.Errorf("(c *CasbinService) AssignRolesForUser -> 该用户已经拥有该角色")
+	//	return fmt.Errorf("(c *CasbinService) AssignRolesForAdminOrUser -> 该用户已经拥有该角色")
 	//}
 	//// 保存策略(保存到存储)
 	//return c.Enforcer.SavePolicy()
 
 }
 
-// GetRolesForUser
-// @Description: 获取用户拥有的角色ID
+// GetRolesForAdminOrUser
+// @Description: 获取管理员或用户拥有的角色ID
 // @Author wangyulong 2025-01-16 16:14:23
 // @receiver     c
 // @param        email uint
-// @return       []uint
+// @return       []uint : 角色ID
 // @return       error
-func (c *CasbinService) GetRolesForUser(email string) ([]uint, error) {
-
-	/*// 用于存储要返回的用户拥有的角色id
-	var ids []uint*/
+func (c *CasbinService) GetRolesForAdminOrUser(email string) ([]uint, error) {
 
 	// 确保最新的策略数据
 	err := c.Enforcer.LoadPolicy()
 	if err != nil {
-		return nil, fmt.Errorf("(c *CasbinService) GetRolesForUser -> 策略加载失败， 已有的会忽略 -> %s", err)
+		return nil, fmt.Errorf("(c *CasbinService) GetRolesForAdminOrUser -> 策略加载失败， 已有的会忽略 -> %s", err)
 	}
 	// 获取用户拥有的角色
 	roles, err := c.Enforcer.GetRolesForUser(email)
 	if err != nil {
-		return nil, fmt.Errorf("c *CasbinService) GetRolesForUser -> 获取用户拥有的角色异常 -> %s", err)
+		return nil, fmt.Errorf("c *CasbinService) GetRolesForAdminOrUser -> 获取用户拥有的角色异常 -> %s", err)
 	}
 
 	// 根据角色Name查询角色ID
 	roleIds, err := c.GetIdForRole(roles)
 	if err != nil {
-		return nil, fmt.Errorf("(c *CasbinService) GetRolesForUser -> 策略加载失败， 已有的会忽略 -> %s", err)
+		return nil, fmt.Errorf("(c *CasbinService) GetRolesForAdminOrUser -> 策略加载失败， 已有的会忽略 -> %s", err)
 	}
 
 	/*var id uint
 	for _, roleId := range roles {
 		id, err = utils.ChangeStringToUint(roleId)
 		if err != nil {
-			return nil, fmt.Errorf("c *CasbinService) GetRolesForUser -> %s", err)
+			return nil, fmt.Errorf("c *CasbinService) GetRolesForAdminOrUser -> %s", err)
 		}
 		ids = append(ids, id)
 	}*/
@@ -242,70 +262,70 @@ func (c *CasbinService) GetRolesForUser(email string) ([]uint, error) {
 	return roleIds, nil
 }
 
-// DeleteRoleForUser
-// @Description: 删除用户对应的角色ids
+// DeleteRoleForAdminOrUser
+// @Description: 删除管理员或用户对应的角色ids
 // @Author wangyulong 2025-01-17 09:30:30
 // @receiver     c
 // @param        userId uint
 // @param        roleIds []uint
 // @return       error
-func (c *CasbinService) DeleteRoleForUser(email string, roleIds []uint) error {
+func (c *CasbinService) DeleteRoleForAdminOrUser(email string, roleIds []uint) error {
+
+	// 确保最新的策略数据
+	err := c.Enforcer.LoadPolicy()
+	if err != nil {
+		return fmt.Errorf("(c *CasbinService) DeleteRoleForAdminOrUser -> 策略加载失败， 已有的会忽略 -> %s", err)
+	}
 
 	// 根据角色ID查询其对应的Name
 	roles, err := c.GetRoleForId(roleIds)
 	if err != nil {
-		return fmt.Errorf("(c *CasbinService) DeleteRoleForUser -> 策略加载失败， 已有的会忽略 -> %s", err)
-	}
-
-	// 确保最新的策略数据
-	err = c.Enforcer.LoadPolicy()
-	if err != nil {
-		return fmt.Errorf("(c *CasbinService) DeleteRoleForUser -> 策略加载失败， 已有的会忽略 -> %s", err)
+		return fmt.Errorf("(c *CasbinService) DeleteRoleForAdminOrUser -> 策略加载失败， 已有的会忽略 -> %s", err)
 	}
 
 	for _, role := range roles {
 		ok, err := c.Enforcer.DeleteRoleForUser(email, role)
 		if err != nil {
-			return fmt.Errorf("c *CasbinService) DeleteRoleForUser -> 删除用户对应的角色异常 -> %s", err)
+			return fmt.Errorf("c *CasbinService) DeleteRoleForAdminOrUser -> 删除用户对应的角色异常 -> %s", err)
 		}
 		if !ok {
-			return fmt.Errorf("c *CasbinService) DeleteRoleForUser -> 删除用户对应的角色失败 -> %s", err)
+			return fmt.Errorf("c *CasbinService) DeleteRoleForAdminOrUser -> 删除用户对应的角色失败 -> %s", err)
 		}
 	}
 
 	// 如果需要持久化到数据库
 	if err := c.Enforcer.SavePolicy(); err != nil {
-		return fmt.Errorf("(c *CasbinService) DeleteRoleForUser -> 保存策略失败: %s", err)
+		return fmt.Errorf("(c *CasbinService) DeleteRoleForAdminOrUser -> 保存策略失败: %s", err)
 	}
 
 	return nil
 }
 
-// UpdateRoleForUser
-// @Description: 更改用户的角色id
+// UpdateRoleForAdminOrUser
+// @Description: 更改管理员或用户的角色id
 // @Author wangyulong 2025-01-17 09:29:37
 // @receiver     c
 // @param        email uint
 // @param        roleIds []uint
 // @return       error
-func (c *CasbinService) UpdateRoleForUser(email string, roleIds []uint) error {
+func (c *CasbinService) UpdateRoleForAdminOrUser(email string, roleIds []uint) error {
+
+	// 确保最新的策略数据
+	err := c.Enforcer.LoadPolicy()
+	if err != nil {
+		return fmt.Errorf("(c *CasbinService) UpdateRoleForAdminOrUser -> 策略加载失败， 已有的会忽略 -> %s", err)
+	}
 
 	// 根据角色ID查询其对应的Name
 	roles, err := c.GetRoleForId(roleIds)
 	if err != nil {
-		return fmt.Errorf("(c *CasbinService) DeleteRoleForUser -> 策略加载失败， 已有的会忽略 -> %s", err)
+		return fmt.Errorf("(c *CasbinService) DeleteRoleForAdminOrUser -> 根据角色ID查询其对应的Name 失败 -> %s", err)
 	}
 
-	// 确保最新的策略数据
-	err = c.Enforcer.LoadPolicy()
-	if err != nil {
-		return fmt.Errorf("(c *CasbinService) UpdateRoleForUser -> 策略加载失败， 已有的会忽略 -> %s", err)
-	}
-
-	// 删除用户所有对应的角色
+	// 删除用户所有对应的所有角色
 	_, err = c.Enforcer.DeleteRolesForUser(email)
 	if err != nil {
-		return fmt.Errorf("c *CasbinService) UpdateRoleForUser -> 删除用户所有对应的角色异常 -> %s", err)
+		return fmt.Errorf("c *CasbinService) UpdateRoleForAdminOrUser -> 删除用户所有对应的角色异常 -> %s", err)
 	}
 
 	// 遍历要分配的角色
@@ -314,7 +334,7 @@ func (c *CasbinService) UpdateRoleForUser(email string, roleIds []uint) error {
 		// 为用户添加单个角色
 		ok, err := c.Enforcer.AddRoleForUser(email, role)
 		if err != nil {
-			return fmt.Errorf("(c *CasbinService) UpdateRoleForUser -> 为用户分配角色失败: %s", err)
+			return fmt.Errorf("(c *CasbinService) UpdateRoleForAdminOrUser -> 为用户分配角色失败: %s", err)
 		}
 		if !ok {
 			// 不用做任何处理
@@ -323,14 +343,14 @@ func (c *CasbinService) UpdateRoleForUser(email string, roleIds []uint) error {
 
 	// 如果需要持久化到数据库
 	if err := c.Enforcer.SavePolicy(); err != nil {
-		return fmt.Errorf("(c *CasbinService) UpdateRoleForUser -> 保存策略失败: %s", err)
+		return fmt.Errorf("(c *CasbinService) UpdateRoleForAdminOrUser -> 保存策略失败: %s", err)
 	}
 
 	return nil
 }
 
 // VerifySuperAdministrator
-// @Description: 验证用户是否是超级管理员
+// @Description: 验证管理员或用户是否是超级管理员
 // @Author wangyulong 2025-01-24 18:28:02
 // @receiver     c
 // @param        email string
@@ -356,17 +376,17 @@ func (c *CasbinService) VerifySuperAdministrator(email string, role string) (boo
 	}
 }
 
-// DeletePermForUser
+// DeletePermForAdminOrUser
 // @Description: 删除角色拥有的权限
 // @Author wangyulong 2025-01-24 20:26:47
 // @receiver     c
 // @param        role string
 // @return       error
-func (c *CasbinService) DeletePermForUser(role string) error {
+func (c *CasbinService) DeletePermForAdminOrUser(role string) error {
 	// 删除角色拥有的权限
 	_, err := c.Enforcer.DeletePermissionForUser(role)
 	if err != nil {
-		return fmt.Errorf("(c *CasbinService) DeletePermForUser -> 删除角色拥有的权限异常 -> %s", err)
+		return fmt.Errorf("(c *CasbinService) DeletePermForAdminOrUser -> 删除角色拥有的权限异常 -> %s", err)
 	}
 	return nil
 }

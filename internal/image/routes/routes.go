@@ -14,5 +14,4 @@ func ProduceImageUrl(e *gin.Engine) {
 
 	// 压缩图片
 	e.GET(globals.SConfig.Prefix+"/:path", controllers.CompressImageCtrl)
-
 }

@@ -291,7 +291,15 @@ func DeleteApiRep(e *casbin2.Enforcer, req *requests.DeleteApiReq, db *gorm.DB) 
 	// 删除casbin_rule表中的信息
 	for _, id := range req.ID {
 
-		err = casbinServer.DeletePermForUser(fmt.Sprintf("%v", id))
+		// 在 casbin_rule 表中查询api对应的角色
+		var roleId string
+		res := tx.Table("casbin_rule").Select("v0").Where("ptype = ? And v1 = ?", "p", fmt.Sprintf("%v", id)).First(&roleId)
+		if res.Error != nil {
+			tx.Rollback()
+			return fmt.Errorf("DeleteApiRep -> 在 casbin_rule 表中查询api对应的角色 失败 -> %s", err)
+		}
+
+		err = casbinServer.DeletePermForAdminOrUser(roleId)
 		if err != nil {
 			// 回滚普通事务
 			tx.Rollback()
