@@ -40,9 +40,9 @@ func BsLogin(c *gin.Context) {
 
 	// 业务逻辑
 	bsManageContext := logics.NewBsManageContext(globals.DB, c)
-	backstageLoginRes, err := bsManageContext.BsLogin(bsLogicMsg)
+	backstageLoginRes, state, err := bsManageContext.BsLogin(bsLogicMsg)
 	if err != nil {
-		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("BsLogin() -> %v", err), nil))
+		response.Failed(c, state, response.NewAppErr(globals.AppCode(state), fmt.Errorf("BsLogin() -> %v", err), nil))
 		return
 	}
 

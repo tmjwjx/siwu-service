@@ -43,7 +43,7 @@ func NewBsManageContext(db *gorm.DB, c *gin.Context) *BsManageContext {
 // @receiver     b
 // @param        msg requests.BackstageLoginReq
 // @return       error
-func (b *BsManageContext) BsLogin(msg requests.BackstageLoginReq) (*requests.FinalBackstageLoginRes, error) {
+func (b *BsManageContext) BsLogin(msg requests.BackstageLoginReq) (*requests.FinalBackstageLoginRes, int, error) {
 	// 判断邮箱和密码是否匹配
 	email := msg.Email
 	password := msg.Password
@@ -51,13 +51,13 @@ func (b *BsManageContext) BsLogin(msg requests.BackstageLoginReq) (*requests.Fin
 	// 根据邮箱查用户
 	user := repositories.QueryUserByEmail(b.DB, email)
 	if user == nil {
-		return nil, fmt.Errorf("BsManageContext.BsLogin() err: 不存在该邮箱用户")
+		return nil, 400, fmt.Errorf("BsManageContext.BsLogin() err: 不存在该邮箱用户")
 	}
 
 	// 比较加密密码
 	encryptedPassword := user.Password
 	if !internalUtils.CheckPasswordHash(password, encryptedPassword) {
-		return nil, fmt.Errorf("BsManageContext.BsLogin() err: 密码错误")
+		return nil, 400, fmt.Errorf("BsManageContext.BsLogin() err: 密码错误")
 	}
 
 	// 改变 LastLoginTime
@@ -69,11 +69,11 @@ func (b *BsManageContext) BsLogin(msg requests.BackstageLoginReq) (*requests.Fin
 	// 查询用户的头像路径
 	userImages, err := internalUtils.GetImages(b.DB, globals.UserHome, user.ID)
 	if err != nil {
-		return nil, fmt.Errorf("BsManageContext.BsLogin() -> %v", err)
+		return nil, 500, err
 	}
 	// 没有图片
 	if userImages == nil {
-		return nil, fmt.Errorf("BsManageContext.BsLogin() err = 无法找到id为%d的用户头像图片", user.ID)
+		return nil, 500, fmt.Errorf("无法找到id为%d的用户头像图片", user.ID)
 	}
 	avatarPath := (*userImages)[0]
 
@@ -84,11 +84,11 @@ func (b *BsManageContext) BsLogin(msg requests.BackstageLoginReq) (*requests.Fin
 	// 获取该用户对应的全部角色id
 	casbinService, err := casbin.NewCasbinService(globals.DB)
 	if err != nil {
-		return nil, fmt.Errorf("UserReqContext.BsLogin() %v", err)
+		return nil, 500, err
 	}
 	roleIds, err := casbinService.GetRolesForUser(user.Email)
 	if err != nil {
-		return nil, fmt.Errorf("UserReqContext.BsLogin() %v", err)
+		return nil, 500, err
 	}
 
 	for _, v := range roleIds {
@@ -117,7 +117,7 @@ func (b *BsManageContext) BsLogin(msg requests.BackstageLoginReq) (*requests.Fin
 	// 查询超级管理员的ID
 	superAdminId, err := repositories.QuerySuperAdminId(b.DB)
 	if err != nil {
-		return nil, fmt.Errorf("UserReqContext.BsLogin() %v", err)
+		return nil, 500, err
 	}
 
 	var menuPerm *[]requests.MenuPerm // 用于存储当前用户角色的所有菜单权限并集
@@ -136,21 +136,25 @@ func (b *BsManageContext) BsLogin(msg requests.BackstageLoginReq) (*requests.Fin
 	if flag == 1 {
 		menuPerm, err = b.GetMenuPermRep(b.DB, nil, 1)
 		if err != nil {
-			return nil, fmt.Errorf("UserReqContext.BsLogin() -> menuPerm -> %v", err)
+			// return nil, fmt.Errorf("UserReqContext.BsLogin() -> menuPerm -> %v", err)
+			return nil, 500, err
 		}
 		permCode, err = b.GetPermCodeRep(casbinService, b.DB, nil, 1)
 		if err != nil {
-			return nil, fmt.Errorf("UserReqContext.BsLogin() -> permCode -> %v", err)
+			// return nil, fmt.Errorf("UserReqContext.BsLogin() -> permCode -> %v", err)
+			return nil, 500, err
 		}
 
 	} else {
 		menuPerm, err = b.GetMenuPermRep(b.DB, roleIds, 0)
 		if err != nil {
-			return nil, fmt.Errorf("UserReqContext.BsLogin()2 %v", err)
+			// return nil, fmt.Errorf("UserReqContext.BsLogin()2 %v", err)
+			return nil, 500, err
 		}
 		permCode, err = b.GetPermCodeRep(casbinService, b.DB, roleIds, 0)
 		if err != nil {
-			return nil, fmt.Errorf("UserReqContext.BsLogin() -> permCode -> %v", err)
+			// return nil, fmt.Errorf("UserReqContext.BsLogin() -> permCode -> %v", err)
+			return nil, 500, err
 		}
 	}
 
@@ -177,12 +181,12 @@ func (b *BsManageContext) BsLogin(msg requests.BackstageLoginReq) (*requests.Fin
 		if err = sqlUtils.UpdateObjects(b.DB, &models.Administrator{Model: gorm.Model{ID: admin.ID}}, map[string]interface{}{"last_login_time": now}); err != nil {
 			// return nil, fmt.Errorf("UserReqContext.Login() -> %v", err)
 			globals.Log.Errorf(err.Error())
-			return nil, err
+			return nil, 500, err
 		}
 
-		return res, nil
+		return res, 500, nil
 	} else {
-		return nil, fmt.Errorf("id为%d没有权限进入后台", user.ID)
+		return nil, 400, fmt.Errorf("id为%d没有权限进入后台", user.ID)
 	}
 }
 
@@ -192,7 +196,7 @@ func (b *BsManageContext) BsLogout(tokenString string) error {
 	// 设置过期时间为 Token 剩余时间
 	claims, err := token.ValidateToken(tokenString)
 	if err != nil {
-		return fmt.Errorf("BsManageContext.BsLogout() : 无效的 token")
+		return fmt.Errorf("无效的 token")
 		// response.Failed(c, http.StatusUnauthorized, response.NewAppErr(globals.StatusUnauthorized, fmt.Errorf("Logout() : 无效的 token"), nil))
 		// return
 	}
@@ -201,7 +205,7 @@ func (b *BsManageContext) BsLogout(tokenString string) error {
 	// 如果该token还没有失效，就把它添加到黑名单中，让它失效
 	if expiration > 0 {
 		if err = token.AddTokenToBlacklist(globals.RDB, tokenString, expiration); err != nil {
-			return fmt.Errorf("BsManageContext.BsLogout() : err -> %v", err)
+			return err
 			// response.Failed(c, http.StatusUnauthorized, response.NewAppErr(globals.StatusUnauthorized, fmt.Errorf("Logout() : err -> %v", err), nil))
 			// return
 		}

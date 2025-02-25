@@ -59,11 +59,11 @@ func Register(c *gin.Context) {
 
 	// 业务逻辑
 	userReqContext := logics.NewUserReqContext(globals.DB, c)
-	userInfo, err := userReqContext.Register(registerReq)
+	userInfo, state, err := userReqContext.Register(registerReq)
 	if err != nil {
 		// response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, err, nil))
 		globals.Log.Errorf(err.Error())
-		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, err, nil))
+		response.Failed(c, state, response.NewAppErr(globals.AppCode(state), err, nil))
 		return
 	}
 
@@ -155,7 +155,8 @@ func ReqVerifyCode(c *gin.Context) {
 
 	// 业务逻辑
 	userReqContext := logics.NewUserReqContext(globals.DB, c)
-	if err := userReqContext.ReqVerifyCode(email); err != nil {
+	state, err := userReqContext.ReqVerifyCode(email)
+	if err != nil {
 		// response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("ReqVerifyCode() -> %v", err), nil))
 		globals.Log.Errorf(err.Error())
 		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, err, nil))
@@ -163,7 +164,7 @@ func ReqVerifyCode(c *gin.Context) {
 	}
 
 	// 成功
-	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, response.DataSuccess, nil))
+	response.Success(c, state, response.NewAppData(globals.AppCode(state), response.DataSuccess, nil))
 }
 
 // Login 登录
@@ -199,10 +200,10 @@ func Login(c *gin.Context) {
 
 	// 业务逻辑
 	userReqContext := logics.NewUserReqContext(globals.DB, c)
-	userInfo, err := userReqContext.Login(loginReq)
+	userInfo, state, err := userReqContext.Login(loginReq)
 	if err != nil {
 		globals.Log.Errorf(err.Error())
-		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, err, nil))
+		response.Failed(c, state, response.NewAppErr(globals.AppCode(state), err, nil))
 		return
 	}
 
@@ -261,10 +262,10 @@ func ForgotPassword(c *gin.Context) {
 
 	// 业务逻辑
 	userReqContext := logics.NewUserReqContext(globals.DB, c)
-	if err := userReqContext.ForgotPassword(forgotPasswordReq); err != nil {
+	if state, err := userReqContext.ForgotPassword(forgotPasswordReq); err != nil {
 		// response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("Register() -> %v", err), nil))
 		globals.Log.Errorf(err.Error())
-		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, err, nil))
+		response.Failed(c, state, response.NewAppErr(globals.AppCode(state), err, nil))
 		return
 	}
 
