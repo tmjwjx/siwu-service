@@ -291,7 +291,7 @@ func DeleteApiRep(e *casbin2.Enforcer, req *requests.DeleteApiReq, db *gorm.DB) 
 	// 删除casbin_rule表中的信息
 	for _, id := range req.ID {
 
-		err = casbinServer.DeletePermForUser(fmt.Sprintf("%v", id))
+		err = casbinServer.DeletePermForAdminOrUser(fmt.Sprintf("%v", id))
 		if err != nil {
 			// 回滚普通事务
 			tx.Rollback()

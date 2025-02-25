@@ -87,7 +87,7 @@ func NewBsManageContext(db *gorm.DB, c *gin.Context) *BsManageContext {
 // 	if err != nil {
 // 		return nil, 500, err
 // 	}
-// 	roleIds, err := casbinService.GetRolesForUser(user.Email)
+// 	roleIds, err := casbinService.GetRolesForAdminOrUser(user.Email)
 // 	if err != nil {
 // 		return nil, 500, err
 // 	}
@@ -234,7 +234,7 @@ func (b *BsManageContext) BsLogin(msg requests.BackstageLoginReq) (*requests.Fin
 	if err != nil {
 		return nil, 500, err
 	}
-	roleIds, err := casbinService.GetRolesForUser(admin.Email)
+	roleIds, err := casbinService.GetRolesForAdminOrUser(admin.Email)
 	if err != nil {
 		return nil, 500, err
 	}
@@ -472,7 +472,7 @@ func (b *BsManageContext) GetPermCodeRep(casbinService *casbin.CasbinService, db
 
 		for _, roleId := range roleIds {
 			// 获取当前角色的api权限
-			apiId, err := casbinService.GetApiPerm(fmt.Sprintf("%v", roleId))
+			apiId, err := casbinService.GetApiPermForRole(fmt.Sprintf("%v", roleId))
 			if err != nil {
 				return nil, fmt.Errorf("GetPermCodeRep -> 获取当前角色的api权限失败 -> %s", err)
 			}
