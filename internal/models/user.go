@@ -16,7 +16,7 @@ type User struct {
 	FansCount          int              `json:"fans_count" gorm:"default:0"`                          // 粉丝数
 	PrivateSettings    string           `json:"private_settings"`                                     // 私信设置
 	Status             int              `json:"status" gorm:"default:1"`                              // 用户状态：0全部 1正常 2封禁
-	LastLoginTime      time.Time        `json:"last_login_time" gorm:"default:'0001-01-01 00:00:00'"` // 最后一次的登录时间。设置默认值为零值。
+	LastLoginTime      time.Time        `json:"last_login_time" gorm:"default:'1970-01-01 00:00:00'"` // 最后一次的登录时间。设置默认值为零值。
 	UserDetail         UserDetail       // 用户详情
 	UserMessage        UserMessage      // 通知用户信息
 	Tags               []Tag            `gorm:"many2many:user_tags"`

@@ -75,7 +75,7 @@ func (u *UserReqContext) Add(req requests.AddReq) (uint, error) {
 	if err != nil {
 		return 0, fmt.Errorf("UserReqContext.Add() err: %v", err)
 	}
-	if err = casbinService.AssignRolesForUser("user.ID", req.RoleIds); err != nil {
+	if err = casbinService.AssignRolesForUser(user.Email, req.RoleIds); err != nil {
 		return 0, fmt.Errorf("UserReqContext.Add() err: %v", err)
 	}
 
@@ -110,8 +110,10 @@ func (u *UserReqContext) Delete(req requests.DeleteReq) error {
 		if err != nil {
 			return fmt.Errorf("UserReqContext.Delete() err: %v", err)
 		}
+		// 查询该id对应的邮箱
+		email := repositories.QueryUserEmailById(u.DB, v)
 		// 获取该用户对应的全部角色id
-		roleIds, err := casbinService.GetRolesForUser("v")
+		roleIds, err := casbinService.GetRolesForUser(email)
 		if err != nil {
 			return fmt.Errorf("UserReqContext.Delete() err: %v", err)
 		}
@@ -150,7 +152,7 @@ func (u *UserReqContext) Edit(req requests.EditReq) error {
 	if err != nil {
 		return fmt.Errorf("UserReqContext.Delete() err: %v", err)
 	}
-	if err = casbinService.UpdateRoleForUser("req.UserId", req.RoleIds); err != nil {
+	if err = casbinService.UpdateRoleForUser(req.Email, req.RoleIds); err != nil {
 		return fmt.Errorf("UserReqContext.Delete() err: %v", err)
 	}
 
@@ -203,7 +205,7 @@ func (u *UserReqContext) List(req requests.ListReq) ([]*requests.ListRes, int, e
 		if err != nil {
 			return nil, 0, fmt.Errorf("UserReqContext.List() %v", err)
 		}
-		roleIds, err := casbinService.GetRolesForUser("v.ID")
+		roleIds, err := casbinService.GetRolesForUser(v.Email)
 		if err != nil {
 			return nil, 0, fmt.Errorf("UserReqContext.List() %v", err)
 		}
@@ -425,7 +427,7 @@ func (u *UserReqContext) GetInfo(id uint) (*requests.GetInfoRes, error) {
 	if err != nil {
 		return nil, fmt.Errorf("UserReqContext.GetInfo() %v", err)
 	}
-	roleIds, err := casbinService.GetRolesForUser("user.ID")
+	roleIds, err := casbinService.GetRolesForUser(user.Email)
 	if err != nil {
 		return nil, fmt.Errorf("UserReqContext.GetInfo() %v", err)
 	}
