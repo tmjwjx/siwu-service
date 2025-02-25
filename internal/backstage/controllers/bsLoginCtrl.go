@@ -42,7 +42,7 @@ func BsLogin(c *gin.Context) {
 	bsManageContext := logics.NewBsManageContext(globals.DB, c)
 	backstageLoginRes, state, err := bsManageContext.BsLogin(bsLogicMsg)
 	if err != nil {
-		response.Failed(c, state, response.NewAppErr(globals.AppCode(state), fmt.Errorf("BsLogin() -> %v", err), nil))
+		response.Failed(c, state, response.NewAppErr(globals.AppCode(state*10), fmt.Errorf("BsLogin() -> %v", err), nil))
 		return
 	}
 
