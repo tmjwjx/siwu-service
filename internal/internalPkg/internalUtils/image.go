@@ -1,6 +1,7 @@
 package internalUtils
 
 import (
+	"crypto/rand"
 	"errors"
 	"fmt"
 	"forum/internal/models"
@@ -280,4 +281,21 @@ func AssignDefaultValue(home globals.Home, images *[]string) {
 	} else if home == globals.AdministratorHome {
 		*images = append(*images, AdministratorDefaultImage)
 	}
+}
+
+// GenerateAvatar
+// @Description: 生成默认头像
+// @Author wangyulong 2025-02-24 11:43:37
+// @return       string 放回的头像url路径
+func GenerateAvatar() (string, error) {
+	b := make([]byte, 16)
+
+	_, err := rand.Read(b)
+	if err != nil {
+		return "", fmt.Errorf("GenerateAvatar -> rand.Read(b) 失败 -> %v", err)
+	}
+
+	url := fmt.Sprintf("https://api.multiavatar.com/%s.png", fmt.Sprintf("%x", b))
+
+	return url, nil
 }

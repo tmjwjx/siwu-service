@@ -171,7 +171,8 @@ func (r *RoleReqContext) DispatchRole(dispatchRole requests.DispatchRoleReq) err
 	// return nil
 
 	// 筛选数据
-	userId := dispatchRole.UserId
+	//userId := dispatchRole.UserId
+
 	ids := make([]uint, 0) // 要添加的角色
 	for _, id := range dispatchRole.Ids {
 		// 判断角色Id是否存在
@@ -187,7 +188,7 @@ func (r *RoleReqContext) DispatchRole(dispatchRole requests.DispatchRoleReq) err
 	if err != nil {
 		return fmt.Errorf("RoleReqContext.DispatchRoleReq() -> err = %v", err)
 	}
-	if err = casbinService.AssignRolesForUser(userId, ids); err != nil {
+	if err = casbinService.AssignRolesForUser("userId", ids); err != nil {
 		return fmt.Errorf("RoleReqContext.DispatchRoleReq() -> %v", err)
 	}
 	return nil

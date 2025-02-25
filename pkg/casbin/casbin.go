@@ -80,7 +80,7 @@ func NewCasbinService(db *gorm.DB) (*CasbinService, error) {
 }
 
 // GetApiPerm 获取当前角色的api权限
-func (c *CasbinService) GetApiPerm(id string) ([]uint, error) {
+func (c *CasbinService) GetApiPerm(email string) ([]uint, error) {
 
 	// 确保最新的策略数据
 	err := c.Enforcer.LoadPolicy()
@@ -89,7 +89,7 @@ func (c *CasbinService) GetApiPerm(id string) ([]uint, error) {
 	}
 
 	var resources []uint
-	permissions, err := c.Enforcer.GetPermissionsForUser(id)
+	permissions, err := c.Enforcer.GetPermissionsForUser(email)
 	if err != nil {
 		return nil, fmt.Errorf("GetApiPerm -> 获取当前角色的api权限失败 -> %s", err)
 	}
@@ -105,7 +105,7 @@ func (c *CasbinService) GetApiPerm(id string) ([]uint, error) {
 }
 
 // ModifyRolePolicy 重置角色权限
-func (c *CasbinService) ModifyRolePolicy(roleId string, apiIds []string) error {
+func (c *CasbinService) ModifyRolePolicy(email string, apiIds []string) error {
 
 	// 不直接操作数据库，利用enforcer简化操作
 	err := c.Enforcer.LoadPolicy()
@@ -115,14 +115,14 @@ func (c *CasbinService) ModifyRolePolicy(roleId string, apiIds []string) error {
 
 	// 将角色的所有api权限全部删除
 	//_, err = c.Enforcer.DeletePermissionsForUser(strconv.FormatUint(uint64(roleId), 10))
-	_, err = c.Enforcer.DeletePermissionsForUser(roleId)
+	_, err = c.Enforcer.DeletePermissionsForUser(email)
 	if err != nil {
 		return fmt.Errorf("(c *CasbinService) ModifyRolePolicy -> 删除角色组权限失败 -> %s", err)
 	}
 
 	// 为角色分配新的api权限
 	for _, id := range apiIds {
-		_, err = c.Enforcer.AddPolicy(roleId, id)
+		_, err = c.Enforcer.AddPolicy(email, id)
 		if err != nil {
 			return fmt.Errorf("(c *CasbinService) ModifyRolePolicy -> 修改角色组权限成功 -> %s", err)
 		}
@@ -154,7 +154,7 @@ func SelApiId(requestUrl string) (uint, error) {
 // @param        userId uint 用户ID
 // @param        ids []uint 角色IDs
 // @return       error
-func (c *CasbinService) AssignRolesForUser(userId uint, ids []uint) error {
+func (c *CasbinService) AssignRolesForUser(email string, ids []uint) error {
 	// 确保最新的策略数据
 	err := c.Enforcer.LoadPolicy()
 	if err != nil {
@@ -166,7 +166,7 @@ func (c *CasbinService) AssignRolesForUser(userId uint, ids []uint) error {
 		role := fmt.Sprintf("%v", id)
 
 		// 为用户添加单个角色
-		ok, err := c.Enforcer.AddRoleForUser(fmt.Sprintf("%v", userId), role)
+		ok, err := c.Enforcer.AddRoleForUser(email, role)
 		if err != nil {
 			return fmt.Errorf("(c *CasbinService) AssignRolesForUser -> 为用户分配角色失败: %s", err)
 		}

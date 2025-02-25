@@ -75,7 +75,7 @@ func (u *UserReqContext) Add(req requests.AddReq) (uint, error) {
 	if err != nil {
 		return 0, fmt.Errorf("UserReqContext.Add() err: %v", err)
 	}
-	if err = casbinService.AssignRolesForUser(user.ID, req.RoleIds); err != nil {
+	if err = casbinService.AssignRolesForUser("user.ID", req.RoleIds); err != nil {
 		return 0, fmt.Errorf("UserReqContext.Add() err: %v", err)
 	}
 
