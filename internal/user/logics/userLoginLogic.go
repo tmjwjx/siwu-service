@@ -120,7 +120,7 @@ func (u *UserReqContext) Register(registerMsg requests.RegisterReq) (*requests.L
 		return nil, 500, err
 	}
 
-	userImages, err := internalUtils.GetImages(u.DB, globals.UserHome, user.ID)
+	/*userImages, err := internalUtils.GetImages(u.DB, globals.UserHome, user.ID)
 	if err != nil {
 		globals.Log.Errorf(err.Error())
 		return nil, 500, err
@@ -132,7 +132,14 @@ func (u *UserReqContext) Register(registerMsg requests.RegisterReq) (*requests.L
 		globals.Log.Errorf(response.ErrUnableFindUserAvatar + ":" + strconv.Itoa(int(user.ID)))
 		return nil, 500, fmt.Errorf(response.ErrUnableFindUserAvatar + ":" + strconv.Itoa(int(user.ID)))
 	}
-	avatarPath := (*userImages)[0]
+	avatarPath := (*userImages)[0]*/
+
+	// 为用户设置默认头像
+	da := internalUtils.NewDefaultAvatar(globals.UserHome, user.ID, u.DB)
+	avatarPath, err := internalUtils.GenerateAvatar(da)
+	if err != nil {
+		globals.Log.Errorf(err.Error())
+	}
 
 	// 修改 LastLoginTime
 	if err = sqlUtils.UpdateObjects(u.DB, &models.User{Model: gorm.Model{ID: user.ID}}, map[string]interface{}{"last_login_time": now}); err != nil {

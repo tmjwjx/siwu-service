@@ -268,8 +268,8 @@ func (b *BsManageContext) BsLogin(msg requests.BackstageLoginReq) (*requests.Fin
 		return nil, 500, err
 	}
 
-	var menuPerm *[]requests.MenuPerm // 用于存储当前用户角色的所有菜单权限并集
-	var permCode *[]string            // 用于存储当前用户角色的权限标识并集
+	var menuPerm *[]requests.MenuPerm // 用于存储当前管理员角色的所有菜单权限并集
+	var permCode *[]string            // 用于存储当前管理员角色的权限标识并集
 
 	var flag int // 用于判断该用户是否是超级管理员
 

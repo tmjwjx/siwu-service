@@ -283,11 +283,35 @@ func AssignDefaultValue(home globals.Home, images *[]string) {
 	}
 }
 
+// DefaultAvatar
+// @Description: 用于存储生成默认头像的参数
+// @Author wangyulong 2025-02-24 11:40:27
+type DefaultAvatar struct {
+	Home   globals.Home // home:图片所属单位，即属于文章图片还是用户图片或是资源表图片
+	HomeID uint         // homeID:图片对应的具体文章或用户的ID
+	DB     *gorm.DB
+}
+
+// NewDefaultAvatar
+// @Description: 生成DefaultAvatar对象
+// @Author wangyulong 2025-02-24 11:42:45
+// @param        home globals.Home
+// @param        homeID uint
+// @param        db *gorm.DB
+// @return       DefaultAvatar
+func NewDefaultAvatar(home globals.Home, homeID uint, db *gorm.DB) DefaultAvatar {
+	return DefaultAvatar{
+		Home:   home,
+		HomeID: homeID,
+		DB:     db,
+	}
+}
+
 // GenerateAvatar
 // @Description: 生成默认头像
 // @Author wangyulong 2025-02-24 11:43:37
 // @return       string 放回的头像url路径
-func GenerateAvatar() (string, error) {
+func GenerateAvatar(da DefaultAvatar) (string, error) {
 	b := make([]byte, 16)
 
 	_, err := rand.Read(b)
@@ -295,7 +319,24 @@ func GenerateAvatar() (string, error) {
 		return "", fmt.Errorf("GenerateAvatar -> rand.Read(b) 失败 -> %v", err)
 	}
 
-	url := fmt.Sprintf("https://api.multiavatar.com/%s.png", fmt.Sprintf("%x", b))
+	fileName := fmt.Sprintf("%x", b)
+	url := fmt.Sprintf("https://api.multiavatar.com/%s.png", fileName)
+
+	// 更新数据库
+	attachment := &models.Attachment{
+		Home:   da.Home,
+		HomeID: da.HomeID,
+		Name:   fileName + ".png",
+		Type:   "images/png",
+		Path:   url,
+	}
+
+	// 将文件插入数据库中
+	err = InsertFile(da.DB, attachment)
+	if err != nil {
+		return "", fmt.Errorf("GenerateAvatar -> 将文件插入数据库中 失败 -> %v", err)
+	}
 
 	return url, nil
+
 }
