@@ -43,75 +43,15 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	// req, ok := c.Get("req")
-	// if !ok {
-	// 	globals.Log.Errorf(response.ErrGetReqIsWrong)
-	// 	response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf(response.ErrGetReqIsWrong), nil))
-	// 	return
-	// }
-	// // 类型断言
-	// registerReq, ok := req.(requests.RegisterReq)
-	// if !ok {
-	// 	globals.Log.Errorf(response.ErrTypeAssertionFail)
-	// 	response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf(response.ErrTypeAssertionFail), nil))
-	// 	return
-	// }
-
 	// 业务逻辑
 	userReqContext := logics.NewUserReqContext(globals.DB, c)
-	userInfo, err := userReqContext.Register(registerReq)
+	userInfo, state, err := userReqContext.Register(registerReq)
 	if err != nil {
 		// response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, err, nil))
 		globals.Log.Errorf(err.Error())
-		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, err, nil))
+		response.Failed(c, state, response.NewAppErr(globals.AppCode(state*10), err, nil))
 		return
 	}
-
-	// // 通过email查询id
-	// user := repositories.QueryUserByEmail(userReqContext.DB, registerReq.Email)
-	// if user == nil {
-	// 	globals.Log.Errorf(response.ErrEmailNotExist + ":" + registerReq.Email)
-	// 	response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf(response.ErrEmailNotExist+":"+registerReq.Email), nil))
-	// 	return
-	// }
-	// // 生成token
-	// tok, err := token.GenerateToken(user.ID)
-	// if err != nil {
-	// 	globals.Log.Errorf(err.Error())
-	// 	response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, err, nil))
-	// 	return
-	// }
-
-	// 查询用户的信息
-
-	// // 通过email查询id
-	// user := repositories.QueryUserByEmail(userReqContext.DB, registerReq.Email)
-	// if user == nil {
-	// 	globals.Log.Errorf(response.ErrEmailNotExist + ":" + registerReq.Email)
-	// 	response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf(response.ErrEmailNotExist+":"+registerReq.Email), nil))
-	// 	return
-	// }
-	// userImages, err := internalUtils.GetImages(u.DB, globals.UserHome, user.ID)
-	// if err != nil {
-	// 	globals.Log.Errorf(err.Error())
-	// 	response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf(response.ErrEmailNotExist+":"+registerReq.Email), nil))
-	// 	return
-	// 	// return nil, fmt.Errorf("UserReqContext.Login() %v", err)
-	// }
-	// // 没有图片
-	// if userImages == nil {
-	// 	// return nil, fmt.Errorf("UserReqContext.Login() err = 无法找到id为%d的用户头像图片", user.ID)
-	// 	globals.Log.Errorf(response.ErrUnableFindUserAvatar + ":" + strconv.Itoa(int(user.ID)))
-	//
-	// 	return
-	// }
-	// avatarPath := (*userImages)[0]
-	//
-	// var userInfo = requests.LogicRes{
-	// 	Id:         user.ID,
-	// 	Nickname:   user.Nickname,
-	// 	AvatarPath: avatarPath,
-	// }
 
 	// 生成token
 	tok, err := token.GenerateToken(userInfo.Id)
@@ -121,9 +61,6 @@ func Register(c *gin.Context) {
 		return
 	}
 	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, response.DataSuccess, gin.H{"token": tok, "userinfo": userInfo}))
-
-	// // 成功
-	// response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, response.DataSuccess, gin.H{"token": tok}))
 }
 
 // ReqVerifyCode 用户请求验证码
@@ -139,23 +76,10 @@ func ReqVerifyCode(c *gin.Context) {
 		return
 	}
 
-	// req, ok := c.Get("req")
-	// if !ok {
-	// 	globals.Log.Errorf(response.ErrGetReqIsWrong)
-	// 	response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf(response.ErrGetReqIsWrong), nil))
-	// 	return
-	// }
-	// // 类型断言
-	// email, ok := req.(string)
-	// if !ok {
-	// 	globals.Log.Errorf(response.ErrTypeAssertionFail)
-	// 	response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf(response.ErrTypeAssertionFail), nil))
-	// 	return
-	// }
-
 	// 业务逻辑
 	userReqContext := logics.NewUserReqContext(globals.DB, c)
-	if err := userReqContext.ReqVerifyCode(email); err != nil {
+	state, err := userReqContext.ReqVerifyCode(email)
+	if err != nil {
 		// response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("ReqVerifyCode() -> %v", err), nil))
 		globals.Log.Errorf(err.Error())
 		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, err, nil))
@@ -163,7 +87,7 @@ func ReqVerifyCode(c *gin.Context) {
 	}
 
 	// 成功
-	response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, response.DataSuccess, nil))
+	response.Success(c, state, response.NewAppData(globals.AppCode(state*10), response.DataSuccess, nil))
 }
 
 // Login 登录
@@ -183,26 +107,12 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	// req, ok := c.Get("req")
-	// if !ok {
-	// 	globals.Log.Errorf(response.ErrGetReqIsWrong)
-	// 	response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf(response.ErrGetReqIsWrong), nil))
-	// 	return
-	// }
-	// // 类型断言
-	// loginReq, ok := req.(requests.LogicReq)
-	// if !ok {
-	// 	globals.Log.Errorf(response.ErrTypeAssertionFail)
-	// 	response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf(response.ErrTypeAssertionFail), nil))
-	// 	return
-	// }
-
 	// 业务逻辑
 	userReqContext := logics.NewUserReqContext(globals.DB, c)
-	userInfo, err := userReqContext.Login(loginReq)
+	userInfo, state, err := userReqContext.Login(loginReq)
 	if err != nil {
 		globals.Log.Errorf(err.Error())
-		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, err, nil))
+		response.Failed(c, state, response.NewAppErr(globals.AppCode(state*10), err, nil))
 		return
 	}
 
@@ -245,26 +155,12 @@ func ForgotPassword(c *gin.Context) {
 		return
 	}
 
-	// req, ok := c.Get("req")
-	// if !ok {
-	// 	globals.Log.Errorf(response.ErrGetReqIsWrong)
-	// 	response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf(response.ErrGetReqIsWrong), nil))
-	// 	return
-	// }
-	// // 类型断言
-	// forgotPasswordReq, ok := req.(requests.ForgotPasswordReq)
-	// if !ok {
-	// 	globals.Log.Errorf(response.ErrTypeAssertionFail)
-	// 	response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf(response.ErrTypeAssertionFail), nil))
-	// 	return
-	// }
-
 	// 业务逻辑
 	userReqContext := logics.NewUserReqContext(globals.DB, c)
-	if err := userReqContext.ForgotPassword(forgotPasswordReq); err != nil {
+	if state, err := userReqContext.ForgotPassword(forgotPasswordReq); err != nil {
 		// response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("Register() -> %v", err), nil))
 		globals.Log.Errorf(err.Error())
-		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, err, nil))
+		response.Failed(c, state, response.NewAppErr(globals.AppCode(state*10), err, nil))
 		return
 	}
 

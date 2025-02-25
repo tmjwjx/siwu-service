@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	gonanoid "github.com/matoous/go-nanoid/v2"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 	"math/rand"
 	"os"
 	"regexp"
@@ -243,6 +244,22 @@ func Highlight(content string, keyword string) string {
 	}
 
 	return content
+}
+
+// GetCount
+// @Description: 查看后续是否还有数据
+// @param        db *gorm.DB
+// @param        page int
+// @param        limit int
+// @return       bool
+// @return       error
+// @Author tianjiajie 2025-02-24 19:58:05
+func GetCount(db *gorm.DB, page int, limit int) (bool, error) {
+	var total int64
+	if err := db.Offset(-1).Limit(-1).Count(&total).Error; err != nil {
+		return false, err
+	}
+	return total > int64(page*limit), nil
 }
 
 /*// ChangeStringToUint

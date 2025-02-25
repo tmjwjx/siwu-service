@@ -15,7 +15,7 @@ import (
 )
 
 // ClickAttention 点击关注和点击取消关注。followerId 关注 followedId
-func (u *UserReqContext) ClickAttention(req requests.ClickAttentionReq) error {
+func (u *UserReqContext) ClickAttention(req requests.ClickAttentionReq) (int, error) {
 	followerId := req.FollowerId
 	followedId := req.FollowedId
 
@@ -25,14 +25,14 @@ func (u *UserReqContext) ClickAttention(req requests.ClickAttentionReq) error {
 	if user1 == nil {
 		// return fmt.Errorf("UserReqContext.ClickAttention() : 关注者不存在")
 		globals.Log.Error(response.ErrUserIdNotExist + ":" + strconv.Itoa(int(followerId)))
-		return fmt.Errorf(response.ErrUserIdNotExist + ":" + strconv.Itoa(int(followerId)))
+		return 400, fmt.Errorf(response.ErrUserIdNotExist + ":" + strconv.Itoa(int(followerId)))
 	}
 	// 被关注者
 	user2 := repositories.QueryUserById(u.DB, followedId)
 	if user2 == nil {
 		// return fmt.Errorf("UserReqContext.ClickAttention() : 被关注者不存在")
 		globals.Log.Error(response.ErrUserIdNotExist + ":" + strconv.Itoa(int(followedId)))
-		return fmt.Errorf(response.ErrUserIdNotExist + ":" + strconv.Itoa(int(followedId)))
+		return 400, fmt.Errorf(response.ErrUserIdNotExist + ":" + strconv.Itoa(int(followedId)))
 	}
 
 	// 判断是否已经关注过了，如果已经关注过了，再次点击就会取消关注
@@ -41,7 +41,7 @@ func (u *UserReqContext) ClickAttention(req requests.ClickAttentionReq) error {
 	if err != nil {
 		// return fmt.Errorf("UserReqContext.ClickAttention() -> %v: ", err)
 		globals.Log.Error(err.Error())
-		return err
+		return 500, err
 	}
 	// 是否已经关注过 followedId
 	var isFollowed = false
@@ -57,7 +57,7 @@ func (u *UserReqContext) ClickAttention(req requests.ClickAttentionReq) error {
 	if err != nil {
 		// return fmt.Errorf("UserReqContext.ClickAttention() -> %v: ", err)
 		globals.Log.Error(err.Error())
-		return err
+		return 500, err
 	}
 
 	// 关注
@@ -70,58 +70,58 @@ func (u *UserReqContext) ClickAttention(req requests.ClickAttentionReq) error {
 		if err = sqlUtils.InsertObject(u.DB, userFollow); err != nil {
 			// return fmt.Errorf("UserReqContext.ClickAttention() -> %v", err)
 			globals.Log.Error(err.Error())
-			return err
+			return 500, err
 		}
 
 		//  followerId关注数量+1，followedId粉丝数量+1
 		if err = sqlUtils.UpdateObjects(u.DB, &models.User{Model: gorm.Model{ID: followerId}}, map[string]interface{}{"attention_count": len(followedIDSli) + 1}); err != nil {
 			// return fmt.Errorf("UserReqContext.ClickAttention() -> %v", err)
 			globals.Log.Error(err.Error())
-			return err
+			return 500, err
 		}
 		if err = sqlUtils.UpdateObjects(u.DB, &models.User{Model: gorm.Model{ID: followedId}}, map[string]interface{}{"fans_count": len(followerIDSli) + 1}); err != nil {
 			// return fmt.Errorf("UserReqContext.ClickAttention() -> %v", err)
 			globals.Log.Error(err.Error())
-			return err
+			return 500, err
 		}
 
 		// user2 的热度+10
 		if err = sqlUtils.UpdateObjects(u.DB, &models.User{Model: gorm.Model{ID: followedId}}, map[string]interface{}{"heat": user2.Heat + 10}); err != nil {
 			// return fmt.Errorf("UserReqContext.ClickAttention() -> %v", err)
 			globals.Log.Error(err.Error())
-			return err
+			return 500, err
 		}
 
 	} else { // 取消关注
 		if _, err := sqlUtils.DeleteObjectsByTable(u.DB, "sw_user_follows", map[string]interface{}{"follower_id": followerId, "followed_id": followedId}); err != nil {
 			// return fmt.Errorf("UserReqContext.ClickAttention() -> %v", err)
 			globals.Log.Error(err.Error())
-			return err
+			return 500, err
 		}
 		//  followerId关注数量-1，followedId粉丝数量-1
 		if err = sqlUtils.UpdateObjects(u.DB, &models.User{Model: gorm.Model{ID: followerId}}, map[string]interface{}{"attention_count": len(followedIDSli) - 1}); err != nil {
 			// return fmt.Errorf("UserReqContext.ClickAttention() -> %v", err)
 			globals.Log.Error(err.Error())
-			return err
+			return 500, err
 		}
 		if err = sqlUtils.UpdateObjects(u.DB, &models.User{Model: gorm.Model{ID: followedId}}, map[string]interface{}{"fans_count": len(followerIDSli) - 1}); err != nil {
 			// return fmt.Errorf("UserReqContext.ClickAttention() -> %v", err)
 			globals.Log.Error(err.Error())
-			return err
+			return 500, err
 		}
 
 		// user2 的热度-10
 		if err = sqlUtils.UpdateObjects(u.DB, &models.User{Model: gorm.Model{ID: followedId}}, map[string]interface{}{"heat": user2.Heat - 10}); err != nil {
 			// return fmt.Errorf("UserReqContext.ClickAttention() -> %v", err)
 			globals.Log.Error(err.Error())
-			return err
+			return 500, err
 		}
 	}
 
 	// 通知用户关注消息
 	internalUtils.MessagePush("follow", strconv.Itoa(int(followedId)))
 
-	return nil
+	return 200, nil
 }
 
 // UserRank 用户热度排行
@@ -312,21 +312,21 @@ func (u *UserReqContext) UserRank(req requests.UserRankReq) ([]*requests.UserRan
 }
 
 // Attention 搜索用户关注的人
-func (u *UserReqContext) Attention(req requests.AttentionReq) (*requests.AttentionRes, error) {
+func (u *UserReqContext) Attention(req requests.AttentionReq) (*requests.AttentionRes, bool, error) {
 	// 判断该用户是否存在
 	user := repositories.QueryUserById(u.DB, req.UserId)
 	if user == nil {
 		// return nil, fmt.Errorf("UserReqContext.Attention() : id为%d的用户不存在", req.UserId)
 		globals.Log.Error(response.ErrUserIdNotExist + ":" + strconv.Itoa(int(req.UserId)))
-		return nil, fmt.Errorf(response.ErrUserIdNotExist + ":" + strconv.Itoa(int(req.UserId)))
+		return nil, false, fmt.Errorf(response.ErrUserIdNotExist + ":" + strconv.Itoa(int(req.UserId)))
 	}
 
 	// 查询
-	ids, err := repositories.QueryAttentionByPage(u.DB, req.UserId, req.Keyword, req.Page, req.Limit)
+	ids, isHaveData, err := repositories.QueryAttentionByPage(u.DB, req.UserId, req.Keyword, req.Page, req.Limit)
 	if err != nil {
 		// return nil, fmt.Errorf("UserReqContext.Attention() err: %v", err)
 		globals.Log.Error(err.Error())
-		return nil, err
+		return nil, false, err
 	}
 
 	// // 筛除数据（避免 ids 里面存在 user.Id ）
@@ -338,7 +338,7 @@ func (u *UserReqContext) Attention(req requests.AttentionReq) (*requests.Attenti
 
 	res := &requests.AttentionRes{Ids: ids}
 
-	return res, nil
+	return res, isHaveData, nil
 }
 
 // GetBasicInfo 通过ids获取到用户简略信息
