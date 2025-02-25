@@ -320,7 +320,7 @@ func GenerateAvatar(da DefaultAvatar) (string, error) {
 	}
 
 	fileName := fmt.Sprintf("%x", b)
-	url := fmt.Sprintf("https://api.multiavatar.com/%s.png", fileName)
+	url := fmt.Sprintf("http://api.multiavatar.com/%s.png", fileName)
 
 	// 更新数据库
 	attachment := &models.Attachment{
