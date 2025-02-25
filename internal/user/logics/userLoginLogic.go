@@ -22,9 +22,8 @@ import (
 
 // UserReqContext 用于在处理请求时传递数据库连接和请求上下文信息
 type UserReqContext struct {
-	DB           *gorm.DB
-	Ctx          *gin.Context
-	SendEmailCfg *globals.SendEmailConfig // 发送邮件
+	DB  *gorm.DB
+	Ctx *gin.Context
 }
 
 // NewUserReqContext 新建UserReqContext对象
