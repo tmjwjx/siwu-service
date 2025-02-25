@@ -46,7 +46,7 @@ func ClickAttention(c *gin.Context) {
 		// response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("ClickAttention() -> %v", err), nil))
 		globals.Log.Errorf(err.Error())
 		// response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, err, nil))
-		response.Failed(c, state, response.NewAppErr(globals.AppCode(state), err, nil))
+		response.Failed(c, state, response.NewAppErr(globals.AppCode(state*10), err, nil))
 		return
 	}
 
@@ -56,45 +56,6 @@ func ClickAttention(c *gin.Context) {
 
 // UserRank 用户热度排行
 func UserRank(c *gin.Context) {
-
-	// 从上下文中获取 id
-	// str, exists := c.Get("id")
-	// if !exists {
-	// 	// response.Failed(c, http.StatusUnauthorized, response.NewAppErr(globals.StatusUnauthorized, fmt.Errorf("UserRank() err = 无法获取 id"), nil))
-	// 	globals.Log.Error(response.ErrUserIdNotGetFromContext)
-	// 	response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf(response.ErrUserIdNotGetFromContext), nil))
-	// 	return
-	// }
-
-	// 类型断言
-	// id := str.(uint)
-
-	// var id uint
-	// // 如果无法Get到id，那么就是没有token，说明是游客模式
-	// if !exists {
-	// 	id = 0
-	// 	globals.Log.Error("用户热度排行——游客模式")
-	// } else {
-	// 	// 类型断言
-	// 	id = str.(uint)
-	// }
-
-	// p, exists := c.Get("page")
-	// if !exists {
-	// 	globals.Log.Error(response.ErrUserIdNotGetFromContext)
-	// 	response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf(response.ErrUserIdNotGetFromContext), nil))
-	// 	return
-	// }
-	// l, exists := c.Get("limit")
-	// if !exists {
-	// 	globals.Log.Error(response.ErrUserIdNotGetFromContext)
-	// 	response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf(response.ErrUserIdNotGetFromContext), nil))
-	// 	return
-	// }
-	// // 类型断言
-	// page := p.(int)
-	// limit := l.(int)
-
 	// 绑定数据
 	page, err := strconv.Atoi(c.Query("page"))
 	if err != nil {
@@ -128,10 +89,6 @@ func UserRank(c *gin.Context) {
 		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("UserRank() err: limit参数必须为正数"), nil))
 		return
 	}
-
-	// var rankMsg requests.UserRankReq
-	// rankMsg.Page = page
-	// rankMsg.Limit = limit
 
 	// 业务逻辑
 	userReqContext := logics.NewUserReqContext(globals.DB, c)
