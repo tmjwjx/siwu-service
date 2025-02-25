@@ -96,7 +96,7 @@ func GetMenuPermRep(db *gorm.DB, id string) (*requests.GetMenuPermRes, error) {
 // GetApiPermRep 获取当前角色的api权限
 func GetApiPermRep(casbinService *casbin.CasbinService, id string) (req *requests.GetApiPermRes, err error) {
 
-	apiIds, err := casbinService.GetApiPerm(id)
+	apiIds, err := casbinService.GetApiPermForRole(id)
 	if err != nil {
 		return nil, fmt.Errorf("GetApiPermRep -> 获取当前角色的api权限失败 -> %s", err)
 	}
@@ -202,7 +202,7 @@ func GetPermCodeRep(casbinService *casbin.CasbinService, db *gorm.DB, id string)
 		}
 	} else {
 		// 获取当前角色的api权限
-		apiId, err := casbinService.GetApiPerm(id)
+		apiId, err := casbinService.GetApiPermForRole(id)
 		if err != nil {
 			return nil, fmt.Errorf("GetPermCodeRep -> 获取当前角色的api权限失败 -> %s", err)
 		}

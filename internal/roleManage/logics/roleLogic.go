@@ -188,7 +188,7 @@ func (r *RoleReqContext) DispatchRole(dispatchRole requests.DispatchRoleReq) err
 	if err != nil {
 		return fmt.Errorf("RoleReqContext.DispatchRoleReq() -> err = %v", err)
 	}
-	if err = casbinService.AssignRolesForUser("userId", ids); err != nil {
+	if err = casbinService.AssignRolesForAdminOrUser("userId", ids); err != nil {
 		return fmt.Errorf("RoleReqContext.DispatchRoleReq() -> %v", err)
 	}
 	return nil
