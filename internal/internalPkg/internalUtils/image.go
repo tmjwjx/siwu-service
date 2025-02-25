@@ -1,7 +1,6 @@
 package internalUtils
 
 import (
-	"crypto/rand"
 	"errors"
 	"fmt"
 	"forum/internal/models"
@@ -283,7 +282,7 @@ func AssignDefaultValue(home globals.Home, images *[]string) {
 	}
 }
 
-// DefaultAvatar
+/*// DefaultAvatar
 // @Description: 用于存储生成默认头像的参数
 // @Author wangyulong 2025-02-24 11:40:27
 type DefaultAvatar struct {
@@ -339,4 +338,4 @@ func GenerateAvatar(da DefaultAvatar) (string, error) {
 
 	return url, nil
 
-}
+}*/
