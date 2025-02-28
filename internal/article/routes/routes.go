@@ -25,6 +25,7 @@ func Article(e *gin.Engine) {
 
 		// 会员中心 获取用户文章或收藏列表
 		articleGroup.GET("/tourists/get_type_data", controllers.TouristsGetUserArticleOrCollectionCtrl)
+
 		// 获取文章详情
 		articleGroup.GET("/tourists/detail", controllers.TouristsArticleDetailCtrl)
 
