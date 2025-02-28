@@ -5,6 +5,7 @@ import (
 	"forum/internal/administrator/requests"
 	"forum/internal/internalPkg/internalUtils"
 	"forum/internal/models"
+	"forum/pkg/casbin"
 	"gorm.io/gorm"
 	"time"
 )
@@ -104,7 +105,12 @@ func GetAdministratorInfoRep(db *gorm.DB, id string) (administrator requests.Get
 		Where("deleted_at IS NULL").
 		Find(&administrator).Error
 
-	// 查询角色 todo
+	// 查询角色
+	ca := casbin.NewCasbinObject()
+	administrator.RoleIds, err = ca.GetRolesForAdminOrUser(administrator.Email)
+	if err != nil {
+		return
+	}
 
 	// 格式化时间
 	c, err := time.Parse("2006-01-02T15:04:05Z07:00", administrator.CreatedAt)
@@ -134,7 +140,14 @@ func GetAdministratorListRep(db *gorm.DB, req requests.GetAdministratorListReq) 
 		Offset((req.Page - 1) * req.Limit).
 		Find(&res).Error
 
-	// 查询角色 todo
+	// 查询角色
+	for i := range res {
+		c := casbin.NewCasbinObject()
+		res[i].RoleIds, err = c.GetRolesForAdminOrUser(res[i].Email)
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	// 格式化时间
 	for i := range res {
@@ -160,6 +173,7 @@ func GetAdministratorListRep(db *gorm.DB, req requests.GetAdministratorListReq) 
 // @return       error
 // @Author tianjiajie 2025-02-21 15:06:32
 func DeleteAdministratorRep(db *gorm.DB, req requests.AdministratorReq) (err error) {
+
 	administrator := models.Administrator{}
 	err = db.Where("id = ?", req.ID).Delete(&administrator).Error
 	return err
@@ -195,33 +209,26 @@ func AddAdministratorRep(db *gorm.DB, req requests.AddAdministratorReq) (id uint
 	admin := models.Administrator{}
 	db.Unscoped().Where("email = ?", req.Email).First(&admin)
 
-	if admin.ID != 0 { // 存在这个管理员，不过已经软删除了，回复即可
-
-		admin.Name = req.Email
-		admin.Email = req.Email
-		admin.Password = password
+	if admin.ID != 0 { // 存在这个管理员，不过已经软删除了，恢复即可
 		admin.CreatedAt = time.Now()
 		admin.DeletedAt = gorm.DeletedAt{
 			Time:  time.Time{},
 			Valid: false,
 		}
-
-		err = db.Save(&admin).Error
-		if err != nil {
-			return 0, err
-		}
-
-	} else {
-		admin = models.Administrator{
-			Name:     req.Email,
-			Email:    req.Email,
-			Password: password,
-		}
-		err = db.Save(&admin).Error
-		if err != nil {
-			return 0, err
-		}
-
 	}
+
+	admin.Name = req.Email
+	admin.Email = req.Email
+	admin.Password = password
+
+	err = db.Save(&admin).Error
+	if err != nil {
+		return 0, err
+	}
+
+	// 设置角色
+	c := casbin.NewCasbinObject()
+	err = c.AssignRolesForAdminOrUser(admin.Email, req.RoleIds)
+
 	return admin.ID, nil
 }
