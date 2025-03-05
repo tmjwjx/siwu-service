@@ -54,6 +54,7 @@ func TableInit() {
 		&models.ArticleComment{},
 		&models.ArticleCollection{},
 		&models.ArticleLike{},
+		&models.ArticleView{},
 		&models.ArticleTag{},
 		&models.CommentLike{},
 
