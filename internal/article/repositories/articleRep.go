@@ -31,6 +31,9 @@ func AddArticleViews(db *gorm.DB, articleId uint, userId uint) (err error) {
 			return err
 		}
 	}
+	if view.ID != 0 {
+		return nil
+	}
 
 	// 开启事务
 	tx := db.Begin()
