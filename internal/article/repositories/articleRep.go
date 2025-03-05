@@ -22,7 +22,16 @@ import (
 // @param        num int
 // @return       err
 // @Author tianjiajie 2025-01-22 19:27:45
-func AddArticleViews(db *gorm.DB, articleId uint) (err error) {
+func AddArticleViews(db *gorm.DB, articleId uint, userId uint) (err error) {
+
+	// 判断是否有今日浏览记录
+	var view models.ArticleView
+	if err = db.Where("article_id = ? AND user_id = ? AND DATE(created_at) = ?", articleId, userId, time.Now().Format("2006-01-02")).First(&view).Error; err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			return err
+		}
+	}
+
 	// 开启事务
 	tx := db.Begin()
 	if tx.Error != nil { // 检查事务启动是否成功

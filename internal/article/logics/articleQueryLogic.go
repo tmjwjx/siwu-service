@@ -96,20 +96,23 @@ func ArticleDetailLogic(db *gorm.DB, articleId string, userId uint) (data interf
 	//	return nil, err
 	//}
 
-	// 增加点击量
-	id, err := strconv.Atoi(articleId)
-	if err != nil {
-		return nil, err
-	}
-	err = repositories.AddArticleViews(db, uint(id))
+	// 排除游客
+	if userId != 0 {
+		// 增加点击量
+		id, err := strconv.Atoi(articleId)
+		if err != nil {
+			return nil, err
+		}
+		err = repositories.AddArticleViews(db, uint(id), userId)
 
-	// 增加当天的访问量
-	rdb := globals.RDB
-	ctx := context.Background()
-	nowTime := string(time.Now().Format("2006-01-02"))
-	_, err = redisUtils.IncrementHash(rdb, ctx, "todayViews", nowTime, 1)
-	if err != nil {
-		return nil, err
+		// 增加当天的访问量
+		rdb := globals.RDB
+		ctx := context.Background()
+		nowTime := string(time.Now().Format("2006-01-02"))
+		_, err = redisUtils.IncrementHash(rdb, ctx, "todayViews", nowTime, 1)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	data = gin.H{"article": article, "about": about}
