@@ -37,11 +37,19 @@ func AddArticleViews(db *gorm.DB, articleId uint, userId uint) (err error) {
 	if tx.Error != nil { // 检查事务启动是否成功
 		return fmt.Errorf("启动事务失败: %w", tx.Error)
 	}
+	// 增加文章浏览量
 	if err = tx.Model(&models.Article{}).
 		Where("id = ?", articleId).
 		Update("views_count", gorm.Expr("views_count + ?", 1)).
 		Error; err != nil {
 		return err
+	}
+	// 增加浏览记录
+	if err = tx.Create(&models.ArticleView{
+		ArticleID: articleId,
+		UserID:    userId,
+	}).Error; err != nil {
+		tx.Rollback() // 发生错误时回滚事务
 	}
 	// 增加文章热度
 	if err = AddArticleHeat(tx, articleId, 1); err != nil {
