@@ -38,6 +38,7 @@ func AuthMiddleware() gin.HandlerFunc {
 
 		// 保存用户 ID 到上下文
 		c.Set("id", claims.ID)
+		c.Set("email", claims.Email)
 		c.Next()
 	}
 }
