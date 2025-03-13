@@ -54,7 +54,7 @@ func Register(c *gin.Context) {
 	}
 
 	// 生成token
-	tok, err := token.GenerateToken(userInfo.Id)
+	tok, err := token.GenerateToken(userInfo.Id, registerReq.Email)
 	if err != nil {
 		globals.Log.Errorf(err.Error())
 		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, err, nil))
@@ -117,7 +117,7 @@ func Login(c *gin.Context) {
 	}
 
 	// 生成token
-	tok, err := token.GenerateToken(userInfo.Id)
+	tok, err := token.GenerateToken(userInfo.Id, loginReq.Email)
 	if err != nil {
 		globals.Log.Errorf(err.Error())
 		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, err, nil))
