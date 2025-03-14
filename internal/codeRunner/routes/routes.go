@@ -6,6 +6,6 @@ import (
 )
 
 func CodeRunner(c *gin.Engine) {
-	c.POST("/codeRunner/sendCode", controllers.GetCodeInfoCtr)
+	c.POST("/codeRunner/execute", controllers.GetCodeInfoCtr)
 	c.POST("/codeRunner/getResult", controllers.GetCodeRunResultCtrl)
 }

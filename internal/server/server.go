@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"forum/pkg/globals"
-	"forum/pkg/sendEmailAsynchronous"
 	"net/http"
 	"os"
 	"os/signal"
@@ -19,7 +18,7 @@ func Run() {
 	defer globals.Log.Sync()
 
 	// 开协程：启动邮件任务消费者
-	go sendEmailAsynchronous.StartEmailTaskConsumer(globals.RDB)
+	//go sendEmailAsynchronous.StartEmailTaskConsumer(globals.RDB)
 
 	// 启动处理函数
 	SetupRouter()
