@@ -1,0 +1,54 @@
+database:
+  host: "localhost"
+  port: 3306
+  user: "root"
+  password: "abc123"
+  name: "forum"
+
+redis:
+  host: "localhost"
+  port: 6379
+  password: ""
+  db: 0
+  pool_size: 10            # 连接池大小，默认为 10
+  min_idle_conns: 3        # 最小空闲连接数，默认为 3
+  dial_timeout: 5s        # 连接超时时间
+  read_timeout: 30s       # 读取超时时间
+  write_timeout: 30s      # 写入超时时间
+  idle_timeout: 300s      # 连接最大空闲时间，默认为 5分钟（300秒）
+  max_retries: 3         # 最大重试次数
+
+app:
+  host: ""
+  port: 8081
+  domain: "localhost"
+
+# 发送邮件
+send_email:
+  From : "3174285493@qq.com"
+  host: "smtp.qq.com"
+  port: 587
+  username: "3174285493@qq.com"
+  authorizeCode: "mmureuzrdnmndfef"
+
+# 静态资源存储
+static:
+  prefix: "/images"
+  path: "./static/images"
+  limit: 2                    # 上传图片文件的大小限制，单位是MB, 数值类型为int64
+  watermark: "思悟"            # 图片水印的内容
+  size: 36                    # 水印的大小
+  scale: 1.5                 # 图片压缩时的缩放比例
+  margin: 10.0                # 水印距离左下角的距离 ，规则: 从右向左移动margin个位置的距离，从下往上移动3*margin个位置的距离
+  user_default_image: "user_default_head_image.png"
+  article_default_image: "article_default_image.jpg"
+  tag_default_image: "tag_default_image.jpg"
+  advertisement_default_image: "advertisement_default_image.jpg"
+  comment_default_image: "comment_default_image.jpg"
+  category_default_image: ""
+
+# 日志配置
+log:
+  #  level: "debug"
+  logPath: "./logs"
+  appName: "forum"
