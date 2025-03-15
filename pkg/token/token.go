@@ -11,12 +11,13 @@ var jwtSecret = []byte("siwu-web-service.forumSetJwtSecret_S@mpl3ComplexS3cretK3
 
 // Claims 自定义的 Claims 结构体
 type Claims struct {
-	ID                   uint `json:"id"`
-	jwt.RegisteredClaims      // 包含标准的 JWT 声明
+	ID                   uint   `json:"id"`
+	Email                string `json:"email"`
+	jwt.RegisteredClaims        // 包含标准的 JWT 声明
 }
 
 // GenerateToken 使用用户的 ID 生成 JWT token。
-func GenerateToken(id uint) (string, error) {
+func GenerateToken(id uint, email string) (string, error) {
 	// 创建声明 Claims
 	claims := Claims{
 		ID: id,
@@ -25,6 +26,7 @@ func GenerateToken(id uint) (string, error) {
 			IssuedAt:  jwt.NewNumericDate(time.Now()),                     // 签发时间
 			Issuer:    "siwu-web-service",                                 // 签发者
 		},
+		Email: email,
 	}
 
 	// 创建 token

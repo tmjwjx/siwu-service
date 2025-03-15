@@ -12,3 +12,12 @@ const (
 	StatusTooManyRequests     AppCode = 4290
 	StatusInternalServerError AppCode = 5000 // 服务器内部错误
 )
+
+type SSEType string
+
+const (
+	NoticeType     SSEType = "notice"
+	VirtualMachine SSEType = "virtual_machine"
+	CodeRunnerType SSEType = "codeRunner"
+	AIType         SSEType = "ai"
+)
