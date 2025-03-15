@@ -9,7 +9,6 @@ import (
 )
 
 func LogInit() {
-
 	if err := viper.UnmarshalKey("log", &globals.AppConfig.Log); err != nil {
 		globals.Log.Panicf("无法解码为结构: %s", err)
 	}
