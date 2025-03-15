@@ -18,7 +18,7 @@ type SendCodeLogin struct {
 
 func (s *SendCodeLogin) SendCode(token string) (string, error) {
 	// 1. 获取服务地址
-	srv := "/codeRunner.v1.CodeRunner/Execute"
+	srv := "/services/code-runner"
 	addr, err := globals.EtcdClient.GetService(srv)
 	if err != nil {
 		log.Printf("获取服务地址失败: %v", err)
