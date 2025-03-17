@@ -68,15 +68,15 @@ func CheckPasswordHash(password, hashedPassword string) bool {
 
 // DeleteFile 从文件系统中删除图片
 func DeleteFile(home string, homeID uint) error {
-	
+
 	var attachment models.Attachment
-	
+
 	// 开启事务
 	tx := globals.DB.Begin()
 	if tx.Error != nil {
 		return fmt.Errorf("DeleteFile -> 开启事务失败 -> %s", tx.Error)
 	}
-	
+
 	// 查询要删除的图片文件路径
 	err := tx.Where("home = ? and home_id = ?", home, homeID).First(&attachment).Error
 	if err != nil {
@@ -84,15 +84,15 @@ func DeleteFile(home string, homeID uint) error {
 		// 没有查到说明文件系统中没有该图片，直接添加进入文件系统即可
 		return nil
 	}
-	
+
 	/*path := "./static" + attachment.Path
-	
+
 	// 删除文件系统中的图片
 	err = os.Remove(path)
 	if err != nil {
 		return fmt.Errorf("deleteFile -> 文件系统中的图片删除失败 -> %s", err)
 	}*/
-	
+
 	// 删除 attachments 表中的图片相关信息
 	err = tx.Delete(&attachment).Error
 	if err != nil {
@@ -100,13 +100,13 @@ func DeleteFile(home string, homeID uint) error {
 		tx.Rollback()
 		return fmt.Errorf("deleteFile -> 删除 attachments 表中的图片相关信息失败 -> %s", err)
 	}
-	
+
 	// 提交事务
 	err = tx.Commit().Error
 	if err != nil {
 		return fmt.Errorf("DeleteFile -> 提交事务失败 -> %s", err)
 	}
-	
+
 	return nil
 }
 
@@ -211,15 +211,25 @@ func MessagePush(data string, userId string) {
 	}
 }
 
-func MessagePush2(data string, userId string, t globals.SSEType) {
-	
-	appData := response.NewAppData(globals.StatusOK, string(t), data)
+func MessagePush2(data string, userId string, t string) {
+
+	appData := response.NewAppData(globals.StatusOK, t, data)
 	jsonData, _ := json.Marshal(appData)
-	
+
 	notifyChan, exist := globals.SubscriberChannels[userId]
 	if exist {
 		notifyChan <- string(jsonData)
 	}
+}
+
+func QueryUserByEmail(db *gorm.DB, email string) *models.User {
+	var user models.User
+	d := db.Model(&models.User{}).Where("email = ?", email).Select("*").Scan(&user)
+	// 没有找到用户
+	if d.RowsAffected <= 0 {
+		return nil
+	}
+	return &user
 }
 
 // Highlight
@@ -233,20 +243,20 @@ func Highlight(content string, keyword string) string {
 	if keyword == "" {
 		return content
 	}
-	
+
 	// keywordLower := strings.ToLower(keyword)
 	// contentLower := strings.ToLower(content)
 	//
 	// if strings.Contains(contentLower, keywordLower) {
 	//	// 高亮显示匹配项
 	// }
-	
+
 	// content = strings.ReplaceAll(content, keyword, fmt.Sprintf("<mark>%s</mark>", keyword))
-	
+
 	// 转换为小写，用于大小写不敏感的匹配
 	keywordLower := strings.ToLower(keyword)
 	contentLower := strings.ToLower(content)
-	
+
 	if strings.Contains(contentLower, keywordLower) {
 		// 使用正则表达式忽略大小写替换
 		regex := regexp.MustCompile(`(?i)` + regexp.QuoteMeta(keyword))
@@ -255,7 +265,7 @@ func Highlight(content string, keyword string) string {
 			return fmt.Sprintf("<mark>%s</mark>", match)
 		})
 	}
-	
+
 	return content
 }
 
@@ -314,14 +324,14 @@ func TimeAgo(t time.Time) string {
 	duration := time.Since(t) // 计算传入时间和当前时间的差值
 	// y, m, d := t.Date()
 	// fmt.Println(y, m, d)
-	
+
 	seconds := int(duration.Seconds())
 	minutes := int(duration.Minutes())
 	hours := int(duration.Hours())
 	days := hours / 24
 	months := days / 30
 	years := days / 365
-	
+
 	if seconds < 60 {
 		return fmt.Sprintf("%d秒前", seconds)
 	} else if minutes < 60 {
@@ -383,7 +393,7 @@ func RemoveDuplicates(seen *map[uint]struct{}, slice []uint) {
 // @return       []uint
 func RemoveDuplicates2(seen *map[uint]struct{}, slice []uint) []uint {
 	var result []uint
-	
+
 	for _, v := range slice {
 		_, ok := (*seen)[v]
 		if !ok {
@@ -402,14 +412,14 @@ func ProcessImagePath(originalURL string) (string, error) {
 	if originalURL == "" {
 		return "", nil
 	}
-	
+
 	// 按 '?' 分割字符串
 	parts := strings.Split(originalURL, "?")
-	
+
 	// 第一个部分是文件名
 	fileName := parts[0]
-	
+
 	outFile = globals.SConfig.Path + "/" + fileName
-	
+
 	return outFile, nil
 }
