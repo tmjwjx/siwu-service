@@ -11,5 +11,6 @@ func InitEtcd(addr []string) {
 	if err != nil {
 		log.Println("InitEtcd() -> 创建 etcdService 失败, err = ", err)
 	}
+
 	globals.EtcdClient = etcd
 }
