@@ -45,10 +45,11 @@ func (s *SendCodeLogin) SendCode(token string) (string, error) {
 	req := &requests.ExecuteRequest{
 		Id:          s.Id,
 		Uid:         s.Uid,
-		CallBackUrl: "http://codeRunner/getResult",
+		CallBackUrl: "http://192.168.23.26:8081/codeRunner/getResult",
 		CodeBlock:   s.CodeArea,
 		Language:    s.Language,
 	}
+
 	md := metadata.Pairs(
 		"token", token, // 这里与服务端拦截器的 md["token"] 键名对应
 	)
