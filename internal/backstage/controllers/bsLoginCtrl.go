@@ -67,7 +67,7 @@ func BsLogin(c *gin.Context) {
 		return
 	}
 	// 生成token
-	tok, err := token.GenerateToken(admin.ID)
+	tok, err := token.GenerateToken(admin.ID, bsLogicReq.Email)
 	if err != nil {
 		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, err, nil))
 		return
