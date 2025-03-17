@@ -13,11 +13,9 @@ const (
 	StatusInternalServerError AppCode = 5000 // 服务器内部错误
 )
 
-type SSEType string
-
 const (
-	NoticeType     SSEType = "notice"
-	VirtualMachine SSEType = "virtual_machine"
-	CodeRunnerType SSEType = "codeRunner"
-	AIType         SSEType = "ai"
+	NoticeType         string = "notice"
+	VirtualMachineType string = "virtual_machine"
+	CodeRunnerType     string = "codeRunner"
+	AIType             string = "ai"
 )
