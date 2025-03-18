@@ -13,6 +13,7 @@ import (
 	roleRouter "forum/internal/roleManage/routes"
 	tagRouter "forum/internal/tag/routes"
 	userRouter "forum/internal/user/routes"
+	virtualMachineRouter "forum/internal/virtualMachine/routes"
 	"forum/pkg/corsMW"
 	"forum/pkg/csrfMW"
 	"forum/pkg/globals"
@@ -73,5 +74,7 @@ func SetupRouter() {
 
 	// 后台登陆分路由
 	bsLoginRouter.Backstage(globals.Router)
-
+	
+	// 虚拟机分路由
+	virtualMachineRouter.VirtualMachine(globals.Router)
 }

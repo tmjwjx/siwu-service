@@ -1,9 +1,11 @@
 package internalUtils
 
 import (
+	"encoding/json"
 	"fmt"
 	"forum/internal/models"
 	"forum/pkg/globals"
+	"forum/pkg/response"
 	"github.com/gin-gonic/gin"
 	gonanoid "github.com/matoous/go-nanoid/v2"
 	"golang.org/x/crypto/bcrypt"
@@ -207,6 +209,27 @@ func MessagePush(data string, userId string) {
 	if exist {
 		notifyChan <- data
 	}
+}
+
+func MessagePush2(data string, userId string, t string) {
+
+	appData := response.NewAppData(globals.StatusOK, t, data)
+	jsonData, _ := json.Marshal(appData)
+
+	notifyChan, exist := globals.SubscriberChannels[userId]
+	if exist {
+		notifyChan <- string(jsonData)
+	}
+}
+
+func QueryUserByEmail(db *gorm.DB, email string) *models.User {
+	var user models.User
+	d := db.Model(&models.User{}).Where("email = ?", email).Select("*").Scan(&user)
+	// 没有找到用户
+	if d.RowsAffected <= 0 {
+		return nil
+	}
+	return &user
 }
 
 // Highlight
