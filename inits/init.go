@@ -38,6 +38,7 @@ func init() {
 	// 初始化casbin配置
 	CasbinInit()
 
-	//初始化ETCD //todo 记得改回去
-	InitEtcd([]string{"localhost:2379"})
+	//初始化ETCD TODO : 在本地测试完记得改回去
+	//InitEtcd([]string{"8.154.36.180:2378"})
+	InitEtcd([]string{"127.0.0.1:2379"})
 }

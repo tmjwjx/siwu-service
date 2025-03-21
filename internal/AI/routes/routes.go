@@ -6,6 +6,7 @@ import (
 )
 
 func AIRouters(e *gin.Engine) {
+	e.POST("/AI/codeExplain", controllers.GetCodeExplain)
 	articleRouter := e.Group("/AI/extract")
 	{
 		// 第一次获取文章的摘要、总结、标签
