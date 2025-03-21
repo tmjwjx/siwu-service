@@ -1,6 +1,7 @@
 package globals
 
 import (
+	"forum/pkg/etcd"
 	"github.com/casbin/casbin/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
@@ -38,6 +39,8 @@ var (
 	SubscriberChannels = make(map[string]chan string)
 
 	CasbinEnforcer *casbin.Enforcer
+
+	EtcdClient *etcd.EtcdClient //全局ETCD客户端
 
 	// // SystemMsgSubject 系统消息主题
 	// SystemMsgSubject = observer.NewSystemMsgSubject()

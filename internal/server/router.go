@@ -1,6 +1,7 @@
 package server
 
 import (
+	AIRouter "forum/internal/AI/routes"
 	administratorRouter "forum/internal/administrator/routes"
 	ApiRouter "forum/internal/api/routes"
 	articleRouter "forum/internal/article/routes"
@@ -73,7 +74,11 @@ func SetupRouter() {
 	
 	// 后台登陆分路由
 	bsLoginRouter.Backstage(globals.Router)
-	
+
 	// 虚拟机分路由
 	virtualMachineRouter.VirtualMachine(globals.Router)
+
+	// AI解释代码
+	AIRouter.AIRouters(globals.Router)
+
 }
