@@ -14,7 +14,7 @@ import (
 func SaveArticleIDCtrl(c *gin.Context) {
 	//接收前端的代码
 	var req requests.SaveArticleIDReq
-	if err := c.ShouldBind(&req); err != nil {
+	if err := c.ShouldBindJSON(&req); err != nil {
 		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("SaveArticleIDCtrl -> %v", err), nil))
 		return
 	}

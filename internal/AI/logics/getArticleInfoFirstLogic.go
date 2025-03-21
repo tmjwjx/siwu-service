@@ -37,7 +37,7 @@ func (a *GetArticleInfoFirstLogic) GetArticleInfoFirstLogic(articleInfo *request
 		"token", a.Token, // 这里与服务端拦截器的 md["token"] 键名对应
 	)
 	ctxWithToken := metadata.NewOutgoingContext(context.Background(), md)
-	ctx, cancel := context.WithTimeout(ctxWithToken, 5*time.Second)
+	ctx, cancel := context.WithTimeout(ctxWithToken, 100*time.Second)
 	defer cancel()
 
 	// 6. 调用 gRPC 方法

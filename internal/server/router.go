@@ -14,14 +14,13 @@ import (
 	roleRouter "forum/internal/roleManage/routes"
 	tagRouter "forum/internal/tag/routes"
 	userRouter "forum/internal/user/routes"
-	"forum/pkg/corsMW"
 	"forum/pkg/globals"
 )
 
 // SetupRouter 启动处理函数
 func SetupRouter() {
 	// 跨域
-	globals.Router.Use(corsMW.CorsMiddleware())
+	//globals.Router.Use(corsMW.CorsMiddleware())
 
 	// csrf 中间件
 	// 验证前端的 csrf 令牌
@@ -30,7 +29,7 @@ func SetupRouter() {
 	// globals.Router.Use(csrfMW.CSRFTokenMW())
 
 	// 空接口，不执行操作，用来 get X-CSRF-Token
-	globals.Router.GET("/get_csrf_token")
+	//globals.Router.GET("/get_csrf_token")
 
 	// 管理员分路由
 	administratorRouter.Administrator(globals.Router)
