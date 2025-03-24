@@ -79,14 +79,15 @@ func CSRFMW() gin.HandlerFunc {
 			return
 		}
 
-		// 跳过特定路径的 CSRF 验证
-		skipPaths := []string{"/AI/codeExplain"}
-		for _, path := range skipPaths {
-			if c.Request.URL.Path == path {
-				c.Next() // 直接跳过 CSRF 验证，继续执行后续处理
-				return
-			}
-		}
+		// // 跳过特定路径的 CSRF 验证
+		// skipPaths := []string{"/AI/codeExplain"}
+		// for _, path := range skipPaths {
+		// 	fmt.Println(c.Request.URL.Path, path)
+		// 	if c.Request.URL.Path == path {
+		// 		c.Next() // 直接跳过 CSRF 验证，继续执行后续处理
+		// 		return
+		// 	}
+		// }
 
 		// 对于非 GET 请求，执行自定义的 Redis 验证逻辑
 		if c.Request.Method != http.MethodGet {
