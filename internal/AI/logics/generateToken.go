@@ -3,7 +3,7 @@ package logics
 import (
 	"context"
 	"fmt"
-	requests "forum/internal/AI/requests/token"
+	"forum/pkg/AI/token/proto"
 	"forum/pkg/globals"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -37,9 +37,9 @@ func (c *CodeToken) GetEtcdToken() (string, error) {
 	}
 	defer conn.Close() // 确保连接关闭
 	// 3. 创建正确的客户端
-	client := requests.NewTokenServiceClient(conn)
+	client := proto.NewTokenServiceClient(conn)
 	// 4. 构造请求参数
-	req := &requests.TokenRequest{
+	req := &proto.TokenRequest{
 		GenerateTokenKey: c.GenerateTokenKey,
 	}
 
