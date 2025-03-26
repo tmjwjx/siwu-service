@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"forum/internal/codeRunner/requests"
 	"forum/pkg/globals"
+	request "github.com/ningzhaoxing/codeRunnerProto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
@@ -39,17 +40,16 @@ func (s *SendCodeLogin) SendCode(token string) (string, error) {
 	defer conn.Close() // 确保连接关闭
 
 	// 3. 创建正确的客户端
-	client := requests.NewCodeRunnerClient(conn)
+	client := request.NewCodeRunnerClient(conn)
 
 	// 4. 构造请求参数
-	req := &requests.ExecuteRequest{
+	req := &request.ExecuteRequest{
 		Id:          s.Id,
 		Uid:         s.Uid,
-		CallBackUrl: "http://192.168.23.26:8081/codeRunner/getResult",
+		CallBackUrl: "http://192.168.23.49:8081/codeRunner/getResult",
 		CodeBlock:   s.CodeArea,
 		Language:    s.Language,
 	}
-
 	md := metadata.Pairs(
 		"token", token, // 这里与服务端拦截器的 md["token"] 键名对应
 	)

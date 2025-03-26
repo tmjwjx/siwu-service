@@ -3,8 +3,8 @@ package logics
 import (
 	"context"
 	"fmt"
-	"forum/internal/codeRunner/requests"
 	"forum/pkg/globals"
+	requests "github.com/ningzhaoxing/codeRunnerProto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"log"
