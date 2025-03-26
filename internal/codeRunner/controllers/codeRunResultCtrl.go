@@ -3,10 +3,10 @@ package controllers
 import (
 	"fmt"
 	"forum/internal/codeRunner/logics"
-	"forum/internal/codeRunner/requests"
 	"forum/pkg/globals"
 	"forum/pkg/response"
 	"github.com/gin-gonic/gin"
+	requests "github.com/ningzhaoxing/codeRunnerProto"
 	"net/http"
 )
 
