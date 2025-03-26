@@ -3,9 +3,9 @@ package logics
 import (
 	"encoding/json"
 	"fmt"
-	"forum/internal/codeRunner/requests"
 	"forum/internal/internalPkg/internalUtils"
 	"forum/pkg/globals"
+	requests "github.com/ningzhaoxing/codeRunnerProto"
 	"strconv"
 )
 
