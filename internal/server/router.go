@@ -15,6 +15,7 @@ import (
 	roleRouter "forum/internal/roleManage/routes"
 	tagRouter "forum/internal/tag/routes"
 	userRouter "forum/internal/user/routes"
+	virtualMachineRouter "forum/internal/virtualMachine/routes"
 	"forum/pkg/corsMW"
 	"forum/pkg/globals"
 )
@@ -80,7 +81,6 @@ func SetupRouter() {
 
 	// AI解释代码
 	AIRouter.AIRouters(globals.Router)
-
 
 	// codeRunner分路由
 	codeRunnerRouter.CodeRunner(globals.Router)
