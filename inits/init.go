@@ -18,13 +18,13 @@ func init() {
 	DBInit()
 
 	// 初始化 redis
-	//RedisInit()
+	RedisInit()
 
 	// 初始化表
 	TableInit()
 
 	// 初始化发送邮件配置
-	//SendEmailCfgInit()
+	SendEmailCfgInit()
 
 	// 初始化路由配置
 	RouterInit()

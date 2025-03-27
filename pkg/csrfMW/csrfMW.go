@@ -45,7 +45,7 @@ func CSRFTokenMW() gin.HandlerFunc {
 			c.Header("X-CSRF-Token", token)
 
 			// 成功
-			response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, response.DataSuccess, nil))
+			// response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, response.DataSuccess, nil))
 		}
 	}
 }
@@ -58,7 +58,8 @@ func CSRFMW() gin.HandlerFunc {
 		[]byte("8d7c2c6a1d4b7a3d9c8e4f6b5a2d1c3e4f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c"), // 32 字节的随机密钥
 		csrf.Secure(false),  // 允许在 HTTP 中使用
 		csrf.HttpOnly(true), // 设置 HttpOnly 属性
-		// csrf.CookieName("CSRF-Cookie"),
+		csrf.CookieName("CSRF-Cookie"),
+		csrf.Path("/"),
 		csrf.ErrorHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusForbidden)
 			w.Write([]byte(`{
@@ -77,6 +78,16 @@ func CSRFMW() gin.HandlerFunc {
 		if c.IsAborted() {
 			return
 		}
+
+		// // 跳过特定路径的 CSRF 验证
+		// skipPaths := []string{"/AI/codeExplain"}
+		// for _, path := range skipPaths {
+		// 	fmt.Println(c.Request.URL.Path, path)
+		// 	if c.Request.URL.Path == path {
+		// 		c.Next() // 直接跳过 CSRF 验证，继续执行后续处理
+		// 		return
+		// 	}
+		// }
 
 		// 对于非 GET 请求，执行自定义的 Redis 验证逻辑
 		if c.Request.Method != http.MethodGet {
