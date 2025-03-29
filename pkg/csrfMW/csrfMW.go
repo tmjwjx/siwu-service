@@ -44,7 +44,8 @@ func CSRFTokenMW() gin.HandlerFunc {
 			// 将 Token 添加到响应头中
 			c.Header("X-CSRF-Token", token)
 			// 手动设置 CSRF-Cookie
-			c.SetCookie("CSRF-Cookie", token, int(tokenExpires.Seconds()), "/", "", false, false)
+			// c.SetCookie("CSRF-Cookie", token, int(tokenExpires.Seconds()), "/", "", false, false)
+			// fmt.Println(token)
 		}
 	}
 }
