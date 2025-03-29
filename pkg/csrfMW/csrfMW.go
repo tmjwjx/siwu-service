@@ -43,9 +43,8 @@ func CSRFTokenMW() gin.HandlerFunc {
 
 			// 将 Token 添加到响应头中
 			c.Header("X-CSRF-Token", token)
-
-			// 成功
-			// response.Success(c, http.StatusOK, response.NewAppData(globals.StatusOK, response.DataSuccess, nil))
+			// 手动设置 CSRF-Cookie
+			c.SetCookie("CSRF-Cookie", token, int(tokenExpires.Seconds()), "/", "", false, false)
 		}
 	}
 }
@@ -78,16 +77,6 @@ func CSRFMW() gin.HandlerFunc {
 		if c.IsAborted() {
 			return
 		}
-
-		// // 跳过特定路径的 CSRF 验证
-		// skipPaths := []string{"/AI/codeExplain"}
-		// for _, path := range skipPaths {
-		// 	fmt.Println(c.Request.URL.Path, path)
-		// 	if c.Request.URL.Path == path {
-		// 		c.Next() // 直接跳过 CSRF 验证，继续执行后续处理
-		// 		return
-		// 	}
-		// }
 
 		// 对于非 GET 请求，执行自定义的 Redis 验证逻辑
 		if c.Request.Method != http.MethodGet {

@@ -23,12 +23,11 @@ import (
 
 // SetupRouter 启动处理函数
 func SetupRouter() {
-	// 跨域
-	globals.Router.Use(corsMW.CorsMiddleware())
-
 	// csrf 中间件
 	// 验证前端的 csrf 令牌
 	globals.Router.Use(csrfMW.CSRFMW())
+	// 跨域
+	globals.Router.Use(corsMW.CorsMiddleware())
 	// 给前端发送 X-CSRF-Token
 	globals.Router.Use(csrfMW.CSRFTokenMW())
 
