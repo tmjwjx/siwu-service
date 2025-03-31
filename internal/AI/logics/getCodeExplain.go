@@ -50,7 +50,7 @@ func (s *GetCodeExplainLogic) ExplainCodeLogic(token string) (grpc.ServerStreami
 
 	// 5. 构建token
 	md := metadata.Pairs(
-		"token", token, // 这里与服务端拦截器的 md["token"] 键名对应
+		"authorization", "Bearer "+token, // 这里与服务端拦截器的 md["authorization"] 键名对应
 	)
 	ctxWithToken := metadata.NewOutgoingContext(context.Background(), md)
 	ctx, _ := context.WithTimeout(ctxWithToken, 100*time.Second)

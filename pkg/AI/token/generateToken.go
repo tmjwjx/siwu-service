@@ -13,7 +13,7 @@ type CodeToken struct {
 	GenerateTokenKey string
 }
 
-func (c *CodeToken) GetEtcdToken() (string, error) {
+func (c *CodeToken) GetToken() (string, error) {
 	// 1. 建立 gRPC 连接
 	conn, err := utils.GenerateGrpcConn()
 	if err != nil {

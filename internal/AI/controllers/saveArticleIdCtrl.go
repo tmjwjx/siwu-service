@@ -23,7 +23,7 @@ func SaveArticleIDCtrl(c *gin.Context) {
 	etcdToken := token2.CodeToken{
 		GenerateTokenKey: "123456",
 	}
-	token, err := etcdToken.GetEtcdToken()
+	token, err := etcdToken.GetToken()
 	if err != nil {
 		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("SaveArticleIDCtrl -> %v", err), nil))
 		return
