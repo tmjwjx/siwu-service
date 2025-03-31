@@ -79,7 +79,7 @@ func SetupRouter() {
 	// 虚拟机分路由
 	virtualMachineRouter.VirtualMachine(globals.Router)
 
-	// AI解释代码
+	// AI分路由
 	AIRouter.AIRouters(globals.Router)
 
 	// codeRunner分路由
