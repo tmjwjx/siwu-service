@@ -7,6 +7,7 @@ import (
 	articleRouter "forum/internal/article/routes"
 	bsLoginRouter "forum/internal/backstage/routes"
 	casbinRouter "forum/internal/casbin_r_m_a/routes"
+	codeRunnerRouter "forum/internal/codeRunner/routes"
 	dictRouter "forum/internal/dictManage/routes"
 	imageRouter "forum/internal/image/routes"
 	MenuRouter "forum/internal/menu/routes"
@@ -22,12 +23,11 @@ import (
 
 // SetupRouter 启动处理函数
 func SetupRouter() {
-	// 跨域
-	globals.Router.Use(corsMW.CorsMiddleware())
-
 	// csrf 中间件
 	// 验证前端的 csrf 令牌
 	globals.Router.Use(csrfMW.CSRFMW())
+	// 跨域
+	globals.Router.Use(corsMW.CorsMiddleware())
 	// 给前端发送 X-CSRF-Token
 	globals.Router.Use(csrfMW.CSRFTokenMW())
 
@@ -81,5 +81,8 @@ func SetupRouter() {
 
 	// AI解释代码
 	AIRouter.AIRouters(globals.Router)
+
+	// codeRunner分路由
+	codeRunnerRouter.CodeRunner(globals.Router)
 
 }

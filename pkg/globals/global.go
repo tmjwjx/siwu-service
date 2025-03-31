@@ -39,8 +39,7 @@ var (
 	SubscriberChannels = make(map[string]chan string)
 
 	CasbinEnforcer *casbin.Enforcer
-
-	EtcdClient *etcd.EtcdClient //全局ETCD客户端
+	EtcdClient     *etcd.EtcdClient //全局ETCD客户端
 
 	// // SystemMsgSubject 系统消息主题
 	// SystemMsgSubject = observer.NewSystemMsgSubject()
