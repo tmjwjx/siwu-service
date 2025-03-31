@@ -26,7 +26,7 @@ func GetCodeExplain(c *gin.Context) {
 	}
 	token, err := codeToken.GetToken()
 	if err != nil {
-		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("etcdToken.GetToken() -> %v", err), nil))
+		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("codeToken.GetToken() -> %v", err), nil))
 		return
 	}
 
