@@ -5,7 +5,6 @@ import (
 	"forum/pkg/globals"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"log"
 	"time"
 )
 
@@ -14,8 +13,8 @@ func GenerateGrpcConn() (*grpc.ClientConn, error) {
 	srv := "/services/siwuai"
 	addr, err := globals.EtcdClient.GetService(srv)
 	if err != nil {
-		log.Printf("获取服务地址失败: %v", err)
-		return nil, fmt.Errorf("服务不可用")
+		err = fmt.Errorf("globals.EtcdClient.GetService() %v", err)
+		return nil, err
 	}
 
 	// 2. 建立 gRPC 连接
@@ -26,8 +25,8 @@ func GenerateGrpcConn() (*grpc.ClientConn, error) {
 		grpc.WithTimeout(5*time.Second),
 	)
 	if err != nil {
-		log.Printf("gRPC 连接失败: %v", err)
-		return nil, fmt.Errorf("连接服务失败")
+		err = fmt.Errorf("grpc.Dial() %v", err)
+		return nil, err
 	}
 	return conn, nil
 }
