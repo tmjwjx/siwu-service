@@ -59,3 +59,7 @@ log:
   #  level: "debug"
   logPath: "./logs"
   appName: "forum"
+
+etcd:
+  endpoints:
+    - "localhost:2379" # etcd 服务端地址
