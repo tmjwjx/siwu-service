@@ -54,5 +54,4 @@ log:
   appName: "forum"
 
 etcd:
-  endpoints:
-    - "192.168.10.4:2379" # etcd 服务端地址
+  endpoints: "192.168.10.4:2379" # etcd 服务端地址
