@@ -98,3 +98,5 @@ log:
   logPath: "./logs"
   appName: "forum"
 
+etcd:
+  endpoints: "8.154.36.180:2379" # etcd 服务端地址

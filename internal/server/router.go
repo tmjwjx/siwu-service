@@ -1,11 +1,13 @@
 package server
 
 import (
+	AIRouter "forum/internal/AI/routes"
 	administratorRouter "forum/internal/administrator/routes"
 	ApiRouter "forum/internal/api/routes"
 	articleRouter "forum/internal/article/routes"
 	bsLoginRouter "forum/internal/backstage/routes"
 	casbinRouter "forum/internal/casbin_r_m_a/routes"
+	codeRunnerRouter "forum/internal/codeRunner/routes"
 	dictRouter "forum/internal/dictManage/routes"
 	imageRouter "forum/internal/image/routes"
 	MenuRouter "forum/internal/menu/routes"
@@ -20,15 +22,14 @@ import (
 
 // SetupRouter 启动处理函数
 func SetupRouter() {
+	// csrf 中间件
+	// 验证前端的 csrf 令牌
+	// globals.Router.Use(csrfMW.CSRFMW())
 	// 跨域
 	globals.Router.Use(corsMW.CorsMiddleware())
-	
-	//// csrf 中间件
-	//// 验证前端的 csrf 令牌
-	//globals.Router.Use(csrfMW.CSRFMW())
-	//// 给前端发送 X-CSRF-Token
-	//globals.Router.Use(csrfMW.CSRFTokenMW())
-	
+	// 给前端发送 X-CSRF-Token
+	// globals.Router.Use(csrfMW.CSRFTokenMW())
+
 	// 空接口，不执行操作，用来 get X-CSRF-Token
 	globals.Router.GET("/get_csrf_token")
 	
@@ -73,7 +74,14 @@ func SetupRouter() {
 	
 	// 后台登陆分路由
 	bsLoginRouter.Backstage(globals.Router)
-	
+
 	// 虚拟机分路由
 	virtualMachineRouter.VirtualMachine(globals.Router)
+
+	// AI分路由
+	AIRouter.AIRouters(globals.Router)
+
+	// codeRunner分路由
+	codeRunnerRouter.CodeRunner(globals.Router)
+
 }

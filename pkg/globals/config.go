@@ -53,6 +53,7 @@ type Config struct {
 	App          App             `yaml:"app"`
 	SendEmailCfg SendEmailConfig `yaml:"verifyCode"`
 	Log          LogConfig       `yaml:"log"`
+	Etcd         EtcdConfig      `mapstructure:"etcd"`
 }
 
 // LogConfig
@@ -79,4 +80,9 @@ type StaticConfig struct {
 	AdvertisementDefaultImage string  `yaml:"advertisement_default_image" mapstructure:"advertisement_default_image"` // 默认广告图片
 	CommentDefaultImage       string  `yaml:"comment_default_image" mapstructure:"comment_default_image"`             // 默认评论图片
 	CategoryDefaultImage      string  `yaml:"category_default_image" mapstructure:"category_default_image"`           // 默认类目图片
+}
+
+// EtcdConfig etcd 配置
+type EtcdConfig struct {
+	Endpoints string `mapstructure:"endpoints"`
 }
