@@ -46,7 +46,7 @@ func (s *SendCodeLogin) SendCode(token string) (string, error) {
 	req := &request.ExecuteRequest{
 		Id:          s.Id,
 		Uid:         s.Uid,
-		CallBackUrl: fmt.Sprintf("http://%s:%s/codeRunner/getResult", globals.AppConfig.App.Host, globals.AppConfig.App.Port),
+		CallBackUrl: fmt.Sprintf("http://%s:%d/codeRunner/getResult", globals.AppConfig.App.Domain, globals.AppConfig.App.Port),
 		CodeBlock:   s.CodeArea,
 		Language:    s.Language,
 	}
