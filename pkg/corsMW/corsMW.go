@@ -16,6 +16,7 @@ func CorsMiddleware() gin.HandlerFunc {
 			"http://192.168.10.7:9902": true,
 			"http://8.154.36.180:8910": true,
 			"http://8.154.36.180:8911": true,
+			"http://127.0.0.1:8110":    true,
 		}
 
 		// 判断 origin 是否在允许列表内
@@ -24,7 +25,7 @@ func CorsMiddleware() gin.HandlerFunc {
 			c.Header("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE, UPDATE")
 			c.Header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization")
 			c.Header("Access-Control-Expose-Headers", "Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers, Cache-Control, Content-Language, Content-Type")
-			// c.Header("Access-Control-Expose-Headers", "Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers, Cache-Control, Content-Language, Content-Type, X-Csrf-Token")
+			c.Header("Access-Control-Expose-Headers", "Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers, Cache-Control, Content-Language, Content-Type, X-Csrf-Token")
 			c.Header("Access-Control-Allow-Credentials", "true") // 允许跨域请求携带 Cookie
 		}
 
