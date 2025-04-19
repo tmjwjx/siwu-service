@@ -15,7 +15,7 @@ func DelArticleInfoCtrl(c *gin.Context) {
 	//接收前端的代码
 	var req requests.DelArticleInfoReq
 	if err := c.ShouldBindJSON(&req); err != nil {
-		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("SaveArticleIDCtrl -> %v", err), nil))
+		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("DelArticleInfoCtrl -> %v", err), nil))
 		return
 	}
 
@@ -23,9 +23,9 @@ func DelArticleInfoCtrl(c *gin.Context) {
 	etcdToken := token2.CodeToken{
 		GenerateTokenKey: "123456",
 	}
-	token, err := etcdToken.GetEtcdToken()
+	token, err := etcdToken.GetToken()
 	if err != nil {
-		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("SaveArticleIDCtrl -> %v", err), nil))
+		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("DelArticleInfoCtrl -> %v", err), nil))
 		return
 	}
 
@@ -35,7 +35,7 @@ func DelArticleInfoCtrl(c *gin.Context) {
 
 	res, err := d.DelArticleInfoLogic(&req)
 	if err != nil {
-		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("SaveArticleIDCtrl -> %v", err), nil))
+		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("DelArticleInfoCtrl -> %v", err), nil))
 		return
 	}
 

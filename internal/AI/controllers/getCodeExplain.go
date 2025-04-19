@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"forum/internal/AI/logics"
 	requests "forum/internal/AI/requests/code"
+	token2 "forum/pkg/AI/token"
 	"forum/pkg/globals"
 	"forum/pkg/response"
 	"github.com/gin-gonic/gin"
@@ -20,12 +21,12 @@ func GetCodeExplain(c *gin.Context) {
 	}
 
 	// 生成token
-	etcdToken := logics.CodeToken{
+	codeToken := token2.CodeToken{
 		GenerateTokenKey: "123456",
 	}
-	token, err := etcdToken.GetEtcdToken()
+	token, err := codeToken.GetToken()
 	if err != nil {
-		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("etcdToken.GetEtcdToken() -> %v", err), nil))
+		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("codeToken.GetToken() -> %v", err), nil))
 		return
 	}
 

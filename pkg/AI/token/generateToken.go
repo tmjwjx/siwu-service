@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"forum/pkg/AI/token/proto"
 	"forum/pkg/AI/utils"
-	"log"
 	"time"
 )
 
@@ -13,10 +12,11 @@ type CodeToken struct {
 	GenerateTokenKey string
 }
 
-func (c *CodeToken) GetEtcdToken() (string, error) {
+func (c *CodeToken) GetToken() (string, error) {
 	// 1. 建立 gRPC 连接
 	conn, err := utils.GenerateGrpcConn()
 	if err != nil {
+		err = fmt.Errorf("utils.GenerateGrpcConn() %v", err)
 		return "", err
 	}
 	defer conn.Close() // 确保连接关闭
@@ -34,8 +34,8 @@ func (c *CodeToken) GetEtcdToken() (string, error) {
 
 	resp, err := client.GenerateToken(ctx, req)
 	if err != nil {
-		log.Printf("生成 Token 失败: %v", err)
-		return "", fmt.Errorf("服务调用失败")
+		err = fmt.Errorf("client.GenerateToken() %v", err)
+		return "", err
 	}
 
 	// 6. 返回结果

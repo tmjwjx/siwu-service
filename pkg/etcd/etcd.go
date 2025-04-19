@@ -24,7 +24,6 @@ func NewEtcdClient(addr []string) (*EtcdClient, error) {
 		Endpoints:   addr,
 		DialTimeout: 5 * time.Second,
 	}
-
 	client, err := clientv3.New(conf)
 	if err != nil {
 		fmt.Printf("create connection etcd failed %s\n", err)

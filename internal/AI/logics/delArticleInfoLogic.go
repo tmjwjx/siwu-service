@@ -33,7 +33,7 @@ func (s *DelArticleInfoLogic) DelArticleInfoLogic(req *requests.DelArticleInfoRe
 
 	// 5. 构建token
 	md := metadata.Pairs(
-		"token", s.Token, // 这里与服务端拦截器的 md["token"] 键名对应
+		"authorization", "Bearer "+s.Token, // 这里与服务端拦截器的 md["authorization"] 键名对应
 	)
 	ctxWithToken := metadata.NewOutgoingContext(context.Background(), md)
 	ctx, cancel := context.WithTimeout(ctxWithToken, 5*time.Second)

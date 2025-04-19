@@ -3,8 +3,8 @@ package logics
 import (
 	"context"
 	"fmt"
-	"forum/pkg/AI/token/proto"
 	"forum/pkg/globals"
+	requests "github.com/ningzhaoxing/codeRunnerProto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"log"
@@ -12,12 +12,13 @@ import (
 )
 
 type CodeToken struct {
-	GenerateTokenKey string
+	Name     string `json:"name"`
+	Password string `json:"password"`
 }
 
 func (c *CodeToken) GetEtcdToken() (string, error) {
 	// 1. 获取服务地址
-	srv := "/services/siwuai"
+	srv := "/services/code-runner"
 	addr, err := globals.EtcdClient.GetService(srv)
 	if err != nil {
 		log.Printf("获取服务地址失败: %v", err)
@@ -37,10 +38,11 @@ func (c *CodeToken) GetEtcdToken() (string, error) {
 	}
 	defer conn.Close() // 确保连接关闭
 	// 3. 创建正确的客户端
-	client := proto.NewTokenServiceClient(conn)
+	client := requests.NewTokenIssuerClient(conn)
 	// 4. 构造请求参数
-	req := &proto.TokenRequest{
-		GenerateTokenKey: c.GenerateTokenKey,
+	req := &requests.GenerateTokenRequest{
+		Name:     c.Name,
+		Password: c.Password,
 	}
 
 	// 5. 调用 RPC 方法
