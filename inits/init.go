@@ -39,5 +39,5 @@ func init() {
 	CasbinInit()
 	//初始化ETCD
 	// 8.154.36.180:2378
-	InitEtcd([]string{"192.168.10.4:2379"})
+	InitEtcd()
 }
