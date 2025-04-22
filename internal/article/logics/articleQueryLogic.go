@@ -8,6 +8,7 @@ import (
 	"forum/internal/internalPkg/internalUtils"
 	"forum/internal/internalPkg/redisUtils"
 	"forum/pkg/globals"
+	"forum/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"strconv"
@@ -48,8 +49,12 @@ func ArticleSearchLogic(db *gorm.DB, req *requests.ArticleSearchReq) (data inter
 		articles[i].Summary = internalUtils.Highlight(articles[i].Summary, req.Keyword)
 	}
 
+	// 热度算法处理
+	// 返回合理排序后的文章
+	sortedArticles := utils.RedditHot(articles)
+
 	data = gin.H{
-		"selectedList": articles,
+		"selectedList": sortedArticles,
 		"next":         b,
 	}
 

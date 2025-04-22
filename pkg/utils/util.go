@@ -2,9 +2,13 @@ package utils
 
 import (
 	"fmt"
+	"forum/internal/article/requests"
 	"forum/internal/models"
 	"forum/pkg/globals"
+	"math"
+	"sort"
 	"strconv"
+	"time"
 )
 
 // ChangeStringToUint
@@ -75,4 +79,56 @@ func SelEmailForAdmin(ID uint) (string, error) {
 		return "", fmt.Errorf("SelEmailForAdmin -> 根据管理员的ID查询其Email 异常 -> %v", res.Error)
 	}
 	return email, nil
+}
+
+// RedditHot 计算 Reddit 热度排序得分
+func RedditHot(articles []requests.SearchArticleListRes) []requests.SearchArticleListRes {
+	// 最终返回结果
+	resArticlers := make([]requests.SearchArticleListRes, len(articles))
+	// 创建映射
+	type mp struct {
+		id  int
+		val float64
+	}
+	tmpArticles := make([]mp, len(articles))
+	for i, v := range articles {
+		tmpArticles[i].id = i
+		tmpArticles[i].val = heat(v.Heat, v.PublishedAt)
+	}
+	sort.Slice(tmpArticles, func(i, j int) bool {
+		return tmpArticles[i].val > tmpArticles[j].val
+	})
+
+	for i, v := range tmpArticles {
+		//resArticlers = append(resArticlers, articles[v.id])
+		resArticlers[i] = articles[v.id]
+	}
+
+	return resArticlers
+}
+
+// 返回加热度
+func heat(score int, createdTime *time.Time) float64 {
+	// 计算 log(得分)
+	order := math.Log10(math.Max(math.Abs(float64(score)), 1))
+
+	// 确定符号
+	var sign float64
+	if score > 0 {
+		sign = 1
+	} else if score < 0 {
+		sign = -1
+	} else {
+		sign = 0
+	}
+
+	// Reddit 的基准时间戳：2005-12-08T07:46:43Z
+	epoch := int64(1134028003)
+
+	// 距离基准时间的秒数
+	createdUTC := createdTime.Unix()
+	seconds := createdUTC - epoch
+
+	// 返回热度得分
+	return math.Round((sign*order+float64(seconds)/10000)*1e7) / 1e7
 }
