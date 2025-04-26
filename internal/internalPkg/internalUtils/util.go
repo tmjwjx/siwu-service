@@ -211,9 +211,9 @@ func MessagePush(data string, userId string) {
 	}
 }
 
-func MessagePush2(data string, userId string, t string) {
-
-	appData := response.NewAppData(globals.StatusOK, t, data)
+func MessagePush2(data string, userId string, t string, msg string) {
+	//appData := response.NewAppData(globals.StatusOK, t, data)
+	appData := response.NewSSEData(globals.StatusOK, msg, data, t)
 	jsonData, _ := json.Marshal(appData)
 
 	notifyChan, exist := globals.SubscriberChannels[userId]

@@ -60,3 +60,23 @@ func NewAppErr(code globals.AppCode, err error, data interface{}) *AppErr {
 		Data: data,
 	}
 }
+
+type SSEData struct {
+	Code globals.AppCode `json:"code"`
+	Msg  string          `json:"msg"`
+	Type string          `json:"type"`
+	Data interface{}     `json:"data"`
+}
+
+func NewSSEData(code globals.AppCode, msg string, data interface{}, t string) *SSEData {
+	if data == nil {
+		data = gin.H{}
+	}
+
+	return &SSEData{
+		Code: code,
+		Msg:  msg,
+		Type: t,
+		Data: data,
+	}
+}

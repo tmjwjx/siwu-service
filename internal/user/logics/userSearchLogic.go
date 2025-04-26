@@ -120,6 +120,7 @@ func (u *UserReqContext) ClickAttention(req requests.ClickAttentionReq) (int, er
 
 	// 通知用户关注消息
 	internalUtils.MessagePush("follow", strconv.Itoa(int(followedId)))
+	internalUtils.MessagePush2("follow", strconv.Itoa(int(followedId)), globals.NoticeType, "")
 
 	return 200, nil
 }

@@ -1127,6 +1127,7 @@ func UpdateLikeRep(db *gorm.DB, req requests.ArticleLikeReq, userId uint) (err e
 				// 通知文章作者
 				authorId := strconv.Itoa(int(article.UserID))
 				internalUtils.MessagePush("like", authorId)
+				internalUtils.MessagePush2("like", authorId, globals.NoticeType, "")
 
 				// 增加文章点赞数
 				err = AddArticleLikes(db, article.ID)
@@ -1186,6 +1187,7 @@ func UpdateCollectionRep(db *gorm.DB, req requests.ArticleCollectionReq, userId 
 				// 通知文章作者
 				authorId := strconv.Itoa(int(article.UserID))
 				internalUtils.MessagePush("collection", authorId)
+				internalUtils.MessagePush2("collection", authorId, globals.NoticeType, "")
 
 				// 增加文章收藏数
 				err = AddArticleCollections(db, article.ID)
