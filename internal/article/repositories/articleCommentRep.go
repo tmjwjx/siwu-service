@@ -101,10 +101,12 @@ func InsertCommentRep(userId uint, articleCommentReq *requests.ArticleCommentReq
 
 		// 评论通知
 		internalUtils.MessagePush("comment", fmt.Sprintf("%v", aUserID))
+		internalUtils.MessagePush2("comment", fmt.Sprintf("%v", aUserID), globals.NoticeType, "")
 	} else {
 		// 如果不是顶级评论，返回回复的评论的发布者ID
 		// 评论通知
 		internalUtils.MessagePush("comment", fmt.Sprintf("%v", articleCommentReq.ParentUserID))
+		internalUtils.MessagePush2("comment", fmt.Sprintf("%v", articleCommentReq.ParentUserID), globals.NoticeType, "")
 	}
 
 	return nil, 200
@@ -636,6 +638,7 @@ func UpdatePraiseCountRep(req *requests.PraiseCount, db *gorm.DB, userId uint) e
 					err = db.Model(&models.ArticleComment{}).Select("user_id").Where("id = ?", req.ID).First(&comment).Error
 					// 评论点赞通知
 					internalUtils.MessagePush("comment_like", strconv.Itoa(int(comment.UserID)))
+					internalUtils.MessagePush2("comment_like", strconv.Itoa(int(comment.UserID)), globals.NoticeType, "")
 
 				} else {
 					tx.Rollback()

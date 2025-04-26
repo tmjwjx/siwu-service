@@ -22,5 +22,5 @@ func CreateVMCallback(c *gin.Context) {
 	user := internalUtils.QueryUserByEmail(db, cb.Email)
 	userId := strconv.Itoa(int(user.ID))
 
-	internalUtils.MessagePush2(string(data), userId, globals.VirtualMachineType)
+	internalUtils.MessagePush2(string(data), userId, globals.VirtualMachineType, "")
 }
