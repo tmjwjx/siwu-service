@@ -1,6 +1,7 @@
 package logics
 
 import (
+	"encoding/json"
 	"fmt"
 	"forum/internal/internalPkg/internalUtils"
 	"forum/internal/internalPkg/sqlUtils"
@@ -9,6 +10,7 @@ import (
 	"forum/internal/user/requests"
 	"forum/pkg/globals"
 	"forum/pkg/response"
+	"github.com/gin-gonic/gin"
 	"github.com/samber/lo"
 	"gorm.io/gorm"
 	"strconv"
@@ -120,7 +122,8 @@ func (u *UserReqContext) ClickAttention(req requests.ClickAttentionReq) (int, er
 
 	// 通知用户关注消息
 	internalUtils.MessagePush("follow", strconv.Itoa(int(followedId)))
-	internalUtils.MessagePush2("follow", strconv.Itoa(int(followedId)), globals.NoticeType, "")
+	jsonData, _ := json.Marshal(gin.H{"content": "follow"})
+	internalUtils.MessagePush2(string(jsonData), strconv.Itoa(int(followedId)), globals.NoticeType, "")
 
 	return 200, nil
 }
