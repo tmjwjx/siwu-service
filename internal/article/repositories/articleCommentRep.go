@@ -1,12 +1,14 @@
 package repositories
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"forum/internal/article/requests"
 	"forum/internal/internalPkg/internalUtils"
 	"forum/internal/models"
 	"forum/pkg/globals"
+	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"strconv"
 )
@@ -100,11 +102,15 @@ func InsertCommentRep(userId uint, articleCommentReq *requests.ArticleCommentReq
 		}
 
 		// 评论通知
-		internalUtils.MessagePush("comment", fmt.Sprintf("%v", aUserID))
+		//internalUtils.MessagePush("comment", fmt.Sprintf("%v", aUserID))
+		jsonData, _ := json.Marshal(gin.H{"content": "comment"})
+		internalUtils.MessagePush2(string(jsonData), fmt.Sprintf("%v", aUserID), globals.NoticeType, "")
 	} else {
 		// 如果不是顶级评论，返回回复的评论的发布者ID
 		// 评论通知
-		internalUtils.MessagePush("comment", fmt.Sprintf("%v", articleCommentReq.ParentUserID))
+		//internalUtils.MessagePush("comment", fmt.Sprintf("%v", articleCommentReq.ParentUserID))
+		jsonData, _ := json.Marshal(gin.H{"content": "comment"})
+		internalUtils.MessagePush2(string(jsonData), fmt.Sprintf("%v", articleCommentReq.ParentUserID), globals.NoticeType, "")
 	}
 
 	return nil, 200
@@ -635,7 +641,9 @@ func UpdatePraiseCountRep(req *requests.PraiseCount, db *gorm.DB, userId uint) e
 					var comment models.ArticleComment
 					err = db.Model(&models.ArticleComment{}).Select("user_id").Where("id = ?", req.ID).First(&comment).Error
 					// 评论点赞通知
-					internalUtils.MessagePush("comment_like", strconv.Itoa(int(comment.UserID)))
+					//internalUtils.MessagePush("comment_like", strconv.Itoa(int(comment.UserID)))
+					jsonData, _ := json.Marshal(gin.H{"content": "comment_like"})
+					internalUtils.MessagePush2(string(jsonData), strconv.Itoa(int(comment.UserID)), globals.NoticeType, "")
 
 				} else {
 					tx.Rollback()

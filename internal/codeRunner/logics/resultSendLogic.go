@@ -27,7 +27,7 @@ func (r *ResultSendLogic) Send() error {
 	}
 
 	// 将消息push到sse
-	internalUtils.MessagePush2(string(data), strconv.Itoa(int(r.req.Uid)), globals.CodeRunnerType)
+	internalUtils.MessagePush2(string(data), strconv.Itoa(int(r.req.Uid)), globals.CodeRunnerType, "")
 	fmt.Println(string(data))
 	return nil
 }

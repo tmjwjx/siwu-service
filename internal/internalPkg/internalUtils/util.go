@@ -211,9 +211,16 @@ func MessagePush(data string, userId string) {
 	}
 }
 
-func MessagePush2(data string, userId string, t string) {
-
-	appData := response.NewAppData(globals.StatusOK, t, data)
+// MessagePush2
+// @Description: 向用户实时发送更新数据
+// @param        data string 数据
+// @param        userId string 推送给哪个用户
+// @param        t string 信息的类型
+// @param        msg string 一些提示信息
+// @Author tianjiajie 2025-04-26 16:03:42
+func MessagePush2(data string, userId string, t string, msg string) {
+	//appData := response.NewAppData(globals.StatusOK, t, data)
+	appData := response.NewSSEData(globals.StatusOK, msg, data, t)
 	jsonData, _ := json.Marshal(appData)
 
 	notifyChan, exist := globals.SubscriberChannels[userId]
