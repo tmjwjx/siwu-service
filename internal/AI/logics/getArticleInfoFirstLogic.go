@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 	"forum/internal/AI/proto/article"
+	"forum/internal/AI/repositories"
 	"forum/internal/AI/requests"
 	"forum/pkg/AI/utils"
 	"google.golang.org/grpc/metadata"
+	"gorm.io/gorm"
 	"time"
 )
 
@@ -14,7 +16,7 @@ type GetArticleInfoFirstLogic struct {
 	Token string
 }
 
-func (a *GetArticleInfoFirstLogic) GetArticleInfoFirstLogic(articleInfo *requests.GetArticleInfoFirstReq) (*requests.GetArticleInfoFirstRes, error) {
+func (a *GetArticleInfoFirstLogic) GetArticleInfoFirstLogic(articleInfo *requests.GetArticleInfoFirstReq, db *gorm.DB) (*requests.GetArticleInfoFirstRes, error) {
 	// 1. 建立 gRPC 连接
 	conn, err := utils.GenerateGrpcConn()
 	if err != nil {
@@ -28,8 +30,9 @@ func (a *GetArticleInfoFirstLogic) GetArticleInfoFirstLogic(articleInfo *request
 
 	// 4. 构造请求参数
 	req := &article.GetArticleInfoFirstRequest{
-		Content: articleInfo.Content,
-		Tags:    articleInfo.Tags,
+		Content:   articleInfo.Content,
+		Tags:      articleInfo.Tags,
+		ArticleID: uint32(articleInfo.ArticleID),
 	}
 
 	// 5. 构建token
@@ -51,6 +54,12 @@ func (a *GetArticleInfoFirstLogic) GetArticleInfoFirstLogic(articleInfo *request
 		Abstract: resGrpc.Abstract,
 		Summary:  resGrpc.Summary,
 		Tags:     resGrpc.Tags,
+	}
+
+	// 更新文章摘要
+	err = repositories.UpdateArticleAbstract(db, res.Abstract, articleInfo.ArticleID)
+	if err != nil {
+		return nil, fmt.Errorf("GetArticleInfoFirstLogic -> 更新文章摘要失败 -> %v", err)
 	}
 
 	// 6. 返回结果

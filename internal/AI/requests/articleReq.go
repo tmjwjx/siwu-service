@@ -1,8 +1,9 @@
 package requests
 
 type GetArticleInfoFirstReq struct {
-	Content string   `json:"content"` // 文章的全部内容
-	Tags    []string `json:"tags"`    // 所有标签, 用于给文章匹配相应的标签
+	Content   string   `json:"content"`    // 文章的全部内容
+	Tags      []string `json:"tags"`       // 所有标签, 用于给文章匹配相应的标签
+	ArticleID uint     `json:"article_id"` // 文章ID
 }
 
 type GetArticleInfoFirstRes struct {
