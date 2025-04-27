@@ -121,7 +121,7 @@ func (u *UserReqContext) ClickAttention(req requests.ClickAttentionReq) (int, er
 	}
 
 	// 通知用户关注消息
-	internalUtils.MessagePush("follow", strconv.Itoa(int(followedId)))
+	//internalUtils.MessagePush("follow", strconv.Itoa(int(followedId)))
 	jsonData, _ := json.Marshal(gin.H{"content": "follow"})
 	internalUtils.MessagePush2(string(jsonData), strconv.Itoa(int(followedId)), globals.NoticeType, "")
 
