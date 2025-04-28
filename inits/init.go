@@ -36,7 +36,7 @@ func init() {
 	PartPathPrefixInit()
 
 	// 初始化casbin配置
-	CasbinInit()
+	// CasbinInit()
 	// 初始化ETCD
 	// 8.154.36.180:2378
 	InitEtcd()

@@ -22,7 +22,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/samber/lo v1.47.0
 	github.com/spf13/viper v1.19.0
-	github.com/world-fish/proto v0.0.7
+	github.com/world-fish/proto v0.0.8
 	github.com/xuri/excelize/v2 v2.9.0
 	go.etcd.io/etcd/api/v3 v3.5.12
 	go.etcd.io/etcd/client/v3 v3.5.12
