@@ -19,11 +19,19 @@ func VirtualMachine(e *gin.Engine) {
 
 		// 创建虚拟机回调
 		vmGroup.POST("/create_callback", controllers.CreateVMCallback)
+		// 销毁虚拟机毁掉
+		vmGroup.POST("/destroy_callback", controllers.DestroyVMCallback)
+		// 虚拟机通知信息
+		vmGroup.POST("/notice_callback", controllers.NoticeVMCallback)
 	}
+
 	// token 校验
 	vmGroup.Use(token.AuthMiddleware())
 	{
 		vmGroup.POST("/create", controllers.CreateVM)
+
+		// 用户手动删除虚拟机
+		vmGroup.POST("/destroy", controllers.DestroyVM)
 	}
 
 }
