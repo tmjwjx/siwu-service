@@ -37,7 +37,7 @@ func init() {
 
 	// 初始化casbin配置
 	CasbinInit()
-	//初始化ETCD
+	// 初始化ETCD
 	// 8.154.36.180:2378
 	InitEtcd()
 }
