@@ -21,5 +21,6 @@ func AIRouters(e *gin.Engine) {
 
 		// 删除文章相关信息
 		articleRouter.DELETE("/del_info", controllers.DelArticleInfoCtrl)
+
 	}
 }
