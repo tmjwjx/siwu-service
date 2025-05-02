@@ -56,10 +56,15 @@ func (a *GetArticleInfoFirstLogic) GetArticleInfoFirstLogic(articleInfo *request
 		Tags:     resGrpc.Tags,
 	}
 
-	// 更新文章摘要
-	err = repositories.UpdateArticleAbstract(db, res.Abstract, articleInfo.ArticleID)
-	if err != nil {
-		return nil, fmt.Errorf("GetArticleInfoFirstLogic -> 更新文章摘要失败 -> %v", err)
+	if res.Abstract != "" && res.Summary != "" {
+		// 更新文章摘要
+		err = repositories.UpdateArticleAbstract(db, res.Abstract, articleInfo.ArticleID)
+		if err != nil {
+			return nil, fmt.Errorf("GetArticleInfoFirstLogic -> 更新文章摘要失败 -> %v", err)
+		}
+	} else {
+		res.Key = ""
+		res.Tags = make([]string, 0)
 	}
 
 	// 6. 返回结果

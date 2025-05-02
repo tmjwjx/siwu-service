@@ -16,7 +16,6 @@ import (
 	tagRouter "forum/internal/tag/routes"
 	userRouter "forum/internal/user/routes"
 	virtualMachineRouter "forum/internal/virtualMachine/routes"
-	"forum/pkg/corsMW"
 	"forum/pkg/globals"
 )
 
@@ -27,13 +26,13 @@ func SetupRouter() {
 	// globals.Router.Use(csrfMW.CSRFMW())
 
 	// 跨域
-	globals.Router.Use(corsMW.CorsMiddleware())
+	//globals.Router.Use(corsMW.CorsMiddleware())
 
 	// 给前端发送 X-CSRF-Token
 	// globals.Router.Use(csrfMW.CSRFTokenMW())
 
 	// 空接口，不执行操作，用来 get X-CSRF-Token
-	globals.Router.GET("/get_csrf_token")
+	//globals.Router.GET("/get_csrf_token")
 
 	// 管理员分路由
 	administratorRouter.Administrator(globals.Router)
