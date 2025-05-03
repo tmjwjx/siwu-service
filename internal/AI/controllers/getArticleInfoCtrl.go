@@ -15,7 +15,7 @@ func GetArticleInfoCtrl(c *gin.Context) {
 	//接收前端的代码
 	var req requests.GetArticleInfoReq
 	if err := c.ShouldBindJSON(&req); err != nil {
-		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("SaveArticleIDCtrl -> %v", err), nil))
+		response.Failed(c, http.StatusBadRequest, response.NewAppErr(globals.StatusBadRequest, fmt.Errorf("GetArticleInfoCtrl -> %v", err), nil))
 		return
 	}
 
@@ -25,7 +25,7 @@ func GetArticleInfoCtrl(c *gin.Context) {
 	}
 	token, err := etcdToken.GetToken()
 	if err != nil {
-		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("SaveArticleIDCtrl -> %v", err), nil))
+		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("GetArticleInfoCtrl -> %v", err), nil))
 		return
 	}
 
@@ -35,7 +35,7 @@ func GetArticleInfoCtrl(c *gin.Context) {
 
 	res, err := a.GetArticleInfoLogic(&req)
 	if err != nil {
-		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("SaveArticleIDCtrl -> %v", err), nil))
+		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("GetArticleInfoCtrl -> %v", err), nil))
 		return
 	}
 

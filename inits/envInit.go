@@ -6,6 +6,6 @@ import "forum/pkg/globals"
 func EnvInit() {
 	// 配置项目环境 本地 local.yaml
 	if len(globals.Env) == 0 {
-		globals.Env = "local"
+		globals.Env = "dev"
 	}
 }
