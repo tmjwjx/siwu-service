@@ -41,7 +41,7 @@ func DestroyVMCallback(c *gin.Context) {
 	if user != nil {
 		userId := strconv.Itoa(int(user.ID))
 		// 调用sse
-		internalUtils.MessagePush2(fmt.Sprintf("已销毁Email为%v用户的虚拟机", dr.Email), userId, globals.VirtualMachineType)
+		internalUtils.MessagePush2(fmt.Sprintf("已销毁Email为%v用户的虚拟机", dr.Email), userId, globals.VirtualMachineType, "")
 	} else {
 		globals.Log.Panicf("无法获取email为%v的用户id\n", dr.Email)
 	}
@@ -62,7 +62,7 @@ func NoticeVMCallback(c *gin.Context) {
 	if user != nil {
 		userId := strconv.Itoa(int(user.ID))
 		// 调用sse
-		internalUtils.MessagePush2(noticeResp.Data, userId, globals.VirtualMachineType)
+		internalUtils.MessagePush2(noticeResp.Data, userId, globals.VirtualMachineType, "")
 	} else {
 		globals.Log.Panicf("无法获取email为%v的用户id\n", noticeResp.Email)
 	}
