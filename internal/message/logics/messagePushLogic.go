@@ -14,17 +14,17 @@ func NewMessageChan(c *gin.Context) {
 	id, _ := c.Get("id")
 	globals.Log.Infof("用户 %s 连接成功", id)
 	userId := fmt.Sprintf("%d", id)
-	
+
 	// 将用户的通道存入全局变量
 	notifyChan := make(chan string, 10)
 	globals.SubscriberChannels[userId] = notifyChan
 	//notifyChan := globals.SubscriberChannels[userId]
-	
+
 	//// 创建一个观察者
 	//observer.NewSystemMsgObserver(userId)
 	//// 注册观察者到事件
 	//globals.SystemMsgSubject.RegisterObserver("systemMsg", observer.NewSystemMsgObserver(userId))
-	
+
 	for {
 		select {
 		case message := <-notifyChan:
@@ -46,11 +46,11 @@ func NewMessageChan(c *gin.Context) {
 			if _, ok := globals.SubscriberChannels[userId]; ok {
 				// 关闭通道
 				close(notifyChan)
-				
+
 				// 删除用户的通道
 				delete(globals.SubscriberChannels, userId)
 			}
-			
+
 			//// 取消注册观察者
 			//globals.SystemMsgSubject.UnRegisterObserver("systemMsg", observer.NewSystemMsgObserver(userId))
 			return

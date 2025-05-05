@@ -18,4 +18,5 @@ const (
 	VirtualMachineType string = "virtual_machine"
 	CodeRunnerType     string = "codeRunner"
 	AIType             string = "ai"
+	HeatBeatType       string = "heartbeat"
 )

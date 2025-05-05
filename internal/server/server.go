@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"forum/pkg/globals"
+	"forum/pkg/heartbeat"
 	"forum/pkg/sendEmailAsynchronous"
 	"net/http"
 	"os"
@@ -20,6 +21,9 @@ func Run() {
 
 	// 开协程：启动邮件任务消费者
 	go sendEmailAsynchronous.StartEmailTaskConsumer(globals.RDB)
+
+	// 开协程：sse心跳
+	go heartbeat.StartHeartbeat()
 
 	// 启动处理函数
 	SetupRouter()
