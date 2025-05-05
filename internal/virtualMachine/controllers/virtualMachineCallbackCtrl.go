@@ -9,6 +9,10 @@ import (
 	"strconv"
 )
 
+// CreateVMCallback
+// @Description:
+// @param        c *gin.Context
+// @Author tianjiajie 2025-05-07 22:02:59
 func CreateVMCallback(c *gin.Context) {
 	db := globals.DB
 
