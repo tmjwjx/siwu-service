@@ -33,7 +33,7 @@ func GetArticleInfoFirstCtrl(c *gin.Context) {
 		Token: token,
 	}
 
-	res, err := a.GetArticleInfoFirstLogic(&req)
+	res, err := a.GetArticleInfoFirstLogic(&req, globals.DB)
 	if err != nil {
 		response.Failed(c, http.StatusInternalServerError, response.NewAppErr(globals.StatusInternalServerError, fmt.Errorf("GetArticleInfoFirstCtrl -> %v", err), nil))
 		return

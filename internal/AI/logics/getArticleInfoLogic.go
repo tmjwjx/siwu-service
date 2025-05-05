@@ -29,6 +29,7 @@ func (s *GetArticleInfoLogic) GetArticleInfoLogic(req *requests.GetArticleInfoRe
 	// 4. 构造请求参数
 	reqGrpc := &article.GetArticleInfoRequest{
 		ArticleID: uint32(req.ArticleID),
+		UserID:    uint32(req.UserID),
 	}
 
 	// 5. 构建token
@@ -48,6 +49,14 @@ func (s *GetArticleInfoLogic) GetArticleInfoLogic(req *requests.GetArticleInfoRe
 	res := &requests.GetArticleInfoRes{
 		Abstract: resGrpc.Abstract,
 		Summary:  resGrpc.Summary,
+	}
+
+	for _, v := range resGrpc.Codes {
+		value := &requests.CodeExplanation{
+			Question:    v.Question,
+			Explanation: v.Explanation,
+		}
+		res.Codes = append(res.Codes, value)
 	}
 
 	// 6. 返回结果

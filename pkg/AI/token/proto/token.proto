@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package token;
 
-option go_package = "forum/pkg/ai_token/proto";
+option go_package = "forum/pkg/AI/token/proto";
 
 // 请求与响应消息
 message TokenRequest {

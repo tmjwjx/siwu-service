@@ -17,9 +17,10 @@ func AIRouters(e *gin.Engine) {
 		articleRouter.POST("/save_article_id", controllers.SaveArticleIDCtrl)
 
 		// 非首次获取文章的摘要、总结、标签
-		articleRouter.GET("/get_info", controllers.GetArticleInfoCtrl)
+		articleRouter.POST("/get_info", controllers.GetArticleInfoCtrl)
 
 		// 删除文章相关信息
 		articleRouter.DELETE("/del_info", controllers.DelArticleInfoCtrl)
+
 	}
 }
